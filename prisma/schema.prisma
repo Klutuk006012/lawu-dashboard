@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,20 +7,59 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// ============================================
+// Lawu-2.5-Fine Dashboard
+// ============================================
+
+model Conversation {
+  id        String    @id @default(cuid())
+  title     String    @default("Obrolan Baru")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  messages  Message[]
 }
 
-model Post {
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  role           String // "user" | "assistant"
+  content        String
+  latencyMs      Int?
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+model Ebook {
   id        String   @id @default(cuid())
   title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
+  author    String
+  category  String
+  fileType  String // PDF | EPUB | DOCX
+  path      String
+  sizeMb    Float
+  pages     Int?
+  summary   String
+  indexedAt DateTime @default(now())
+
+  @@index([category])
+  @@index([fileType])
+}
+
+model Alert {
+  id        String   @id @default(cuid())
+  level     String // info | success | warning | error
+  title     String
+  message   String
+  source    String @default("dashboard")
+  delivered Boolean  @default(false)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
+model Setting {
+  key   String @id
+  value String
 }

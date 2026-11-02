@@ -1,0 +1,686 @@
+﻿​Daftar lsi​
+​Table of Contents​
+
+​Pendahuluan dan Tujuan​ ​1​
+​Introduction and Purpose​
+
+​Lingkup Aplikasi​ ​6​
+​Scope of Application​
+
+​Pedoman Penggunaan Bertanggung Jawab​ ​8​
+​Responsible Use Guidelines​
+
+​Penggunaan yang Dilarang​ ​11​
+​Prohibited Uses​
+
+​Strategi Mitigasi dan Manajemen Risiko​ ​12​
+​Mitigation Strategies and Risk Management​
+
+​lnformasi Kontak dan Bantuan​ ​13​
+​Contact Information and Support​
+
+​Version​
+​April 2025​
+
+​Sahabat-AI​ ​April 2025​
+
+
+
+​I.​​Pendahuluan dan Tujuan​ ​I. Introduction and Purpose​
+​A.​​Ringkasan terkait Sahabat-AI dan Kemampuannya​ ​A.​​Overview of Sahabat-AI and its capabilities​
+
+​Sahabat-AI​ ​adalah​ ​sekumpulan​ ​Model​ ​Bahasa​ ​Besar​ ​(LLM)​ ​yang​ ​Sahabat-AI​ ​(Indonesian​​language​​for​​"close​​friends")​​is​​a​​collection​
+​telah​ ​dilatih​ ​secara​ ​kontinu​ ​(pre-trained)​ ​dan​ ​disesuaikan​ ​of​ ​Large​ ​Language​ ​Models​ ​(LLMs)​ ​which​ ​has​ ​been​ ​continuously​
+​(instruct-tuned)​ ​untuk​ ​Bahasa​ ​Indonesia​ ​serta​ ​berbagai​ ​bahasa​ ​pre-trained​ ​and​ ​instruct-tuned​ ​for​ ​the​ ​Indonesian​ ​language​ ​and​​its​
+​daerah.​ ​Ekosistem​​Sahabat-AI​​diinisiasi​​dan​​dikembangkan​​bersama​ ​various​ ​local​ ​languages.​ ​The​​Sahabat-AI​​ecosystem​​is​​co-initiated,​
+​oleh​​perusahaan​​teknologi​​dan​​telekomunikasi​​Indonesia:​​PT​​lndosat​ ​and​ ​co-developed​ ​by​ ​Indonesian​ ​homegrown​ ​tech​ ​and​
+​Tbk ("lndosat Ooredoo Hutchison" or "IOH").​ ​telecommunication​ ​companies:​ ​PT​ ​lndosat​ ​Tbk​ ​("lndosat​ ​Ooredoo​
+
+​Hutchison" or "IOH").​
+​Dalam​ ​mengembangkan​ ​model​​tersebut,​​kami​​berkolaborasi​​dengan​
+​universitas​​lokal​​dan​​grup​​media​​di​​Indonesia​​untuk​​melatih​​model​​kita​ ​In​ ​developing​ ​the​ ​model,​ ​we​ ​worked​ ​with​ ​local​ ​universities​ ​and​
+​dengan​ ​talenta​ ​mereka​ ​dan/atau​ ​menggunakan​ ​set​ ​data​ ​mereka.​ ​media​ ​groups​ ​in​ ​Indonesia​ ​to​ ​train​ ​our​ ​model​ ​with​ ​their​ ​talents​
+​Universitas​ ​ternama​ ​tersebut​ ​termasuk​ ​Universitas​ ​Gadjah​ ​Mada,​ ​and/or​ ​using​ ​their​ ​datasets.​​These​​include​​top​​universities​​such​​as​
+​Universitas​ ​Indonesia,​ ​Universitas​ ​IPB,​ ​dan​ ​lnstitut​ ​Teknologi​ ​Universitas​ ​Gadjah​ ​Mada,​ ​Universitas​ ​Indonesia,​ ​IPB​ ​University,​
+​Bandung,​ ​serta​ ​sejumlah​ ​grup​ ​media​ ​ternama​ ​di​ ​Indonesia.​ ​Kami​ ​lnstitut​ ​Teknologi​ ​Bandung,​ ​and​ ​several​ ​key​ ​Indonesian​ ​media​
+​berencana​ ​untuk​ ​memperluas​ ​kolaborasi​ ​kami​ ​dengan​ ​lebih​​banyak​ ​groups.​​We​​plan​​to​​expand​​our​​collaborations​​with​​more​​universities​
+​universitas​​dan​​grup​​media​​lainnya​​untuk​​dapat​​semakin​​melatih​​dan​ ​and​ ​media​ ​groups​ ​to​ ​further​ ​train​ ​and​​enrich​​the​​model​​in​​Bahasa​
+​memperkaya​ ​model​ ​dalam​ ​Bahasa​ ​Indonesia,​ ​agar​ ​memastikan​ ​Indonesia,​ ​ensuring​ ​the​ ​best​​provision​​of​​local​​context​​and​​cultural​
+​ketersediaan​​konteks​​lokal​​dan​​relevansi​​budaya.​​Kami​​juga​​didukung​ ​relevance.​ ​We​ ​are​ ​also​ ​supported​ ​by​ ​research​ ​centers​​and​​global​
+​oleh​ ​pusat​ ​riset​ ​dan​ ​ahli​ ​teknologi​​global​​seperti​ ​Al​ ​Singapore​​untuk​ ​tech​​experts​​such​​as​​Al​​Singapore​​to​​train​​the​​model​​to​​gain​​general​
+​melatih​ ​modelnya​ ​dan​ ​mendapatkan​ ​pemahaman​ ​bahasa​ ​secara​ ​language understanding.​
+​umum.​
+
+​Ekosistem Sahabat-AI diakselerasi oleh​​NVIDIA.​
+​Sahabat-AI ecosystem, accelerated by NVIDIA.​
+
+​Kami​​membangun​​LLM​​dalam​​Bahasa​​Indonesia​​dan​​bahasa-bahasa​
+​daerah​ ​karena​ ​kami​ ​percaya​ ​bahwa​ ​Kecerdasan​ ​Artifisial​ ​harus​ ​We​​build​​LLMs​​in​​Indonesian​​and​​its​​local​​languages​​as​​we​​believe​
+​mencerminkan​ ​kecerdasan​ ​dan​ ​budaya​ ​bangsa​ ​kita​ ​sendiri​ ​serta​ ​artificial​ ​intelligence​​must​​reflect​​our​​nation's​​intelligence​​and​​culture​
+​memungkinkan​ ​inklusivitas​​dan​​representasi​​Indonesia​​pada​​lanskap​ ​while​​enabling​​inclusivity​​and​​representation​​of​​Indonesia​​within​​the​
+​global​ ​LLM​ ​yang​ ​telah​ ​berkembang​ ​di​ ​dua​ ​wilayah​ ​utama:​ ​Amerika​ ​global​ ​LLM​ ​landscape,​ ​which​ ​has​ ​evolved​ ​around​ ​two​ ​dominant​
+​Serikat​​dan​​Tiongkok.​​Oleh​​karena​​itu,​​model​​LLM​​yang​​berkembang​ ​areas:​ ​the​ ​USA​ ​and​ ​China.​ ​Consequently,​ ​these​ ​models​ ​reflect​
+​dari​ ​negara-negara​ ​tersebut​ ​mencerminkan​ ​pandangan​​berdasarkan​ ​those​ ​worldviews​ ​based​ ​on​ ​data​ ​sets​​and​​the​​languages​​that​​train​
+​data​ ​dan​ ​bahasa​ ​yang​ ​digunakan​ ​untuk​ ​melatihnya.​ ​Hal​ ​ini​ ​them.​ ​This​ ​reflects​ ​the​ ​vision​​and​​Al​​principles​​of​​lndosat​​Ooredoo​
+​mencerminkan​ ​visi​ ​dan​ ​prinsip​ ​Al​ ​dari​ ​lndosat​ ​Ooredoo​ ​Hutchison​​,​ ​Hutchison,​ ​which​ ​prioritize​ ​ethical,​ ​transparent,​ ​and​ ​secure​ ​Al​
+​yang​​mengutamakan​​sistem​ ​Al​​yang​​etis,​​transparan,​​dan​​aman​​demi​ ​systems for the benefit of all users.​
+​kepentingan seluruh pengguna.​
+
+​Sebagai​​negara​​dengan​​jumlah​​penduduk​​terbesar​​keempat​​di​​dunia,​
+​budaya​​Indonesia​​sangatlah​​beragam,​​dengan​​lebih​​dari​ ​700​​bahasa​ ​Indonesia,​ ​the​ ​world's​ ​fourth​ ​most​ ​populous​ ​country​ ​in​ ​the​ ​world,​
+​daerah.​ ​has a rich and diverse culture with more than 700 local languages.​
+
+​Dengan​ ​mayoritas​ ​orang​ ​Indonesia​ ​(77%)​ ​lebih​ ​memilih​ ​untuk​ ​With​ ​the​ ​majority​ ​of​ ​Indonesians​ ​(77%)​ ​preferring​ ​to​ ​use​ ​local​
+​menggunakan​ ​bahasa​ ​daerah​ ​mereka​ ​(Sumber:​ ​Laporan​​e-Conomy​ ​languages​ ​(Source:​ ​e-Conomy​ ​SEA​ ​Report​ ​2024​)​​​.​ ​many​ ​remain​
+​SEA​​2024​​)​​,​ ​masih​​terdapat​​banyak​​masyarakat​​yang​​belum​​terlayani​ ​underserved by existing LLMs.​
+​oleh​​LLM​​yang sudah ada.​
+
+​Melalui​ ​Sahabat-AI.​ ​kami​ ​berharap​ ​untuk​ ​dapat​ ​mempercepat​
+​pengembangan​ ​dan​ ​adopsi​ ​penggunaan​ ​kecerdasan​ ​artifisial​ ​di​ ​Through​ ​Sahabat-AI,​ ​we​ ​aim​ ​to​ ​catalyze​ ​the​ ​development​ ​and​
+​Indonesia,​ ​di​ ​mana​ ​bahasa​ ​yang​ ​digunakan​ ​dalam​ ​perdagangan,​ ​adoption​ ​of​ ​Al​ ​use​ ​cases​ ​in​ ​Indonesia​ ​where​ ​the​ ​medium​ ​of​
+​bisnis,​​dan​​masyarakat​​umumnya​​tidak​​terwakilkan​​dengan​​baik​​oleh​ ​commerce,​ ​enterprise​ ​and​ ​society​ ​are​ ​primarily​ ​the​ ​languages​
+​model global yang tersedia saat ini.​ ​underrepresented by existing global models.​
+
+​Sahabat-AI​ ​April 2025​
+
+
+
+​Kami​ ​juga​ ​percaya​ ​bahwa​ ​semakin​ ​banyak​ ​orang​ ​Indonesia​ ​We​​also​​believe​​the​​more​​people​​use​​and​​contribute​​to​​Sahabat-AI,​
+​menggunakan​ ​dan​ ​berkontribusi​ ​terhadap​ ​Sahabat-AI,​ ​semakin​​baik​ ​the​ ​better​ ​Sahabat-AI​ ​is​ ​able​ ​to​ ​comprehend​ ​local​ ​context​ ​and​
+​kemampuan​ ​Sahabat-AI​ ​dalam​ ​memahami​ ​konteks​ ​lokal​ ​dan​ ​cultural​ ​relevance.​ ​Therefore,​ ​we​ ​are​ ​committed​ ​to​ ​developing​
+​relevansi​ ​budaya.​ ​Sehingga,​ ​kami​ ​berkomitmen​ ​untuk​ ​Sahabat-AI​​as​​an​​open​​source​​ecosystem​​in​​order​​to​​accelerate​​the​
+​mengembangkan​​Sahabat-AI​​menjadi​​ekosistem​​sumber​​terbuka​​agar​ ​model's training and enable more localized context.​
+​dapat​ ​mempercepat​ ​pelatihan​ ​model​ ​dan​ ​memungkinkan​ ​konteks​
+​yang lebih lokal.​
+
+​Melalui​ ​ekosistem​ ​sumber​ ​terbuka,​ ​kami​ ​dapat​ ​mendemokratisasi​ ​With​​an​​open-source​​ecosystem,​​we​​will​ ​be​​able​​to​​democratize​​Al​
+​akses​ ​kecerdasan​ ​artifisial​ ​bagi​ ​semua​ ​orang:​ ​peneliti,​ ​akademisi,​ ​access​ ​for​ ​everyone:​ ​researchers.​ ​academics,​ ​small​ ​to​ ​large​
+​perusahaan kecil hingga besar, serta​​developer​​sehari-hari.​ ​enterprises, and everyday developers.​
+
+​B.​​Tujuan Pedoman​ ​B. Objectives of The Guideline​
+
+​Dokumen​ ​ini​ ​berfungsi​ ​sebagai​ ​kerangka​ ​untuk​​pengembangan​​dan​ ​This​ ​document​ ​serves​ ​as​ ​a​ ​framework​ ​for​ ​the​ ​responsible​
+​pemanfaatan​ ​Sahabat-AI​ ​secara​ ​bertanggungjawab.​ ​Tujuan​ ​utama​ ​development​ ​and​ ​utilization​​of​​Sahabat-AI.​ ​The​​primary​​purpose​​of​
+​dari​ ​pedoman​ ​ini​ ​adalah​ ​memberikan​ ​arahan​​praktis​​bagi​ ​developer​ ​this​ ​guideline​ ​is​ ​to​ ​provide​ ​practical​ ​direction​ ​for​ ​developers​ ​and​
+​dan​ ​pengguna​ ​Sahabat-AI,​ ​yang​ ​secara​ ​khusus​ ​dioptimalkan​ ​untuk​ ​users​ ​engaging​ ​with​ ​Sahabat-Al's​ ​language​ ​models,​ ​which​ ​are​
+​bahasa Indonesia dan beragam bahasa daerahnya .​ ​specifically​​optimized​​for​​Indonesian​​language​​and​​its​​rich​​variety​​of​
+
+​regional languages.​
+
+​Sahabat-AI​ ​berfokus​ ​pada​ ​pelestarian​​warisan​​budaya​​dan​​linguistik​ ​Sahabat-AI​​focuses​​on​​preserving​​Indonesia's​​cultural​​and​​linguistic​
+​Indonesia​ ​melalui​ ​pengembangan​ ​Al​ ​yang​ ​bertanggung​ ​jawab​​yang​ ​heritage​ ​through​ ​responsible​ ​Al​ ​development​ ​that​ ​respects​ ​the​
+​menghormati​ ​nuansa​ ​dari​ ​bahasa​ ​daerah​ ​sekaligus​ ​memastikan​ ​nuances​ ​of​ ​its​ ​languages​ ​and​ ​dialects​ ​while​ ​ensuring​​accessibility​
+​aksesibilitas​ ​dan​ ​kesesuaian​ ​budaya​ ​bagi​ ​semua​ ​komunitas.​ ​and​ ​cultural​ ​appropriateness​ ​for​ ​all​ ​communities.​​The​​Responsible​
+​Pedoman​ ​Penggunaan​ ​Bertanggung​ ​Jawab​ ​ini​ ​menetapkan​ ​standar​ ​Use​​Guideline​​is​​setting​​standards​​for​​the​​design,​​development,​​and​
+​untuk​ ​proses​ ​desain,​​pengembangan,​​dan​​penerapan​​model​​bahasa​ ​deployment​ ​of​ ​Indonesia-specific​ ​language​ ​models,​ ​alongside​
+​khusus​ ​Indonesia,​ ​sekaligus​ ​menerapkan​ ​langkah-langkah​ ​implementing​ ​robust​ ​safety​ ​measures​ ​and​ ​ethical​ ​considerations​
+​keselamatan​ ​yang​ ​menyeluruh​ ​dan​ ​pertimbangan​ ​etika​ ​yang​ ​tailored​ ​to​ ​the​ ​country's​ ​sociocultural​ ​context.​ ​We​ ​use​ ​references​
+​disesuaikan​ ​dengan​ ​konteks​ ​sosial​ ​dan​ ​budaya​ ​Indonesia.​ ​Kami​ ​from​ ​the​ ​existing​ ​regulatory​ ​frameworks​ ​such​ ​as​ ​the​ ​Minister​ ​of​
+​mengacu​​pada​​kerangka​​kebijakan​​yang​​berlaku​​di​​wilayah​​Indonesia​ ​Communication​​and​​Informatics'​ ​Circular​​Letter​​No.​​9​​Year​​2023​​on​
+​seperti​ ​Surat​​Edaran​​Menteri​​Komunikasi​​dan​​lnformatika​​No.​​9​​Tahun​ ​Ethical​​Guidelines​​for​​Use​​of​​Artificial​​Intelligence​​and​​ASEAN​​Guide​
+​2023​ ​tentang​ ​Etika​ ​Kecerdasan​ ​Artifisial​ ​dan​ ​Pedoman​ ​ASEAN​ ​on Al Governance and Ethics.​
+​tentang Tata Kelola dan Etika Al.​
+
+​Kami​ ​sangat​ ​menyarankan​ ​developer​ ​dan​ ​pengguna​ ​untuk​ ​We​​strongly​​advise​​developers​​and​​users​​to​​use​​this​​reference​​as​​a​
+​menggunakan​ ​pedoman​ ​ini​ ​sebagai​ ​referensi​ ​dan​ ​tolak​ ​ukur​ ​bagi​ ​benchmark​ ​for​ ​those​ ​seeking​ ​to​ ​utilise​ ​Sahabat-AI​ ​responsibly.​
+​mereka​ ​yang​ ​ingin​ ​memanfaatkan​ ​Sahabat-AI​ ​secara​ ​bertanggung​ ​Developers​ ​are​ ​expected​ ​to​ ​ensure​ ​the​ ​trust​ ​and​ ​safety​ ​of​ ​their​
+​jawab.​ ​Pengembang​ ​diharapkan​ ​untuk​ ​memastikan​ ​aspek​ ​product​​or​​innovation​​that​​is​​powered​​by​​the​​Sahabat-AI​​model.​​This​
+​kepercayaan​ ​dan​ ​keamanan​ ​dari​ ​produk​ ​ataupun​ ​inovasi​ ​mereka​ ​guideline​​is​​intended​​to​​be​​constantly​​evolving,​​with​​regular​​reviews​
+​yang​ ​didukung​ ​oleh​ ​model​ ​Sahabat-AI.​ ​Pedoman​ ​ini​ ​akan​ ​terus​ ​and​ ​updates​ ​as​ ​we​ ​incorporate​ ​feedback​ ​from​ ​developers,​
+​dikembangkan,​ ​dengan​ ​tinjauan​ ​dan​ ​pembaharuan​ ​secara​ ​berkala​ ​stakeholders,​ ​technological​ ​advancements,​ ​and​ ​regulatory​
+​se1nng​ ​masukan​ ​dan​ ​perkembangan​ ​dari​ ​developer,​ ​pemangku​ ​requirements in the Al landscape.​
+​kepentingan, kemajuan teknologi, dan ketentuan regulasi terkait.​
+
+​Melalui​ ​pedoman​ ​ini,​ ​Sahabat-AI​ ​bertujuan​ ​untuk​ ​menjadi​ ​mitra​
+​terpercaya​ ​dalam​ ​lanskap​ ​kecerdasan​ ​artifisial​ ​di​ ​Indonesia,​ ​Through​​this​​guideline,​​Sahabat-AI​​aims​​to​​become​​a​​trusted​​partner​
+​mendorong​ ​inovasi​​sembari​ ​memastikan​​pengembangan​​kecerdasan​ ​in​ ​Indonesia's​ ​Al​ ​landscape,​ ​fostering​ ​innovation​ ​while​ ​ensuring​
+​artifisial​ ​yang​​bertanggung​​jawab​​dan​​etis​​serta​​memberikan​​manfaat​ ​responsible and ethical Al development that benefits all Indonesians.​
+​bagi seluruh masyarakat Indonesia.​
+
+​Sahabat-AI​
+
+​April 2025​
+
+
+
+​C. Prinsip-Prinsip Utama​ ​C. Core Principles​
+
+​Panduan​ ​Sahabat-AI​ ​mengintegrasikan​ ​prinsip-prinsip​ ​Al​ ​yang​ ​The​​Sahabat-AI​​Guideline​​incorporates​​the​​Al​​principles​​adopted​​by​
+​diadopsi​ ​oleh​ ​lndosat​ ​Ooredoo​ ​Hutchison,​ ​termasuk​ ​keadilan,​ ​lndosat​ ​Ooredoo​ ​Hutchison,​ ​including​ ​fairness,​ ​transparency,​
+​transparansi,​ ​privasi,​ ​keamanan,​ ​pengawasan​ ​manusia,​ ​serta​ ​privacy,​ ​security,​ ​human​​oversight,​ ​and​​compliance​​with​​applicable​
+​kepatuhan terhadap hukum yang berlaku.​ ​laws.​
+
+​Penting​ ​bagi​ ​developer​ ​untuk​​memperhatikan​​kerangka​​regulasi​​dan​
+​pedoman​ ​yang​ ​ada​ ​ketika​ ​mengembangkan​ ​dan​ ​menerapkan​ ​It​ ​is​ ​important​​that​​developers​​take​​into​​account​​existing​​regulatory​
+​kecerdasan artifisial. Sebagai LLM yang dikembangkan​​di​ ​frameworks​ ​and​ ​guidelines​ ​when​ ​developing​ ​and​ ​deploying​​Al.​ ​As​
+​Indonesia,​ ​Sahabat-Al​ ​mempertimbangkan​ ​an​​Indonesian​​developed​​LLM,​​Sahabat-AI​​takes​​into​​consideration​
+​prinsip-prinsip​ ​dan​ ​rekomendasi​ ​yang​ ​ditetapkan​ ​oleh​ ​lembaga​ ​the​ ​principles​ ​and​ ​recommendations​ ​set​ ​by​ ​governing​ ​institutions,​
+​berwenang, seperti:​ ​such as:​
+
+​•​ ​Surat Edaran Kementerian Komunikasi dan lnformatika​​tentang​ ​•​ ​Minister of Communication and Informatics' Circular​​Letter on​​Al​
+​Etika Kecerdasan Artifisial​ ​Ethics​
+
+​•​ ​Pedoman​​ASEAN​​tentang Tata Kelola dan Etika​​Al​ ​•​ ​ASEAN​​Guide on​​Al​​Governance and Ethics​
+
+​1.​​Akuntabilitas dan lntegritas​ ​1.​​Accountability and Integrity​
+
+​Akuntabilitas​ ​manusia​ ​sangat​ ​pentinq​ ​untuk​ ​memastikan​ ​bahwa​ ​Human​ ​accountability​ ​is​ ​crucial​ ​to​ ​ensure​ ​Al​ ​systems​ ​function​
+​sistem​ ​Al​ ​berfungsi​​dengan​​baik,​​mematuhi​​hukum​​yang​​berlaku,​​dan​ ​properly,​​comply​​with​​relevant​​laws,​​and​​adhere​​to​​ethical​​principles.​
+​mengikuti​ ​prinsip-prinsip​ ​etika.​ ​Developers​ ​dan​ ​pengguna​ ​harus​ ​Developers​ ​and​ ​users​ ​should​ ​maintain​ ​integrity​ ​throughout​ ​the​
+​menjaga​​integritas​​sepanjang​​siklus​​hidup​​sistem​​Al,​​mulai​​dari​​desain​ ​entire​ ​lifecycle​ ​of​ ​Al​ ​systems,​ ​from​ ​design​ ​to​​deployment,​​and​​act​
+​hingga​ ​penerapan,​ ​dan​ ​bertindak​ ​secara​ ​bertanggung​ ​jawab​ ​jika​ ​responsibly​ ​if​ ​any​ ​malfunction​ ​or​ ​misuse​ ​occurs.​​Furthermore,​​the​
+​terjadi​ ​malfungsi​ ​atau​​penyalahgunaan.​​Selain​​itu,​​pengoperasian​ ​Al​ ​operation​​of​​Al​​should​​prioritize​​the​​ability​​to​​make​​decisions​​based​
+​harus​ ​mengutamakan​ ​kemampuan​ ​untuk​ ​membuat​ ​keputusan​ ​on​​trustworthy​​and​​accountable​​information.​​Therefore​​ensuring​​that​
+​berdasarkan​ ​informasi​ ​yang​ ​dapat​ ​dipercaya​ ​dan​ ​dapat​ ​anyinsights​ ​or​​innovations​​generated​​by​​Al​​can​​be​​relied​​upon​​and​
+​dipertanggungjawabkan.​​Sehingga​​memastikan​​bahwa​​wawasan​​atau​ ​responsibly shared with the public.​
+​inovasi​ ​yang​ ​dihasilkan​ ​oleh​ ​Al​ ​dapat​ ​diandalkan​ ​dan​ ​dibagikan​
+​kepada publik secara bertanggungjawab.​
+
+​2.​ ​Transparansi​
+​2.​​Transparency​
+
+​Transparansi​​dalam​ ​Al​​mencakup​​pengungkapan​​informasi​​mengenai​
+​kapan​ ​sistem​ ​Al​ ​digunakan​ ​dan​ ​tujuan​ ​di​ ​balik​ ​pengambilan​ ​Transparency​ ​in​ ​Al​ ​involves​ ​disclosing​ ​information​​related​​to​​when​
+​keputusan​ ​tersebut.​ ​Transparansi​ ​ini​ ​sangat​ ​penting​ ​untuk​ ​Al​ ​systems​ ​are​ ​being​ ​used​ ​and​ ​the​ ​purpose​ ​behind​ ​their​
+​membangun​​kepercayaan​​publik,​ ​karena​​pengguna​​perlu​​memahami​ ​decision-making.​ ​This​ ​transparency​ ​is​ ​crucial​ ​for​ ​building​ ​public​
+​proses​ ​bagaimana​ ​data​ ​mereka​ ​digunakan​ ​dan​ ​faktor-faktor​ ​yang​ ​trust,​ ​as​ ​users​ ​need​ ​to​ ​understand​ ​how​​their​​data​​is​​being​​utilized​
+​mempengaruhi​ ​keputusan​ ​Al.​ ​Pengungkapan​ ​yangjelas​ ​sangatlah​ ​and​ ​the​ ​factors​ ​influencing​ ​Al​ ​decisions.​ ​Clear​ ​disclosure​ ​is​
+​penting,​ ​terutama​ ​dengan​ ​semakin​ ​banyaknya​ ​Al​ ​yang​ ​hadir​ ​di​ ​important,​ ​especially​ ​as​ ​Al's​ ​presence​ ​grows​ ​in​ ​various​​industries,​
+​berbagai​ ​industri,​ ​dan​ ​pengguna​ ​perlu​ ​menyadari​ ​potensi​ ​risiko,​ ​and​ ​users​ ​need​ ​to​ ​be​ ​aware​ ​of​ ​potential​ ​risks,​ ​such​ ​as​ ​bias​ ​or​
+​seperti​ ​bias​​atau​​malfungsi.​ ​Dengan​​memberitahu​​pengguna​​tentang​ ​malfunction.​ ​By​ ​informing​ ​users​ ​about​ ​Al's​ ​role​ ​in​ ​processes,​
+​peranan​ ​Al​ ​dalam​ ​proses,​ ​individu​ ​dapat​ ​membuat​ ​keputusan​ ​individuals​ ​can​ ​make​ ​informed​ ​choices​ ​about​ ​whether​ ​to​ ​engage​
+​berdasarkan​ ​informasi​ ​yang​ ​mumpuni​ ​untuk​ ​dapat​ ​with the system.​
+​mempertimbangkan​​apakah​​mereka​​akan​​berinteraksi​​dengan​​sistem​
+​tersebut.​
+
+​Penjelasan​ ​yang​ ​memadai​ ​dapat​ ​melengkapi​ ​transparansi​ ​dengan​
+​memastikan​ ​bahwa​ ​keputusan​ ​Al​ ​disampaikan​ ​dengan​ ​cara​ ​yang​ ​Explainability​ ​complements​ ​transparency​ ​by​ ​ensuring​ ​that​ ​Al​
+​mudah​ ​dipahami​ ​oleh​ ​pengguna.​ ​Hal​ ​ini​ ​bisa​ ​berupa​ ​deskripsi​ ​teks​ ​decisions​ ​are​ ​communicated​ ​in​ ​a​ ​way​ ​that​ ​is​ ​understandable​ ​to​
+​sederhana​ ​hingga​ ​bantuan​ ​visual​ ​seperti​ ​heatmap,​ ​yang​​membantu​ ​users.​​This​​can​​range​​from​​simple​​text​​descriptions​​to​​visual​​aids​​like​
+​orang​ ​memahami​ ​bagaimana​ ​Al​ ​yang​ ​dibangun​ ​mencapai​ ​heatmaps, helping people grasp how Al reaches its conclusions.​
+​kesimpulannya.​
+
+​3.​​Keamanan dan Keselamatan​
+​3.​​Security and Safety​
+
+​Sistem​ ​Al​ ​harus​ ​dilindungi​ ​dari​ ​serangan​ ​berbahaya​ ​seperti​
+​perusakan​ ​data​ ​dan​ ​pembalikan​ ​model.​ ​Hal​ ​tersebut​ ​memerlukan​ ​Al​ ​systems​ ​must​ ​be​ ​secured​ ​against​ ​malicious​ ​attacks​ ​like​ ​data​
+​penerapan​ ​langkah-langkah​ ​keamanan​ ​siber​ ​yang​ ​kuat,​ ​termasuk​ ​poisoning​ ​and​ ​model​ ​inversion.​ ​This​ ​requires​ ​deploying​ ​robust​
+​enkripsi,​ ​otentikasi,​ ​pembaruan​ ​perangkat​ ​lunak​ ​secara​ ​rutin,​ ​serta​ ​cybersecurity​ ​measures,​ ​including​ ​encryption,​ ​authentication,​ ​and​
+​pengembangan​ ​rencana​ ​tanggap​ ​insiden.​ ​Deployer​ ​sistem​ ​Al​ ​juga​ ​regular​ ​software​ ​updates,​ ​as​ ​well​ ​as​​developing​​incident​​response​
+​harus​ ​melakukan​ ​pengujian​ ​keamanan​ ​seperti​ ​penilaian​​kerentanan​ ​plans.​ ​Deployers​ ​should​ ​also​ ​perform​ ​security​ ​testing,​ ​such​ ​as​
+​dan​ ​uji​ ​penetrasi,​ ​untuk​ ​melindungi​ ​sistem​ ​Al​ ​dari​ ​potensi​​ancaman​ ​vulnerability​ ​assessments​ ​and​ ​penetration​ ​testing,​​to​​safeguard​ ​Al​
+​digital.​ ​systems against potential digital threats.​
+
+​Sahabat-AI​ ​April 2025​
+
+
+
+​Selain​​itu,​​keselamatan​​dalam​​hal​​ini​​mencakup​​penilaian​​risiko​​untuk​ ​Additionally,​ ​safety​​involves​​conducting​​risk​​assessments​​to​​identify​
+​mengidentifikasi​ ​dan​ ​mengurangi​ ​potensi​ ​bahaya,​ ​serta​ ​and​ ​mitigate​ ​potential​ ​dangers,​ ​allowing​ ​for​ ​human​​intervention​​or​
+​memungkinkan​ ​intervensi​ ​manusia​ ​atau​ ​penghentian​ ​sistem​ ​jika​ ​Al​ ​system​​disengagement​​if​​the​​Al​​makes​​unsafe​​decisions,​​such​​as​​in​
+​membuat​ ​keputusan​ ​yang​ ​tidak​ ​aman,​ ​seperti​ ​pada​ ​kendaraan​ ​autonomous vehicles.​
+​otonom.​
+
+​4.​​Kemanusiaan​ ​4.​​Human-centricity​
+​Sistem​ ​Al​ ​harus​ ​mengutamakan​ ​nilai-nilai​ ​yang​ ​berfokus​ ​pada​ ​Al​​systems​​should​​prioritize​​human-centred​​values​​and​​consider​​the​
+​manusia​ ​dan​ ​mempertimbangkan​ ​manfaat​ ​keseluruhan​ ​bagi​ ​overall​ ​benefit​ ​of​ ​society​ ​while​ ​protecting​ ​individuals​ ​from​ ​harm.​
+​masyarakat,​ ​sembari​ ​melindungi​ ​individu​ ​dari​ ​bahaya.​ ​Sejak​ ​proses​ ​From​ ​design​ ​to​ ​deployment,​ ​Al​ ​systems​ ​must​ ​be​ ​created​ ​with​ ​a​
+​desain​​hingga​​penerapan,​​sistem​ ​Al​ ​harus​​dibuat​​dengan​​fokus​​pada​ ​focus​ ​on​ ​human​ ​benefit,​ ​including​ ​to​ ​ensure​ ​they​ ​do​ ​not​ ​exploit​
+​manfaat​ ​yang​ ​diberikan​ ​kepada​ ​manusia,​ ​termasuk​ ​memastikan​ ​vulnerable​ ​populations​ ​or​​make​​harmful​​decisions.​​It​ ​is​​essential​ ​to​
+​bahwa​​sistem​​ini​​tidak​​mengeksploitasi​​populasi​​rentan​​atau​​membuat​ ​understand​ ​user​ ​interactions​ ​and​ ​perceptions​ ​to​ ​avoid​ ​negative​
+​keputusan​ ​yang​ ​merugikan.​ ​Penting​ ​untuk​ ​memahami​ ​interaksi​ ​dan​ ​outcomes,​ ​which​ ​can​ ​be​ ​achieved​ ​by​ ​testing​​systems​​with​​diverse​
+​persepsi​​pengguna​​untuk​​menghindari​ ​hasil​ ​yang​​negatif.​ ​Al​​tersebut​ ​user groups and incorporating feedback.​
+​dapat​ ​dicapai​ ​dengan​ ​menguji​ ​sistem​ ​pada​ ​berbagai​ ​kelompok​
+​pengguna dan menerima umpan balik.​
+
+​Selain​​itu,​​Al​​tidak​​boleh​​digunakan​​untuk​​tujuan​​jahat​​ataupun​​praktik​ ​Additionally,​ ​Al​ ​should​ ​not​ ​be​ ​used​ ​for​ ​malicious​ ​purposes​ ​or​
+​manipulatif,​ ​seperti​ ​penerapan​ ​pola​ ​gelap​ ​yang​ ​dapat​ ​menipu​ ​manipulative​ ​practices,​ ​such​ ​as​ ​deployment​ ​of​ ​dark​ ​patterns​ ​that​
+​pengguna​ ​untuk​ ​membuat​ ​pilihan​ ​yang​ ​merugikan.​ ​Deployer​ ​juga​ ​deceive​ ​users​ ​into​ ​making​ ​harmful​ ​choices.​ ​Deployers​ ​must​ ​also​
+​harus​ ​mempertimbangkan​ ​dampak​ ​sosial​ ​yang​ ​lebih​ ​luas​ ​dari​ ​Al,​ ​consider​ ​Al's​ ​broader​ ​societal​ ​impact,​ ​especially​ ​regarding​
+​terutama​​terkait​ ​dengan​​hak​​kekayaan​​intelektual,​​dengan​​melakukan​ ​intellectual​ ​property​ ​rights,​ ​by​ ​conducting​​impact​​assessments​​and​
+​penilaian​ ​dampak​ ​dan​ ​mencari​ ​cara​ ​untuk​ ​mengintegrasikan​ ​Al​ ​exploring​​ways​​to​​integrate​​Al​​by​​providing​​the​​right​​attributions​​and​
+​dengan​ ​memberikan​ ​atribusi​ ​yang​ ​akurat​ ​serta​ ​menghindari​ ​avoiding any violation of proprietary information.​
+​pelanggaran informasi yang bersifat kepemilikan.​
+
+​Terlebih,​ ​sangatlah​ ​penting​ ​untuk​ ​dapat​ ​memastikan​ ​kepatuhan​
+​terhadap​ ​prinsip-prinsip​ ​hak​ ​asasi​ ​manusia,​ ​hubungan​ ​sosial,​ ​Furthermore,​​it​ ​is​​also​​crucial​ ​to​​ensure​​adherence​​to​​the​​principles​
+​kepercayaan​ ​yang​ ​dianut,​ ​serta​ ​pendapat​ ​atau​ ​pemikiran​ ​setiap​ ​of​ ​human​ ​rights,​ ​rights​ ​to​ ​societal​ ​relationships,​​rights​​of​​belief,​ ​as​
+​orang.​ ​well as rights to the freedom of expression or thoughts.​
+
+​5.​ ​Privasi dan Pengelolaan Data​ ​5.​​Privacy and Data Governance​
+​Sistem​ ​Al​ ​harus​ ​memastikan​ ​mekanisme​ ​perlindungan​ ​privasi​ ​dan​ ​Al​ ​systems​ ​must​ ​ensure​ ​robust​ ​privacy​ ​and​ ​data​ ​protection​
+​data​ ​yang​ ​kuat​ ​sepanjang​ ​siklus​ ​hidupnya.​ ​Hal​ ​tersebut​ ​mencakup​ ​mechanisms​ ​throughout​ ​their​ ​lifecycle.​ ​This​ ​involves​ ​setting​ ​clear​
+​pengaturan​ ​protokol​ ​yang​ ​jelas​ ​tentang​ ​praktik​ ​pemrosesan​ ​data,​ ​protocols​ ​on​ ​data​ ​processing​ ​practices,​ ​ensuring​ ​compliance​ ​with​
+​memastikan​ ​kepatuhan​ ​terhadap​ ​peraturan​ ​perundang-undangan​ ​relevant​ ​laws​ ​and​ ​ethical​ ​guidelines,​ ​such​ ​as​​Indonesia's​​Law​​No.​
+​relevan​ ​serta​ ​pedoman​ ​etika,​ ​seperti​ ​Undang-Undang​​No.​​27​​Tahun​ ​27​ ​Year​ ​2022​ ​on​ ​Personal​ ​Data​ ​Protection​ ​and​ ​the​ ​Minister​ ​of​
+​2022​ ​tentang​ ​Perlindungan​ ​Data​ ​Pribadi​ ​dan​ ​Surat​ ​Edaran​ ​Menteri​ ​Communication​​and​​Informatics'​ ​Circular​​Letter​​No.​​9​​Year​​2023​​on​
+​Komunikasi​ ​dan​ ​lnformatika​ ​No.​ ​9​ ​Tahun​ ​2023​ ​tentang​ ​Etika​ ​Artificial Intelligence Ethics.​
+​Kecerdasan Artifisial.​
+
+​Ketika​ ​sistem​ ​Al​ ​mengumpulkan​ ​data​ ​pribadi,​ ​organisasi​ ​harus​ ​When​​Al​​systems​​collect​​personal​​data,​​organizations​​must​​be​​fully​
+​memiliki​ ​transparansi​ ​penuh​ ​mengenai​ ​praktik​ ​data​ ​mereka.​ ​transparent​​about​​their​​data​​practices.​​They​​should​​clearly​​outline​​in​
+​Organisasi​ ​perlu​ ​dengan​ ​jelas​​memberitahukan​​jenis-jenis​​data​​yang​ ​their​ ​Privacy​ ​Notice​ ​the​ ​types​ ​of​ ​data​ ​collected,​ ​how​ ​it​ ​is​ ​used,​
+​dikumpulkan,​ ​bagaimana​ ​data​ ​tersebut​ ​digunakan,​ ​diproses,​ ​processed,​​shared,​​transferred,​​stored,​​and​​deleted,​​as​​well​​as​​who​
+​dibagikan,​​ditransfer,​ ​disimpan​​dan​​dihapus,​​dan​​juga​​siapa​​saja​​yang​ ​has​ ​access​​to​​it.​ ​Additionally,​ ​organizations​​must​​inform​​individuals​
+​memiliki​ ​akses​​terhadap​​data​​pada​​Pemberitahuan​​Privasi.​​Selain​​itu,​ ​of​ ​their​ ​rights,​ ​such​ ​as​ ​rights​ ​to​ ​access,​ ​correct​ ​or​ ​object​ ​to​ ​data​
+​organisasi​ ​perlu​ ​memberitahukan​ ​individu​ ​terkait​ ​dengan​ ​hak-hak​ ​processing.​​Organizations​​should​​also​​assess​​risks​​associated​​with​
+​mereka,​​termasuk​​hak​​mengakses,​​memperbaiki​​ataupun​​mengajukan​ ​data​​processing​​and​​implement​​measures​​to​​ensure​​data​​accuracy,​
+​keberatan​ ​terhadap​ ​pemrosesan​ ​data.​ ​Organisasijuga​ ​harus​ ​menilai​ ​integrity​ ​and​ ​fairness​ ​while​ ​preventing​ ​biased​ ​or​ ​discriminatory​ ​Al​
+​risiko​ ​yang​ ​terkait​ ​dengan​ ​pemrosesan​ ​data​ ​dan​ ​menerapkan​ ​decisions.​
+​langkah-langkah​ ​untuk​ ​memastikan​ ​akurasi,​ ​integritas​ ​dan​ ​keadilan​
+​sembari mencegah keputusan​​Al​​yang bias atau diskriminatif​
+
+​Sistem​ ​Al​ ​harus​ ​memastikan​ ​pengumpulan​ ​data​ ​pribadi​ ​hanya​
+​mencakup​ ​data​ ​yang​ ​benar-benar​ ​diperlukan​ ​sesuai​ ​dengan​
+​dasar-dasar​​dan​​tujuan​​yang​​sah​​dan​​hanya​​menyimpan​​data​​tersebut​ ​Al​ ​systems​ ​should​ ​collect​ ​only​ ​the​​necessary​​personal​​data​​with​​a​
+​selama dibutuhkan untuk mencapai tujuan yang dimaksud.​ ​legitimate​​basis​​and​​purpose​​and​​retain​​it​​only​​as​​long​​as​​needed​​to​
+
+​fulfil its intended purpose.​
+
+​Sahabat-AI​ ​April 2025​
+
+
+
+​Developer​ ​juga​ ​harus​ ​memprioritaskan​ ​tata​ ​kelola​ ​data​ ​yang​ ​kuat,​ ​Developers​​should​​also​​prioritize​​strong​​data​​governance,​​including​
+​termasuk​ ​manajemen​ ​siklus​ ​hidup​ ​dan​ ​audit,​ ​untuk​ ​memastikan​ ​lifecycle​ ​management​ ​and​ ​audits,​​to​​ensure​​fairness,​​security,​ ​and​
+​keadilan, keamanan, dan kepatuhan.​ ​compliance.​
+
+​6.​ ​Ketangguhan​ ​6. Robustness​
+​Sistem​ ​Al​ ​harus​ ​cukup​ ​tangguh​ ​untuk​ ​dapat​​menangani​​kesalahan,​ ​Al​ ​systems​ ​must​ ​be​ ​robust​ ​enough​ ​to​ ​handle​ ​errors,​ ​unexpected​
+​input​​yang​​tidak​​terduga,​​dan​​kondisi​​dunia​​nyata​​yang​​dinamis,​​serta​ ​inputs,​ ​and​ ​dynamic​ ​real-world​ ​conditions​ ​while​ ​maintaining​
+​menjaga​​kinerja​​yang​​konsisten.​​Mereka​​harus​​memiliki​​ketangguhan​ ​consistent​​performance.​​They​​should​​be​​resilient​​to​​unforeseen​​data​
+​terhadap​ ​perubahan​​data​​yang​​tidak​​terduga​​dan​​tidak​​menunjukkan​ ​changes​​and​​not​​exhibit​​dangerous​​behavior,​​ensuring​​they​​continue​
+​perilaku​ ​yang​ ​berbahaya,​ ​serta​ ​memastikan​ ​bahwa​ ​sistem​ ​tetap​ ​to function as intended.​
+​berfungsi sebagaimana mestinya.​
+
+​Mengingat​ ​bahwa​ ​sistem​ ​Al​ ​tidak​ ​sempurna,​ ​deployer​ ​harus​ ​Given​ ​that​ ​Al​ ​systems​ ​are​​not​​infallible,​​deployers​​must​​implement​
+​menerapkan​ ​kontrol​ ​akses​ ​yang​ ​sesuai​ ​dan​ ​perlindungan​ ​untuk​ ​proper​ ​access​ ​control​ ​and​ ​protection​ ​for​ ​sensitive​ ​systems​ ​to​
+​sistem​​sensitif​ ​guna​​mengurangi​​risiko​​dari​​performa​​yang​​tidak​​dapat​ ​mitigate​ ​risks​ ​from​​unreliable​​performance.​​Rigorous​​testing​​before​
+​diandalkan.​​Pengujian​​yang​​ketat​​sebelum​​penerapan​​sangat​​penting​ ​deployment​ ​is​ ​essential​ ​to​ ​ensure​ ​robustness​ ​and​ ​consistency​
+​untuk​ ​memastikan​ ​ketahanan​ ​dan​ ​konsistensi​ ​di​ ​berbagai​ ​situasi.​ ​across​ ​diverse​ ​situations.​ ​Additionally,​ ​documenting​ ​data​ ​sources,​
+​Selain​ ​itu,​ ​pendokumentasian​ ​sumber​ ​data,​ ​pencatatan​ ​tracking​​data​​processing​​steps,​​and​​maintaining​​data​​lineage​​can​​aid​
+​langkah-langkah​​pemrosesan​​data,​​dan​​penjagaan​​data​​lineage​​dapat​ ​in troubleshooting and ensuring Al systems operate reliably.​
+​mendukung​ ​pemecahan​ ​masalah​ ​dan​ ​memastikan​ ​sistem​ ​Al​
+​beroperasi dengan andal.​
+
+​Sahabat-AI​ ​April 2025​
+
+
+
+​II.​​Lingkup Aplikasi​ ​11. Scope of Application​
+​A.​​Definisi​ ​A. Definition​
+
+​anduan​ ​ini​ ​berfungsi​ ​sebagai​ ​sumber​ ​informasi​ ​yang​ ​utamanya​ ​This​ ​guide​ ​serves​ ​as​ ​a​ ​resource​ ​primarily​ ​aimed​ ​at​ ​developers,​
+​ditujukan​ ​untuk​ ​developer.​ ​Panduan​ ​offering​ ​practical​ ​advice​ ​on​ ​how​ ​to​ ​responsibly​ ​build​ ​and​ ​deploy​
+
+​1n1​ ​memberikan​ ​saran​ ​praktis​
+​tentang​ ​cara​ ​membangun​ ​dan​ ​meluncurkan​ ​produk​ ​yang​ ​didukung​ ​Sahabat-Al-powered​ ​products.​ ​It​ ​provides​ ​insights​ ​into​ ​key​
+​oleh​ ​Sahabat-AI​ ​dengan​ ​cara​ ​yang​​bertanggung​​jawab.​​Panduan​​ini​ ​considerations​​that​​developers​​should​​take​​into​​account​​throughout​
+​memberikan​ ​wawasan​ ​mengenai​ ​pertimbangan​ ​penting​ ​yang​ ​perlu​ ​the development process, from the initial design to deployment.​
+​diperhatikan​ ​developer​ ​sepanjang​​proses​​pengembangan,​​mulai​​dari​
+​desain awal hingga tahap peluncuran.​
+
+​Selain​ ​itu,​ ​panduan​ ​ini​ ​juga​ ​menguraikan​ ​berbagai​ ​strategi​ ​mitigasi​
+​untuk​ ​mengatasi​ ​potensi​ ​risiko,​ ​dengan​ ​memfokuskan​ ​pada​ ​teknik​ ​The​ ​guide​ ​also​ ​outlines​ ​various​ ​mitigation​ ​strategies​ ​to​ ​address​
+​penyelarasan​ ​di​ ​tingkat​​model​​dan​​sistem.​​Meskipun​​ditujukan​​untuk​ ​potential​ ​risks,​​focusing​​on​​alignment​​techniques​​at​​both​​the​​model​
+​developer,​ ​prinsip-prinsip​ ​yang​ ​dijelaskan​ ​di​ ​sini​ ​juga​ ​relevan​ ​untuk​ ​and​ ​system​ ​levels.​ ​While​ ​primarily​ ​targeted​ ​at​ ​developers,​ ​the​
+​pemangku​ ​kepentingan​ ​lainnya​ ​yang​ ​terlibat​ ​dalam​ ​siklus​ ​principles​ ​outlined​ ​here​ ​are​ ​also​ ​relevant​ ​to​ ​other​ ​stakeholders​
+​pengembangan​ ​Al.​ ​Pihak-pihak​ ​ini​ ​dapat​ ​memperoleh​ ​manfaat​ ​dari​ ​involved​ ​in​ ​the​ ​Al​ ​development​ ​lifecycle.​ ​These​ ​groups​ ​can​ ​all​
+​informasi​ ​mengenai​ ​cara​ ​mengintegrasikan​ ​praktik-praktik​ ​yang​ ​benefit​ ​from​ ​understanding​ ​how​ ​to​ ​integrate​ ​responsible​ ​practices​
+​bertanggung​ ​jawab​ ​dan​ ​pendekatan​ ​mitigasi​ ​risiko,​ ​sehingga​ ​dapat​ ​and​ ​risk-mitigation​ ​approaches,​ ​ensuring​ ​the​ ​final​ ​product​ ​aligns​
+​memastikan​ ​produk​ ​akhir​ ​sesuai​ ​dengan​ ​standar​ ​etika,​ ​peraturan​ ​with ethical, legal, and safety standards.​
+​perundang-undangan, dan keselamatan.​
+
+​B.​​Pengecualian atau Batasan​
+
+​Meskipun​ ​pedoman​ ​1n1​ ​memberikan​ ​rekomendasi​ ​penggunaan​ ​B. Exclusions or Limitations​
+​Sahabat-AI​ ​yang​ ​bertanggung​ ​jawab,​ ​terdapat​ ​pengecualian​ ​dan​
+​keterbatasan​ ​dalam​ ​penerapannya.​ ​Pedoman​ ​ini​ ​tidak​ ​mencakup​ ​While​ ​this​​guideline​​provides​​recommendations​​for​​the​​responsible​
+​semua​​kemungkinan​​skenario​​atau​​kompleksitas​​teknis​​yang​​mungkin​ ​use​ ​of​ ​Sahabat-AI,​ ​there​ ​are​ ​certain​ ​exclusions​ ​and​ ​limitations​ ​to​
+​timbul​ ​dalam​ ​pengembangan​ ​dan​ ​penerapan​ ​LLM.​ ​Oleh​​karena​​itu,​ ​their​ ​application.​ ​This​ ​guideline​ ​does​ ​not​ ​cover​ ​all​ ​possible​
+​developer​ ​perlu​ ​melakukan​ ​penilaian​ ​dan​ ​penanganan​ ​risiko-risiko​ ​scenarios​ ​or​ ​technical​ ​complexities​ ​that​ ​may​ ​arise​ ​in​ ​the​
+​unik dan spesifik terhadap kasus penggunaan masing-masing.​ ​development​ ​and​ ​deployment​ ​of​ ​LLMs,​ ​and​ ​as​ ​such,​ ​developers​
+
+​should assess and address unique risks specific to their usecase.​
+​Pedoman​ ​inijuga​ ​tidak​ ​dimaksudkan​ ​untuk​ ​menggantikan​ ​ataupun​
+​mengesampingkan​ ​persyaratan​ ​peraturan​ ​perundang-undangan,​
+​kebijakan,​ ​atau​ ​ketentuan​ ​yang​ ​mungkin​ ​berlaku​ ​di​ ​sektor-sektor​
+​tertentu,​ ​seperti​ ​kesehatan,​ ​keuangan,​ ​atau​ ​pendidikan.​ ​Selain​ ​itu,​ ​The​​guideline​​is​​also​​not​​intended​​to​​replace​​or​​supersede​​any​​legal,​
+​dokumen​ ​ini​ ​tidak​ ​memberikan​ ​spesifikasi​ ​teknis​ ​yang​ ​mendalam​ ​regulatory,​ ​or​ ​industry-specific​ ​requirements​ ​that​ ​may​ ​apply​ ​to​
+​untuk​​implementasi​​LLM,​​melainkan​​menggarisbawahi​​praktik​​terbaik​ ​specific​ ​sectors,​ ​such​ ​as​ ​healthcare,​ ​finance,​ ​or​ ​education.​
+​dan prinsip-prinsip tingkat tinggi yang perlu dipertimbangkan.​ ​Additionally,​ ​this​ ​document​ ​does​ ​not​ ​provide​ ​exhaustive​ ​technical​
+
+​specifications​ ​for​ ​the​ ​implementation​ ​of​ ​LLMs​ ​but​ ​rather​ ​outlines​
+​best practices and high-level principles to be considered.​
+
+​Sahabat-AI​ ​April 2025​
+
+
+
+​Sahabat-AI​ ​diberikan​ ​sebagaimana​ ​adanya.​ ​lndosat​ ​Ooredoo​ ​Sahabat-AI​ ​is​ ​provided​ ​"as​ ​is".​ ​lndosat​ ​Ooredoo​ ​Hutchison​​do​​not​
+​Hutchison​ ​tidak​ ​mewakilkan​ ​atau​ ​menjamin​ ​bahwa​ ​keandalan,​ ​represent​​or​​warrant​​that​​the​​reliability,​​timeliness,​​quality,​​suitability,​
+​ketepatan​ ​waktu,​ ​kualitas,​ ​kesesuaian,​ ​ketersediaan,​ ​keakuratan,​ ​availability,​ ​accuracy,​ ​completeness,​ ​or​ ​security​ ​of​ ​Sahabat-AI​ ​will​
+​kelengkapan,​ ​ataupun​ ​keamanan​ ​Sahabat-AI​ ​akan​ ​memenuhi​ ​fulfil​ ​users'​ ​needs​​and​​expectations.​​Users​​are​​solely​​responsible​​for​
+​kebutuhan​ ​dan​ ​harapan​ ​Pengguna.​ ​Pengguna​ ​bertanggung​ ​jawab​ ​deciding​ ​if​ ​it​ ​is​​suitable​​to​​use,​​reproduce,​​modify,​​perform,​​display,​
+​sepenuhnya​​untuk​​memutuskan​​apakah​​Sahabat-AI​​layak​​digunakan,​ ​or​​distribute​​Sahabat-AI​​("Usage").​​Users​​are​​also​​solely​​responsible​
+​diperbanyak,​​dimodifikasi,​ ​dijalankan,​​ditampilkan,​​atau​​didistribusikan​ ​for​​all​​risks​​that​​come​​with​​using​​or​​distributing​​Sahabat-AI​​and​​using​
+​("Penggunaan").​ ​Pengguna​​juga​​bertanggung​​jawab​​sepenuhnya​​atas​ ​the​ ​rights​ ​and​​permissions​​given​​in​​this​​guideline.​​lndosat​​Ooredoo​
+​semua​ ​risiko​ ​yang​ ​timbul​ ​akibat​ ​penggunaan​ ​atau​ ​pendistribusian​ ​Hutchison​​shall​ ​not​​be​​liable​​for​​any​​losses​​or​​damages,​​or​​expense​
+​Sahabat-AI​ ​dan​ ​penggunaan​ ​hak​ ​dan​ ​izin​ ​yang​ ​diberikan​ ​dalam​ ​of​ ​any​ ​kind,​ ​whether​ ​direct,​ ​indirect,​ ​incidental,​ ​special,​ ​or​
+​pedoman​ ​ini.​ ​lndosat​ ​Ooredoo​ ​Hutchison​ ​tidak​ ​bertanggung​ ​jawab​ ​consequential,​ ​arising​​out​​of​​or​​in​​connection​​with​​the​​User's​​Usage​
+​atas​ ​segala​ ​kerugian​ ​atau​ ​kerusakan,​ ​ataupun​ ​biaya​ ​dalam​ ​bentuk​ ​or reliance on Sahabat-​A​ I.​
+​apa​ ​pun,​ ​baik​ ​secara​ ​langsung,​ ​tidak​ ​langsung,​ ​insidental,​ ​khusus,​
+​maupun​ ​konsekuensial,​ ​yang​ ​timbul​ ​dari​ ​atau​ ​sehubungan​ ​dengan​
+​Penggunaan atau ketergantungan Pengguna terhadap Sahabat-AI.​
+
+​Terakhir,​ ​pedoman​ ​1n1​ ​utamanya​ ​ditujukan​ ​untuk​ ​developer.​ ​Namun,​
+​kami​​menyambut​​baik​​masukan​​dari​​pihak​​lain,​​seperti​​pelajar,​​periset,​ ​Lastly,​ ​the​ ​guideline​​is​​primarily​​aimed​​at​​developers.​​However,​​we​
+​dan​ ​badan​ ​pemerintah​ ​/​ ​publik,​ ​untuk​ ​dapat​ ​memberikan​ ​input​ ​welcome​ ​other​ ​stakeholders,​ ​such​ ​as​ ​students,​ ​researchers,​ ​and​
+​berdasarkan​ ​kerangka​ ​kerja​ ​atau​ ​kebijakan​ ​tambahan​ ​untuk​ ​government​ ​/​ ​public​ ​agencies,​ ​to​ ​provide​ ​input​ ​based​ ​on​ ​different​
+​memastikan​ ​penggunaan​ ​yang​ ​bertanggung​ ​jawab​ ​terhadap​ ​frameworks​ ​or​ ​additional​ ​policies​ ​to​ ​ensure​ ​responsible​ ​use​​of​​the​
+​ekosistem​ ​Sahabat-AI.​ ​Developer​ ​juga​ ​harus​ ​mempertimbangkan​ ​Sahabat-AI​ ​ecosystem.​ ​Developers​​should​​also​​be​​mindful​​that​​the​
+​bahwa​ ​sektor​ ​Al​ ​terus​ ​berkembang,​ ​dan​ ​terdapat​ ​kemungkinan​ ​field​​of​​Al​​is​​evolving,​​and​​this​​guideline​​may​​need​​to​​be​​periodically​
+​pedoman​ ​ini​ ​perlu​ ​kembali​ ​ditinjau​ ​dan​ ​diperbarui​ ​secara​ ​berkala​ ​reviewed​ ​and​ ​updated​ ​to​ ​reflect​ ​new​ ​industry​ ​and​ ​technology​
+​untuk​ ​mencerminkan​ ​kemajuan​ ​industri​ ​dan​ ​teknologi,​ ​risiko-risiko​ ​advancements, emerging risks, and evolving societal expectations.​
+​baru, dan harapan masyarakat yang berkembang.​
+
+​Sahabat-AI​ ​April 2025​
+
+
+
+​111. Pedoman Penggunaan​ ​111. Responsible Use Guideline​
+​Bertanggung Jawab​
+
+​A.​​Application Design​
+​A.​
+
+​Like​ ​in​ ​any​ ​SOL​ ​database,​ ​where​ ​it​ ​is​ ​the​ ​responsibility​ ​of​ ​the​
+​Layaknya​ ​database​ ​SOL​ ​mana​ ​pun​​,​ ​dimana​ ​tanggung​ ​jawab​ ​application​ ​developer​ ​to​ ​protect​ ​against​ ​SOL​ ​injection,​ ​using​ ​the​
+​developer​ ​aplikasi​ ​adalah​ ​untuk​ ​memberikan​ ​perlindungan​ ​terhadap​ ​Sahabat​ ​model​ ​requires​ ​similar​ ​precautions.​ ​It​ ​is​ ​the​ ​LLM​
+​SOL​ ​injection,​ ​penggunaan​ ​model​ ​Sahabat​ ​memerlukan​ ​application​ ​developer's​ ​responsibility​ ​to​ ​safeguard​ ​against​ ​prompt​
+​langkah-langkah​ ​pencegahan​ ​serupa​​.​ ​Tanggung​ ​jawab​ ​developer​ ​injection​ ​and​ ​other​ ​potential​ ​misuse.​ ​A​ ​well-designed​ ​integration​
+​aplikasi​ ​LLM​ ​adalah​ ​untuk​​melindungi​​terhadap​ ​prompt​​injection​ ​dan​ ​should​ ​include​ ​multiple​ ​layers​ ​of​ ​protection,​ ​ensuring​ ​responsible​
+​potensi​ ​penyalahgunaan​ ​lainnya.​ ​lntegrasi​ ​yang​ ​dirancang​ ​dengan​ ​use​ ​beyond​ ​just​ ​model-level​ ​mitigations​ ​applied​ ​during​ ​training.​ ​A​
+​baik​ ​harus​ ​mencakup​ ​beberapa​ ​lapisan​ ​perlindungan,​ ​memastikan​ ​typical​ ​Sahabat-AI​ ​model​ ​integration​ ​should​ ​include​ ​the​ ​following​
+​penggunaan​​yang​​bertanggung​​jawab​​melampaui​​upaya​​mitigasi​​pada​ ​safeguards​ ​at​ ​both​ ​the​ ​application​ ​and​ ​model​ ​levels.​ ​with​
+​level​ ​model​ ​yang​ ​diterapkan​ ​selama​ ​pelatihan​​.​ ​lntegrasi​ ​model​ ​appropriate mitigation steps incorporated during application design.​
+​Sahabat-AI​ ​yang​ ​khusus​ ​harus​ ​mencakup​ ​langkah-langkah​
+​perlindungan​ ​berikut​ ​pada​ ​level​ ​aplikasi​​dan​​model,​ ​dengan​​langkah​
+​mitigasi sesuai dan diterapkan selama desain aplikasi.​
+
+​..​
+​Responsible Sahabat Model Deployment​
+
+​Domain/System specific mitigations​ ​Model level mitigations​ ​Domain/System specific​
+​mitigations​
+
+​- - -​​_,11​
+
+​•​ ​Rekayasa​ ​Prompt:​ ​Untuk​ ​memastikan​ ​model​ ​berperilaku​​sesuai​ ​•​ ​Prompt​ ​Engineering:​ ​To​ ​ensure​ ​the​ ​model​ ​behaves​ ​as​
+​dengan​ ​yang​ ​diinginkan,​ ​sangatlah​ ​penting​ ​untuk​ ​merancang​ ​intended,​​it​ ​is​​vital​ ​to​​design​​prompts​​carefully.​​This​​prevents​​the​
+​prompt​ ​secara​ ​hati-hati.​ ​Hal​ ​ini​ ​mencegah​ ​model​ ​melakukan​ ​model​​from​​deviating​​from​​its​​goal.​ ​Examples​​include​​leveraging​
+​penyimpangan​ ​dari​ ​tujuan​ ​yang​ ​ditetapkan.​ ​Contohnya​​termasuk​ ​function​​calling,​​using​​templated​​inputs,​​and​​minimizing​​free-flow​
+​memanfaatkan​ ​pemanggilan​ ​fungsi,​ ​menggunakan​ ​input​ ​dengan​ ​user input.​
+​template tertentu, dan minimalisasi input pengguna secara bebas.​
+
+​•​ ​Perlindungan​ ​Input​ ​untuk​ ​Model:​ ​Berbagai​ ​aturan​ ​atau​ ​model​
+​dapat​​diterapkan​​pada​ ​input​​prompt​ ​pengguna​​untuk​​memastikan​
+​kepatuhan​ ​terhadap​ ​budaya,​ ​bahasa,​ ​dan​ ​hukum​ ​setempat.​ ​•​ ​Input​ ​Safeguards​ ​for​ ​the​​Model:​ ​Various​​rules​​or​​models​​can​
+​Contohnya​ ​termasuk​ ​menggunakan​ ​rule​​engine​ ​untuk​​menyaring​ ​be​ ​applied​ ​to​ ​user​ ​input​ ​prompts​ ​to​ ​ensure​ ​cultural,​ ​linguistic,​
+​pertanyaan​ ​yang​ ​mengandung​ ​kata-kata​ ​kasar,​ ​menggunakan​ ​and​ ​legal​ ​compliance.​ ​Examples​​include​​using​​a​​rule​​engine​​to​
+​model​​LLM​​yang​​lebih​​kecil​ ​untuk​​mendeteksi​​niat​​pengguna​​dan​ ​filter​ ​out​ ​queries​ ​containing​ ​curse​ ​words,​ ​employing​ ​a​ ​smaller​
+​memblokir​ ​permintaan​​berbahaya,​​serta​​membatasi​​bahasa​​input​ ​LLM​ ​model​ ​to​ ​detect​ ​user​ ​intent​ ​and​​block​​malicious​​requests,​
+​yang didukung.​ ​and restricting supported input dialects.​
+
+​Sahabat-AI​ ​April 2025​
+
+
+
+​•​ ​Mitigasi​ ​di​ ​Level​ ​Model:​ ​Selama​ ​pre-training​ ​atau​ ​fine-tuning,​ ​•​ ​Model-Level​​Mitigations:​ ​During​​pre-training​​or​​fine-tuning,​​the​
+​model​ ​harus​ ​diselaraskan​​.​ ​Hal​ ​ini​ ​akan​ ​dibahas​ ​pada​ ​model should be aligned. This is discussed in later sections.​
+​bagian-bagian selanjutnya.​
+
+​•​ ​Tooling Input Safeguards for the Model:​​If the use​​case​
+​involves tool calling, it is important to protect what is passed to​
+
+​•​ ​Perlindungan​ ​untuk​ ​Model:​ ​Jika​ ​kasus​ ​the agent tool. This prevents the LLM from calling tools that are​
+​penggunaan melibatkan tool call, sangat penting untuk​ ​outside the  scope of  the application (e.g., calling a DELETE​
+​melindungi​ ​apa​ ​yang​ ​diteruskan​​ke​​agent​​tool.​ ​Hal​​ini​ ​mencegah​ ​user API when only GET API calls are permitted).​
+​LLM​ ​untuk​ ​memanggil​ ​alat​ ​yang​ ​berada​​di​ ​luar​​cakupan​​aplikasi​
+​tersebut​ ​(misalnya,​ ​pemanggilan​ ​API​ ​DELETE​ ​oleh​ ​pengguna​
+​sedangkan hanya pemanggilan API GET yang diperbolehkan).​ ​•​ ​Tooling​​Output​​Safeguards​​for​​the​​Model:​​To​​prevent​​tool​​call​
+
+​responses​​from​​causing​​the​​LLM​​to​​generate​​harmful​​content,​​it​
+​•​ ​Perlindungan​ ​untuk​​Model:​ ​Untuk​​mencegah​ ​is​ ​crucial​ ​to​ ​filter​​out​​unwanted​​or​​malicious​​responses.​​Similar​
+
+​respons​ ​pemanggilan​ ​alat​ ​yang​ ​dapat​ ​menyebabkan​ ​LLM​ ​models​ ​or​ ​rules​ ​as​ ​those​ ​used​ ​for​ ​input​ ​safeguards​ ​can​ ​be​
+​menghasilkan konten yang dilarang,​ ​employed​ ​for​ ​this​ ​purpose.​ ​Examples​ ​include​ ​restricting​
+​sangatlah​​penting​​untuk​​menyaring​​respons​​yang​​tidak​​diinginkan​ ​supported output dialects and avoiding unwanted data leakage.​
+​ataupun​ ​berbahaya.​ ​Model​ ​atau​ ​aturan​ ​serupa​ ​yang​ ​digunakan​
+​untuk​ ​perlindungan​ ​input​ ​dapat​ ​diterapkan​ ​untuk​ ​tujuan​ ​ini.​
+​Contohnya​ ​termasuk​ ​membatasi​ ​bahasa​ ​output​ ​yang​ ​didukung​
+​dan menghindari kebocoran data yang tidak diinginkan.​ ​•​ ​Model​​Output​​Safeguards:​ ​As​​this​​is​​the​​final​​safeguard​​before​
+
+​responding​ ​to​ ​the​ ​user,​ ​the​ ​strictest​ ​safeguard​ ​model​ ​or​ ​rule​
+​should be used to ensure the model responds responsibly.​
+
+​•​ ​Perlindungan​ ​Model:​ ​Karena​​ini​ ​adalah​​perlindungan​
+​terakhir​ ​sebelum​ ​merespons​ ​pengguna,​ ​model​ ​atau​ ​aturan​
+​perlindungan​ ​yang​ ​paling​ ​ketat​ ​harus​ ​digunakan​ ​untuk​ ​Monitoring:​
+​memastikan model merespons secara bertanggungjawab.​ ​Apart from establishing these safeguards at different layers, ongoing​
+
+​monitoring is essential:​
+​Pemantauan:​
+​Selain​ ​menetapkan​ ​langkah-langkah​ ​perlindungan​ ​di​ ​berbagai​
+​lapisan, pemantauan yang berkelanjutan sangat penting:​ ​•​ ​Real-time​ ​Safeguard​ ​Performance​ ​Monitoring:​ ​Each​ ​added​
+
+​safeguard​​layer​​can​​potentially​​degrade​​the​​user​​experience.​​It​​is​
+​•​ ​Pemantauan Kinerja Perlindungan Secara​ ​Setiap​ ​important​ ​to​ ​continuously​ ​monitor​ ​each​ ​safeguard's​ ​filtering​
+
+​lapisan perlindungan yang ditambahkan dapat berpotensi​ ​in/out count, along with response time.​
+​menurunkan pengalaman pengguna. Oleh karena itu, sangat​
+​penting untuk terus memantau perhitungan jumlah filter​
+​masuk/keluar dari setiap perlindungan, sekaligus dengan waktu​ ​•​ ​Safeguard​ ​Filter​ ​Monitoring:​ ​In​ ​addition​ ​to​ ​objective​ ​system​
+​tanggapannya.​ ​performance​ ​monitoring​ ​of​ ​different​ ​safeguards,​ ​it​ ​is​ ​also​
+
+​important​​to​​sample​​and​​monitor​​positive​​and​​negative​​samples​
+​•​ ​Pemantauan​ ​Filter​ ​Perlindungan:​ ​Selain​ ​pemantauan​ ​kinerja​ ​of​​input​​and​​output​​safeguards.​​This​​helps​​to​​understand​​current​
+
+​sistem​ ​yang​ ​objektif​ ​untuk​ ​berbagai​ ​perlindungan,​ ​penting​ ​juga​ ​system limitations and improve existing models or rules.​
+​untuk​ ​mengambil​ ​sampel​ ​dan​ ​memantau​ ​sampel​ ​positif​ ​dan​
+​negatif​ ​dari​ ​perlindungan​​input​​dan​​output.​​Haltersebut​​membantu​
+​memahami​ ​keterbatasan​ ​sistem​ ​saat​ ​ini​ ​dan​​dapat​​memperbaiki​ ​•​ ​Moving​​Towards​​Model-Level​​Mitigation:​​Labeling​​of​​samples​
+​model atau aturan yang berlaku saat ini.​ ​from​ ​safeguards​ ​can​ ​be​ ​leveraged​ ​in​ ​the​ ​future​ ​to​ ​train​ ​the​
+
+​model itself or further improve safeguard models.​
+​•​ ​Menuju​ ​Mitigasi​ ​di​ ​Level​ ​Model:​ ​Pelabelan​ ​sampel​ ​dari​
+
+​perlindungan​ ​dapat​ ​dimanfaatkan​ ​di​ ​masa​ ​depan​ ​untuk​ ​melatih​
+​model​​itu​​sendiri​ ​ataupun​​untuk​​meningkatkan​​kemampuan​​model​
+​perlindungan.​
+
+​Sahabat-AI​ ​April 2025​
+
+
+
+​B.​ ​B. Safety Alignment​
+
+​Sahabat-AI​ ​telah​ ​melalui​ ​berbagai​ ​langkah​ ​penyelarasan​​keamanan​ ​Sahabat-AI​ ​has​ ​gone​ ​through​ ​various​ ​steps​ ​of​ ​safety​ ​alignment​
+​selama​ ​pengembangannya.​ ​Namun,​ ​seperti​ ​LLM​ ​lainnya,​ ​tetap​ ​during​​its​​development.​​However,​​as​​with​​any​​LLM​​there​​will​​remain​
+​terdapat​​risiko​​seperti​ ​halusinasi​​yang​​perlu​​dikelola.​​Oleh​​karena​​itu,​ ​risks​ ​such​ ​as​ ​hallucination​ ​that​ ​needs​ ​to​ ​be​ ​managed.​ ​Hence,​
+​pertimbangan​​tambahan​​harus​​diperhatikan​​dengan​​mengikuti​​desain​ ​additional​ ​consideration​ ​should​ ​be​ ​taken​ ​into​ ​account​ ​by​ ​following​
+​aplikasi​ ​yang​ ​telah​ ​disebutkan​ ​untuk​ ​mengelola​ ​potensi​ ​risiko​ ​the​ ​application​ ​design​ ​mentioned​​to​​manage​​the​​potential​ ​safety​​in​
+​keamanan dalam pemanfaatan Sahabat-AI.​ ​utilizing Sahabat-Al.​
+
+​Siapa​ ​pun​ ​yang​ ​mengunduh​ ​dan​ ​menggunakan​ ​model​ ​Al​ ​harus​ ​Anyone​ ​who​ ​downloads​ ​and​ ​uses​ ​the​ ​Al​ ​model​ ​must​ ​ensure​ ​that​
+​memastikan​ ​bahwa​ ​developer​ ​menguji​ ​model​ ​tersebut​ ​secara​ ​their​ ​developers​​engineers​​test​​the​​model​​thoroughly,​​tailor​​them​​to​
+​menyeluruh,​ ​menyesuaikannya​ ​dengan​ ​kebutuhan​ ​dan​ ​tantangan​ ​their​ ​specific​ ​needs​ ​and​​challenges,​​and​​have​​a​​dedicated​​team​​to​
+​spesifik​ ​mereka,​ ​dan​ ​memiliki​ ​tim​ ​khusus​ ​untuk​ ​memastikan​ ​ensure trust and safety alignment.​
+​keselarasan kepercayaan dan keamanan.​
+
+​C.​ ​C. Model Evaluation​
+
+​Evaluasi​ ​yang​ ​ketat​ ​sangat​ ​disarankan​ ​untuk​ ​memastikan​ ​bahwa​ ​Rigorous​ ​evaluation​​is​​strongly​​recommended​​to​​ensure​​the​​model​
+​model​ ​menghasilkan​ ​konten​ ​yang​ ​andal​ ​dan​ ​aman,​ ​serta​ ​sesuai​ ​generates​ ​reliable​ ​and​ ​safe​ ​content​ ​that​ ​aligns​ ​with​ ​the​ ​system's​
+​dengan​ ​kebijakan​ ​sistem.​ ​Proses​ ​ini​ ​bersifat​ ​iteratif​ ​hingga​ ​model​ ​policies.​ ​This​ ​is​ ​an​ ​iterative​ ​process​ ​until​ ​the​ ​model​ ​achieves​
+​dapat​ ​mencapai​ ​kinerja​ ​yang​ ​memadai​ ​dalam​ ​kasus​ ​penggunaan​ ​satisfactory​ ​performance​ ​in​ ​the​ ​intended​ ​use​ ​cases​ ​and​ ​safety​
+​yang​ ​dimaksud​ ​dan​ ​memenuhi​ ​standar​ ​keamanan.​ ​Para​ ​developer​ ​standards.​​Developers​​are​​encouraged​​to​​take​​necessary​​actions​​to​
+​dianjurkan​ ​untuk​ ​mengambil​ ​langkah-langkah​ ​yang​ ​diperlukan​ ​guna​ ​provide​ ​accurate​ ​evaluation​ ​results.​ ​This​ ​may​ ​include​ ​conducting​
+​memberikan​ ​hasil​ ​evaluasi​ ​yang​ ​akurat.​ ​Hal​ ​ini​ ​dapat​ ​mencakup​ ​the​​evaluation​​on​​holdout​​test​​sets​​that​​reflect​​data​​in​​the​​production​
+​melakukan​ ​evaluasi​ ​pada​ ​set​ ​pengujian​ ​ketahanan​ ​yang​ ​environment,​ ​preventing​ ​training​​data​​leakage​​to​​the​​test​​sets,​​and​
+​mencerminkan​​data​​pada​​lingkungan​​produksi,​ ​mencegah​​kebocoran​ ​carefully determining the relevant metrics.​
+​data​ ​pelatihan​ ​terhadap​​set​​pengujian,​​dan​​menentukan​​metrik​​yang​
+​relevan dengan hati-hati.​
+
+​Evaluasi​ ​dapat​ ​dilakukan​ ​secara​ ​otomatis​​maupun​​manual.​ ​Evaluasi​ ​Evaluation​ ​can​ ​be​ ​done​ ​automatically​ ​and​ ​manually.​ ​Automatic​
+​otomatis​ ​biasanya​ ​menghitung​ ​metrik​ ​otomatis​ ​(misalnya,​ ​ROUGE,​ ​evaluation​ ​typically​ ​calculates​ ​automatic​ ​metrics​ ​(e.g.,​ ​ROUGE,​
+​BLEU)​​atau​​menggunakan​​model​​yang​​kuat​​untuk​​menilai​​tanggapan​ ​BLEU)​ ​or​ ​utilizes​ ​strong​ ​models​ ​to​ ​judge​ ​the​ ​model's​ ​responses.​
+​model.​ ​Meskipun​​proses​​ini​​cepat​​dan​​relatif​​murah,​​evaluasi​​otomatis​ ​While​​the​​process​​is​​fast​​and​​relatively​​cheap,​​automatic​​evaluation​
+​memiliki​ ​keterbatasan​ ​yang​ ​dapat​ ​diatasi​ ​dengan​ ​memanfaatkan​ ​has​ ​limitations​ ​that​ ​can​ ​be​ ​addressed​ ​by​ ​leveraging​ ​human​
+​annotator​ ​manusia​ ​untuk​ ​memverifikasi​ ​tanggap​ ​model​ ​secara​ ​annotators to manually verify the model's responses.​
+​manual.​
+
+​Terdapat​ ​berbagai​ ​tolak​ ​ukur​ ​publik​ ​yang​ ​dapat​ ​digunakan​ ​untuk​ ​There​ ​are​ ​complimentary​ ​public​ ​benchmarks​ ​to​ ​assess​ ​general​
+​menilai​ ​kemampuan​ ​bahasa​ ​umum​ ​dan​ ​pengetahuan​ ​faktual.​ ​SEA​ ​language​ ​capability​ ​and​ ​factual​ ​knowledge.​ ​SEA​ ​HELM​ ​is​ ​an​
+​HELM​ ​adalah​ ​tolak​ ​ukur​ ​otomatis​ ​yang​ ​mencakup​ ​pemahaman,​ ​automatic​ ​benchmark​ ​that​ ​covers​ ​language​ ​understanding,​
+​penalaran,​ ​dan​ ​pembuatan​ ​bahasa.​​SEA​​HELM​​mendukung​​Bahasa​ ​reasoning,​ ​and​ ​generation.​ ​It​ ​supports​​Indonesian​​and​​some​​of​​its​
+​Indonesia​ ​dan​ ​beberapa​ ​bahasa​ ​daerahnya.​ ​Dalam​ ​tolak​ ​ukur​ ​local​ ​languages.​ ​For​ ​safety​ ​benchmarks,​ ​existing​ ​datasets​ ​and​
+​keselamatan,​ ​dataset​ ​dan​ ​platform​ ​yang​ ​tersedia​ ​sebagian​ ​besar​ ​platforms​ ​mostly​ ​focus​ ​on​ ​English.​ ​Therefore,​ ​developers​ ​are​
+​berfokus​ ​pada​ ​Bahasa​ ​lnggris.​ ​Oleh​ ​karena​ ​itu,​ ​para​ ​developer​ ​suggested​ ​to​ ​identify​ ​model​ ​vulnerabilities​ ​and​ ​potential​ ​risks​ ​by​
+​disarankan​​untuk​​mengidentifikasi​​kerentanan​​dan​​potensi​​risiko​​pada​ ​constructing prompts that maygenerate unsafe responses.​
+​modelnya​ ​dengan​ ​menyusun​ ​prompt​ ​yang​ ​dapat​ ​menghasilkan​
+​tanggapan yang tidak aman.​
+
+​Sahabat-AI​ ​April 2025​
+
+
+
+​IV. Penggunaan yang Dilarang​ ​IV. Prohibited Uses​
+​​​Pengembangan​ ​dan​ ​penerapan​ ​sistem​ ​yang​ ​didukung​ ​oleh​ ​The​ ​responsible​ ​development​ ​and​ ​deployment​ ​of​
+​Sahabat-AI​ ​secara​ ​bertanggung​ ​jawab​ ​memerlukan​​kepatuhan​​ketat​ ​Sahabat-Al-powered​ ​systems​ ​require​ ​strict​ ​adherence​ ​to​ ​ethical​
+​terhadap​ ​prinsip​ ​etika​ ​dan​ ​standar​ ​hukum.​ ​Untuk​ ​memastikan​ ​principles​ ​and​ ​legal​ ​standards.​ ​To​ ​ensure​ ​these​ ​technologies​ ​are​
+​teknologi​ ​ini​ ​digunakan​ ​untuk​ ​tujuan​ ​yang​ ​positif​ ​dan​ ​sah,​ ​used​ ​for​ ​positive​ ​and​ ​lawful​ ​purposes,​ ​the​ ​following​ ​uses​ ​are​
+​penggunaan-penggunaan berikut ini secara tegas dilarang.​ ​explicitly prohibited.​
+
+​A.​​Pembuatan Konten yang Berbahaya atau Jahat​
+​A.​​Creation of Harmful or Malicious Content​
+
+​Pengembangan,​​penerapan,​​atau​​penggunaan​​sistem​​yang​​didukung​
+​oleh​ ​Sahabat-AI​ ​untuk​ ​menghasilkan​​konten​​yang​​merugikan,​​kasar,​ ​The​ ​development,​ ​deployment,​ ​or​ ​use​ ​of​ ​Sahabat-Al-powered​
+​menyesatkan,​ ​atau​ ​ilegal​ ​sangat​ ​dilarang.​ ​lni​ ​termasuk​​namun​​tidak​ ​systems​ ​for​ ​generating​ ​harmful,​ ​abusive,​ ​misleading,​ ​or​ ​illegal​
+​terbatas​ ​pada​ ​pembuatan​ ​konten​ ​ujaran​ ​kebencian,​ ​hasutan​ ​untuk​ ​content​ ​is​ ​strictly​ ​prohibited.​ ​This​ ​includes​ ​but​ ​is​ ​not​ ​limited​ ​to​
+​kekerasan,​​informasi​​palsu,​​ataupun​​konten​​yang​​dimaksudkan​​untuk​ ​generating​​hate​​speech,​​incitement​​to​​violence,​​false​​information,​​or​
+​menipu,​ ​memanipulasi,​ ​atau​ ​mengelabui​ ​individu.​ ​Kami​ ​mencatat​ ​content​​intended​​to​​deceive,​​manipulate,​​or​​defraud​​individuals.​​We​
+​bahwa​ ​tindakan​ ​rasisme,​ ​penyebaran​ ​disinformasi/hoaks,​ ​bahasa​ ​note​ ​that​ ​acts​ ​of​ ​racism,​ ​the​ ​spreading​ ​of​ ​disinformation​ ​or​
+​ofensif,​ ​adalah​​beberapa​​contoh​​yang​​tercantum​​dalam​​Surat​​Edaran​ ​misinformation,​​offensive​​language,​​are​​some​​examples​​listed​​in​​the​
+​Menteri​ ​Komunikasi​ ​dan​​lnformatika​​No.​​9​​Tahun​​2023​​tentang​​Etika​ ​Minister​ ​of​ ​Communication​ ​and​ ​Informatics'​ ​Circular​ ​Letter​ ​No.​ ​9​
+​Kecerdasan​ ​Artifisial​ ​dan​ ​Pedoman​ ​ASEAN​​tentang​​Tata​​Kelola​​dan​ ​Year​​2023​​on​​Ethical​​Guidelines​​for​​Use​​of​​Artificial​​Intelligence​​and​
+​Etika​ ​Al​ ​yang​ ​harus​ ​dihindari​ ​dalam​ ​pengembangan​​dan​​penerapan​ ​ASEAN​​Guide​​on​​Al​​Governance​​and​​Ethics​​that​​should​​be​​avoided​
+​Al.​ ​during Al development and deployment.​
+
+​B.​​Eksploitasi lndividu Rentan​
+​B.​​Exploitation of Vulnerable Individuals​
+
+​Sahabat-AI​ ​tidak​ ​boleh​ ​digunakan​ ​untuk​ ​mengeksploitasi,​
+​memanipulasi,​ ​atau​ ​mengambil​ ​keuntungan​ ​dari​ ​individu​ ​atau​ ​Sahabat-AI​ ​must​ ​not​ ​be​ ​used​ ​to​ ​exploit,​ ​manipulate,​ ​or​ ​take​
+​kelompok​ ​yang​ ​rentan.​ ​Hal​ ​tersebut​ ​termasuk​ ​menggunakan​ ​advantage​ ​of​ ​vulnerable​ ​individuals​ ​or​​groups.​​This​​includes​​using​
+​Sahabat-AI​ ​untuk​ ​menargetkan​ ​individu​ ​berdasarkan​ ​data​ ​pribadi​ ​Sahabat-AI​ ​to​ ​target​ ​individuals​ ​based​ ​on​​sensitive​​personal​​data,​
+​sensitif,​ ​memanipulasi​ ​opini,​ ​atau​ ​menciptakan​ ​interaksi​ ​yang​ ​manipulate​​opinions,​​or​​create​​deceptive​​interactions​​that​​could​​lead​
+​menyesatkan​ ​yang​ ​dapat​ ​menyebabkan​ ​kerugian​ ​secara​ ​finansial,​ ​to financial, emotional, or social harm​.​​
+​emosional, atau sosial.​
+
+​lndividu​ ​atau​ ​kelompok​ ​rentan​ ​dalam​ ​hal​ ​ini​ ​dapat​ ​mencakup​
+​anak-anak,​ ​orang​ ​lanjut​ ​usia,​ ​penyandang​ ​disabilitas​ ​yang​ ​Vulnerable​ ​individuals​ ​or​ ​groups​ ​may​ ​include​ ​children,​ ​elderly​
+​bergantung​ ​pada​ ​teknologi,​ ​komunitas​​berpenghasilan​​rendah,​​serta​ ​individuals,​ ​persons​ ​with​ ​disabilities​ ​who​ ​rely​ ​on​ ​assistive​
+​kelompok adat yang budayanya rentan disalahgunakan.​ ​technologies,​ ​low-income​ ​communities,​ ​and​ ​indigenous​ ​groups​
+
+​whose culture could be misused.​
+​C.​​Pelanggaran Privasi dan Hukum Perlindungan Data​
+
+​Pengembangan​ ​sistem​ ​yang​ ​didukung​ ​oleh​ ​Sahabat-AI​ ​yang​ ​C.​​Violation of Privacy and Data Protection Laws​
+​mengumpulkan,​ ​memproses,​ ​atau​ ​membagikan​ ​data​ ​pribadi​ ​secara​
+​ilegal​ ​tanpa​ ​persetujuan​ ​yang​ ​sah,​ ​atau​ ​yang​ ​melanggar​ ​peraturan​ ​The​ ​development​ ​of​ ​Sahabat-Al-powered​ ​systems​ ​that​ ​unlawfully​
+​perlindungan​​data,​​dilarang.​​Termasuk​​penggunaan​​Sahabat-AI​​untuk​ ​collect,​ ​process,​ ​or​ ​share​​personal​​data​​without​​proper​​consent,​​or​
+​melakukan​​pengawasan​​yang​​tidak​​sah,​​pengambilan​​data​​tanpa​​izin,​ ​those​ ​that​ ​violate​ ​data​ ​protection​ ​laws,​​is​​prohibited.​​This​​includes​
+​ataupun pembagian informasi pribadi tanpa persetujuan​ ​the​​use​​of​​Sahabat-AI​​for​​unauthorized​​surveillance,​​data​​scraping,​
+​eksplisit dari individu.​ ​or​ ​sharing​ ​of​ ​private​ ​information​ ​without​ ​the​ ​explicit​ ​consent​ ​of​
+
+​individuals​.​​
+
+​Sahabat-AI​ ​April 2025​
+
+
+
+​V. Strategi Mitigasi dan Manajemen​ ​V. Mitigation Strategies and Risk​
+​Risiko​ ​Management​
+
+​Pengembangan​ ​dan​ ​penerapan​ ​sistem​ ​yang​ ​didukung​ ​oleh​ ​The​ ​responsible​ ​development​ ​and​ ​deployment​ ​of​
+​Sahabat-AI​ ​secara​ ​bertanggung​ ​jawab​ ​memerlukan​​kepatuhan​​ketat​ ​Sahabat-Al-powered​ ​systems​ ​require​ ​strict​ ​adherence​ ​to​ ​ethical​
+​terhadap​ ​prinsip​ ​etika​ ​dan​ ​standar​ ​hukum.​ ​Untuk​ ​memastikan​ ​principles​ ​and​ ​legal​ ​standards.​ ​To​ ​ensure​ ​these​ ​technologies​ ​are​
+​teknologi​ ​ini​ ​digunakan​ ​untuk​ ​tujuan​ ​yang​ ​positif​ ​dan​ ​sah,​ ​used​ ​for​ ​positive​ ​and​ ​lawful​ ​purposes,​ ​the​ ​following​ ​uses​ ​are​
+​penggunaan-penggunaan berikut ini secara tegas dilarang.​ ​explicitly prohibited.​
+
+​A.​​Strategi Mitigasi​
+​A.​ ​Mitigation Stretagies​
+
+​Penyaringan​ ​Konten​ ​&​ ​Moderasi:​ ​Terapkan​ ​mekanisme​
+​penyaringan​ ​konten​ ​yang​ ​kuat​ ​untuk​ ​mendeteksi​ ​dan​ ​memblokir​ ​Content​​Filtering​​&​​Moderation:​​Implement​​robust​​content​​filtering​
+​output​ ​yang​​berbahaya,​​bias,​​ataupun​​tidak​​pantas.​​Hal​​tersebut​​bisa​ ​mechanism​ ​to​ ​detect​ ​and​ ​block​ ​harmful,​ ​biased,​ ​or​ ​inappropriate​
+​termasuk​ ​menggunakan​ ​penyaring​ ​berbasis​ ​aturan,​ ​klasifikasi​ ​dari​ ​outputs.​ ​This​ ​can​ ​involve​ ​rule-based​ ​filters,​ ​machine​ ​learning​
+​pembelajaran mesin, dan moderasi dengan keterlibatan manusia.​ ​classifiers, and human-in-the-loop​ ​moderation.​
+
+​Rekayasa​ ​Prompt​ ​&​ ​Validasi​ ​Input:​ ​Melakukan​ ​desain​ ​terhadap​
+​prompt​ ​dan​ ​proses​ ​validasi​ ​input​ ​untuk​ ​dapat​​membimbing​​interaksi​ ​Prompt​​Engineering​​&​​Input​​Validation:​​Design​​prompts​​and​​input​
+​pengguna​ ​dan​ ​mencegah​ ​masukan​ ​yang​ ​berbahaya​ ​atau​ ​yang​ ​validation​ ​processes​ ​to​ ​guide​ ​user​ ​interactions​ ​and​ ​prevent​
+​berpotensi​ ​disalahgunakan​ ​(misalnya​ ​prompt​ ​untuk​ ​melakukan​ ​malicious or harmful input that could lead to misuse​ ​(e.g.​
+​serangan injeksi).​ ​prompt​ ​injection​ ​attack).​
+
+​Mekanisme​ ​Penjelasan​ ​&​ ​Transparansi:​ ​Terapkan​ ​mekanisme​
+​untuk​​memberikan​​konteks​​dan​​penjelasan​​kepada​​pengguna​​tentang​ ​Explainability​ ​&​ ​Transparency​ ​Mechanisms:​ ​Implement​
+​output​ ​dari​ ​LLM,​ ​sehingga​ ​membantu​ ​mereka​ ​memahami​ ​mechanisms​ ​to​ ​provide​ ​users​ ​with​ ​context​​and​​explanations​​about​
+​keterbatasan dan potensi bias (misalnya melalui kartu model).​ ​LLM​ ​outputs,​ ​helping​ ​them​ ​understand​ ​limitations​ ​and​ ​potential​
+
+​biases  (e.g.  model  cards).​
+​Pemantauan​ ​&​ ​Evaluasi​ ​Berkelanjutan:​ ​Terapkan​ ​sistem​ ​untuk​
+​pemantauan​​berkelanjutan​​terhadap​​kinerja​​aplikasi​​LLM,​​umpan​​balik​
+​pengguna,​ ​dan​ ​potensi​ ​penyalahgunaan.​ ​Lakukan​ ​evaluasi​ ​secara​ ​Continuous​ ​Monitoring​ ​&​ ​Evaluation:​ ​Implement​ ​systems​ ​for​
+​teratur​​terhadap​​efektivitas​​strategi​​mitigasi​​dan​​lakukan​​perbaikanjika​ ​continuous​ ​monitoring​ ​of​ ​LLM​ ​application​ ​performance,​ ​user​
+​diperlukan.​ ​feedback​​and​​potential​​misuse.​​Regularly​​evaluate​​the​​effectiveness​
+
+​of mitigation strategies and improve as needed.​
+
+​B.​​Manajemen Risiko​
+​B.​​Risk Management​
+
+​Penilaian​ ​Risiko​ ​secara​ ​Proaktif:​ ​Lakukan​ ​penilaian​ ​risiko​
+​menyeluruh​ ​sebelum​ ​meluncurkan​ ​aplikasi​ ​yang​ ​didukung​ ​oleh​ ​Proactive​ ​Risk​ ​Assessment:​ ​Conduct​​thorough​​risk​​assessments​
+​Sahabat-AI.​ ​Hal​ ​ini​ ​harus​ ​melibatkan​ ​identifikasi​ ​potensi​ ​kerugian,​ ​before​ ​deploying​ ​any​ ​Sahabat-Al-powered​ ​application.​​This​​should​
+​bias, kerentanan keamanan, serta penggunaan yang tidak diinginkan.​ ​involve​ ​identifying​ ​potential​ ​harms,​ ​biases,​ ​security​ ​vulnerabilities,​
+
+​and unintended uses.​
+​Penanganan​ ​Masalah​ ​Keamanan:​ ​Ketika​ ​penggunaan​ ​Sahabat-AI​
+​menunjukkan​​adanya​​kekurangan​​dalam​​aspek​​ketentuan​​keamanan​
+​untuk​ ​penggunanya,​ ​penyempurnaan​ ​model​ ​sebaiknya​ ​Addressing​ ​safety​ ​issues:​ ​When​ ​Sahabat-AI​ ​use​ ​exhibits​
+​dipertimbangkan​ ​dengan​ ​melatih​ ​model​​pada​​set​​data​​yang​​terfokus​ ​insufficient​ ​safety​ ​for​ ​user​ ​requirements,​ ​fine-tuning​ ​should​ ​be​
+​pada​ ​keamanan.​ ​Strategi​ ​penyelarasan​ ​keamanan​ ​juga​ ​perlu​ ​considered​ ​to​ ​train​ ​models​ ​specifically​ ​on​ ​curated​ ​safety-focused​
+​dipertimbangkan​ ​untuk​ ​mengarahkan​ ​model​ ​terhadap​ ​perilaku​ ​yang​ ​dataset.​ ​Safety​ ​alignment​ ​strategies​ ​should​ ​also​ ​be​ ​considered​​to​
+​lebih aman dan bertanggungjawab.​ ​guide the model towards safer and more responsible behavior.​
+
+​Sahabat-AI​ ​April 2025​
+
+
+
+​lnformasi Kontak dan Bantuan​
+​Pertanyaan terkait dengan model Sahabat-AI, dan/atau kesempatan kolaborasi, silakan untuk mengirimkan​
+
+​surat elektronik ke alamat​​support@sahabat-ai.com.​​Kami akan dengan senang hati membantu dan​
+​mengeksplorasi potensi sinergi.​
+
+​Contact Information and Support​
+​For any inquiries regarding the Sahabat-AI model, and/or potential collaboration opportunities, please​
+​send an email to​​support@sahabat-ai.com.​​We would​​be happy to assist you and explore possible​
+
+​synergies.​
+
+​Sahabat-AI​ ​April 2025​

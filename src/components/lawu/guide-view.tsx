@@ -887,6 +887,7 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tantivy::collector::TopDocs;
 use tantivy::query::QueryParser;
+use tantivy::schema::Value;
 use tantivy::{Index, IndexReader, ReloadPolicy};
 
 // Module declaration — schema.rs harus ada di src/schema.rs (Langkah 9)

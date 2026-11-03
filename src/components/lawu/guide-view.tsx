@@ -664,10 +664,11 @@ whoami    # harus cetak: lawu
 id        # groups harus TIDAK ada sudo
 
 # 2) Install rustup (rust compiler + cargo + toolchain manager)
+#    Profile 'default' SUDAH include rustfmt + clippy otomatis — tidak perlu --component.
+#    (Syntax --component rustfmt clippy SALAH; pakai -c rustfmt,clippy jika ingin eksplisit)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \\
   --default-toolchain stable \\
-  --profile default \\
-  --component rustfmt clippy
+  --profile default
 
 # 3) Source environment cargo
 source ~/.cargo/env
@@ -676,11 +677,13 @@ source ~/.cargo/env
 rustc --version
 cargo --version
 rustup --version
-rustup component list --installed
 
-# 5) (OPSIONAL) Set target khusus CPU native (optimasi AVX2 di i5-10400)
-#    Tidak wajib — Cargo.toml bisa pakai RUSTFLAGS="-C target-cpu=native"
-mkdir -p ~/.cargo
+# 5) Verifikasi rustfmt + clippy (sudah include dari profile default)
+rustup component list --installed | grep -E 'rustfmt|clippy'
+# Harus cetak: clippy-x86_64-unknown-linux-gnu + rustfmt-x86_64-unknown-linux-gnu
+
+# 6) Persist PATH cargo + RUSTFLAGS ke ~/.bashrc
+echo 'source ~/.cargo/env' >> ~/.bashrc
 echo 'export RUSTFLAGS="-C target-cpu=native"' >> ~/.bashrc
 source ~/.bashrc`
 

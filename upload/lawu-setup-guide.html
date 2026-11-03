@@ -1291,10 +1291,11 @@ whoami    # harus cetak: lawu
 id        # groups harus TIDAK ada sudo
 
 # 2) Install rustup (rust compiler + cargo + toolchain manager)
+#    Profile 'default' SUDAH include rustfmt + clippy otomatis — tidak perlu --component.
+#    (Syntax --component rustfmt clippy SALAH; pakai -c rustfmt,clippy jika ingin eksplisit)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
   --default-toolchain stable \
-  --profile default \
-  --component rustfmt clippy
+  --profile default
 
 # 3) Source environment cargo
 source ~/.cargo/env
@@ -1303,11 +1304,13 @@ source ~/.cargo/env
 rustc --version
 cargo --version
 rustup --version
-rustup component list --installed
 
-# 5) (OPSIONAL) Set target khusus CPU native (optimasi AVX2 di i5-10400)
-#    Tidak wajib — Cargo.toml bisa pakai RUSTFLAGS="-C target-cpu=native"
-mkdir -p ~/.cargo
+# 5) Verifikasi rustfmt + clippy (sudah include dari profile default)
+rustup component list --installed | grep -E 'rustfmt|clippy'
+# Harus cetak: clippy-x86_64-unknown-linux-gnu + rustfmt-x86_64-unknown-linux-gnu
+
+# 6) Persist PATH cargo + RUSTFLAGS ke ~/.bashrc
+echo 'source ~/.cargo/env' &gt;&gt; ~/.bashrc
 echo 'export RUSTFLAGS="-C target-cpu=native"' &gt;&gt; ~/.bashrc
 source ~/.bashrc</code></pre>
         </div>
@@ -1317,27 +1320,42 @@ source ~/.bashrc</code></pre>
             <span class="code-lang">sh</span>
           </div>
           <pre class="code-content"><code># 7.B — Verifikasi Rust toolchain dengan build hello-world
+# &gt;&gt;&gt; RUN AS: user lawu (masih sebagai lawu dari Langkah 7.A, TANPA sudo) &lt;&lt;&lt;
+# JANGAN jalankan 'sudo su - lawu' di sini — Anda SUDAH sebagai lawu dari 7.A.
+# Jika Anda sudah exit dari lawu, login ulang: 'sudo su - lawu' dari user admin.
 
-# Sebagai user lawu
-sudo su - lawu
+# 1) Verifikasi Anda sebagai lawu
+whoami    # harus cetak: lawu
+
+# 2) Source cargo env (wajib setiap shell baru — atau tambah ke ~/.bashrc)
 source ~/.cargo/env
 
-# 1) Buat project dummy
+# Jika 'source ~/.cargo/env' gagal → Langkah 7.A belum dijalankan.
+# KEMBALI ke 7.A: curl https://sh.rustup.rs | sh ...
+# Jika ~/.cargo/env tidak ada setelah 7.A → rustup install gagal,
+# cek log error di 7.A (mungkin butuh build-essential/gcc di Langkah 1.B)
+
+# 3) Buat project dummy
 cd /tmp
 cargo new hello_lawu --bin
 cd hello_lawu
 
-# 2) Build dengan optimasi native CPU
+# 4) Build dengan optimasi native CPU (AVX2 di i5-10400)
 RUSTFLAGS="-C target-cpu=native" cargo build --release
 ./target/release/hello_lawu
 # Harus cetak: Hello, world!
 
-# 3) Cek binary ter-link dengan benar (Paten 3: murni CPU, tanpa GPU dep)
+# 5) Cek binary ter-link dengan benar (Paten 3: murni CPU, tanpa GPU dep)
 ldd ./target/release/hello_lawu
 # Harus HANYA cetak: libc.so.6, libgcc_s.so.1, ld-linux-x86-64.so.2
 # JANGAN ada libcuda, libnvrtc, atau libGPU apa pun
 
-# 4) Cleanup
+# 6) (Optional) Persist RUSTFLAGS + cargo PATH ke ~/.bashrc
+echo 'source ~/.cargo/env' &gt;&gt; ~/.bashrc
+echo 'export RUSTFLAGS="-C target-cpu=native"' &gt;&gt; ~/.bashrc
+# Sekarang setiap shell baru otomatis pakai cargo + RUSTFLAGS
+
+# 7) Cleanup
 cd / &amp;&amp; rm -rf /tmp/hello_lawu</code></pre>
         </div>
       </div>

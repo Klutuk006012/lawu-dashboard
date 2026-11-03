@@ -131,9 +131,8 @@ SECTIONS = [
         "id": "sysctl", "step": "6", "title": "Spesifikasi Infrastruktur & Kernel Tuning (sysctl)",
         "desc": "Parameter kernel di /etc/sysctl.d/99-lawu-fine.conf + limits.conf untuk file descriptor besar (Axum + Tantivy).",
         "blocks": [
-            ("/etc/sysctl.d/99-lawu-fine.conf", "SYSCTL"),
-            ("apply-sysctl.sh", "SYSCTL_APPLY"),
-            ("/etc/security/limits.d/99-lawu-fine.conf", "LIMITS_CONF"),
+            ("6.A-apply-sysctl.sh", "SYSCTL"),
+            ("6.B-apply-limits.sh", "LIMITS_CONF"),
         ]
     },
     {
@@ -194,10 +193,9 @@ SECTIONS = [
         "id": "systemd", "step": "14", "title": "Unit systemd (Auto-restart & Boot)",
         "desc": "Dua service: llama-lawu (inference) & lawu-2.5-fine (API Axum). Hardening systemd (NoNewPrivileges, ProtectSystem, PrivateTmp). Auto-restart on crash.",
         "blocks": [
-            ("14.A-verify-user.sh", "SYSTEMD_USER"),
-            ("/etc/systemd/system/llama-lawu.service", "SYSTEMD_LLAMA"),
-            ("/etc/systemd/system/lawu-2.5-fine.service", "SYSTEMD_AXUM"),
-            ("14.B-enable-services.sh", "SYSTEMD_ENABLE"),
+            ("14.A-write-llama-service.sh", "SYSTEMD_LLAMA"),
+            ("14.B-write-axum-service.sh", "SYSTEMD_AXUM"),
+            ("14.C-enable-services.sh", "SYSTEMD_ENABLE"),
         ]
     },
     {
@@ -223,7 +221,7 @@ SECTIONS = [
         "id": "nginx", "step": "17", "title": "Reverse Proxy Nginx",
         "desc": "Satu port 80: dashboard/API Rust di root, inference llama.cpp di /v1/. Security headers, client_max_body_size 100MB untuk upload ebook, buffering off untuk streaming chat.",
         "blocks": [
-            ("/etc/nginx/sites-available/lawu", "NGINX"),
+            ("17-apply-nginx-config.sh", "NGINX"),
         ]
     },
     {

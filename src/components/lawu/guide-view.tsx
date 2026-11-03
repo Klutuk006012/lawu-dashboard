@@ -581,7 +581,9 @@ const ARCH = `┌─────────────────────
 // LANGKAH 6 — KERNEL TUNING (sysctl)
 // ======================================================================
 
-const SYSCTL = `# /etc/sysctl.d/99-lawu-fine.conf
+const SYSCTL = `# 6.A — Tulis config sysctl Lawu ke file (heredoc — LANGSUNG JALANKAN, jangan paste baris per baris)
+# Ini CONFIG FILE, bukan script. Heredoc menulis ke /etc/sysctl.d/99-lawu-fine.conf lalu apply.
+sudo tee /etc/sysctl.d/99-lawu-fine.conf > /dev/null <<'SYSCTL'
 # Tuning kernel untuk search engine ebook Lawu-2.5-Fine
 
 # Manfaatkan RAM 16GB untuk caching disk/Tantivy, kurangi swap ke SSD
@@ -607,24 +609,28 @@ net.ipv4.tcp_fastopen = 3
 net.core.netdev_max_backlog = 16384
 
 # Cegah SYN flood (DDoS ringan)
-net.ipv4.tcp_syncookies = 1`
+net.ipv4.tcp_syncookies = 1
+SYSCTL
 
-const SYSCTL_APPLY = `sudo sysctl --system
-# verifikasi
+# Apply config ke kernel yang sedang berjalan
+sudo sysctl --system
+
+# Verifikasi nilai sudah berubah
 sysctl vm.swappiness fs.file-max fs.inotify.max_user_watches net.core.somaxconn`
 
-const LIMITS_CONF = `# /etc/security/limits.d/99-lawu-fine.conf
-# Naikkan batas file descriptor untuk user lawu (Axum + Tantivy)
-
+const LIMITS_CONF = `# 6.B — Tulis limits.conf untuk user lawu (heredoc — LANGSUNG JALANKAN)
+# Naikkan batas file descriptor untuk Axum + Tantivy
+sudo tee /etc/security/limits.d/99-lawu-fine.conf > /dev/null <<'LIMITS'
 lawu  soft  nofile  1048576
 lawu  hard  nofile  2097152
 lawu  soft  nproc   65535
 lawu  hard  nproc   131072
 root  soft  nofile  1048576
 root  hard  nofile  2097152
+LIMITS
 
-# Aktifkan dengan logout + login ulang, atau:
-sudo sysctl --system
+# Aktifkan: logout + login ulang (atau reboot) agar limit baru berlaku
+# Verifikasi setelah relogin: ulimit -n  (harus 1048576)
 sudo systemctl daemon-reload`
 
 // ======================================================================
@@ -1136,9 +1142,9 @@ sudo loginctl enable-linger lawu
 loginctl show-user lawu | grep Linger
 # harus cetak: Linger=yes`
 
-const SYSTEMD_LLAMA = `# /etc/systemd/system/llama-lawu.service
+const SYSTEMD_LLAMA = `# 14.A — Tulis unit file systemd untuk llama.cpp (heredoc — LANGSUNG JALANKAN)
 # Service inference llama.cpp (CPU only — Paten 3)
-
+sudo tee /etc/systemd/system/llama-lawu.service > /dev/null <<'UNIT'
 [Unit]
 Description=Lawu-2.5-Fine — llama.cpp GGUF server (CPU)
 After=network.target
@@ -1148,11 +1154,7 @@ After=mnt-data.mount
 User=lawu
 Group=lawu
 Type=simple
-ExecStart=/home/lawu/src/llama.cpp/build/bin/llama-server \\
-  -m /home/lawu/models/lawu-2.5-fine-q4_k_m.gguf \\
-  --alias lawu-2.5-fine \\
-  -t 6 --mmap -c 4096 \\
-  --host 127.0.0.1 --port 8080
+ExecStart=/home/lawu/src/llama.cpp/build/bin/llama-server -m /home/lawu/models/lawu-2.5-fine-q4_k_m.gguf --alias lawu-2.5-fine -t 6 --mmap -c 4096 --host 127.0.0.1 --port 8080
 Restart=always
 RestartSec=3
 LimitNOFILE=65535
@@ -1165,11 +1167,15 @@ PrivateTmp=yes
 ReadWritePaths=/mnt/data /home/lawu/models
 
 [Install]
-WantedBy=multi-user.target`
+WantedBy=multi-user.target
+UNIT
 
-const SYSTEMD_AXUM = `# /etc/systemd/system/lawu-2.5-fine.service
+# Verify file created
+cat /etc/systemd/system/llama-lawu.service | head -10`
+
+const SYSTEMD_AXUM = `# 14.B — Tulis unit file systemd untuk Axum API (heredoc — LANGSUNG JALANKAN)
 # Service API search Axum + Tantivy
-
+sudo tee /etc/systemd/system/lawu-2.5-fine.service > /dev/null <<'UNIT'
 [Unit]
 Description=Lawu-2.5-Fine — Axum + Tantivy search API
 After=network.target llama-lawu.service
@@ -1182,6 +1188,7 @@ Type=simple
 Environment=RUST_LOG=info
 Environment=LAWU_INDEX_PATH=/mnt/data/tantivy_index
 Environment=LAWU_LLM_URL=http://127.0.0.1:8080
+EnvironmentFile=/etc/lawu/env
 ExecStart=/home/lawu/.cargo/bin/lawu-server
 Restart=always
 RestartSec=3
@@ -1195,7 +1202,11 @@ PrivateTmp=yes
 ReadWritePaths=/mnt/data /var/log/lawu
 
 [Install]
-WantedBy=multi-user.target`
+WantedBy=multi-user.target
+UNIT
+
+# Verify file created
+cat /etc/systemd/system/lawu-2.5-fine.service | head -10`
 
 const SYSTEMD_ENABLE = `# 14.B — Aktifkan & enable kedua service systemd
 
@@ -1399,7 +1410,9 @@ export default function () {
 // LANGKAH 17 — NGINX REVERSE PROXY
 // ======================================================================
 
-const NGINX = `# /etc/nginx/sites-available/lawu
+const NGINX = `# 17 — Tulis config Nginx (heredoc — LANGSUNG JALANKAN)
+# Reverse proxy: dashboard/API Rust di root, inference llama.cpp di /v1/
+sudo tee /etc/nginx/sites-available/lawu > /dev/null <<'NGINX'
 server {
     listen 80;
     server_name _;   # ganti dengan domain Anda di produksi
@@ -1443,17 +1456,18 @@ server {
     add_header X-XSS-Protection "1; mode=block" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 }
+NGINX
 
-# Enable site
+# Enable site (symlink ke sites-enabled)
 sudo ln -sf /etc/nginx/sites-available/lawu /etc/nginx/sites-enabled/lawu
 
 # Hapus default site (bentrok dengan port 80)
 sudo rm -f /etc/nginx/sites-enabled/default
 
-# Test config
+# Test config (harus cetak 'syntax is ok' dan 'test is successful')
 sudo nginx -t
 
-# Reload nginx
+# Reload nginx jika test ok
 sudo systemctl reload nginx
 sudo systemctl status nginx --no-pager`
 

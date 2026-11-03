@@ -1,8 +1,10 @@
 'use client'
 
 import * as React from 'react'
+import { ShieldAlert } from 'lucide-react'
 import { CodeBlock } from '@/components/lawu/code-block'
 import { Badge } from '@/components/ui/badge'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { LAWU_HARDWARE } from '@/lib/lawu'
 
 function Section({
@@ -33,6 +35,209 @@ function Section({
     </section>
   )
 }
+
+// ======================================================================
+// LANGKAH 0 — BERSIHKAN SERVER SEBELUM INSTALASI
+// (audit → stop → backup → hapus → hapus user → bersihkan config → verify)
+// ======================================================================
+
+const CLEANUP_AUDIT = `# 0.A — Audit server kotor (JALANKAN DULU, lihat apa yang ada sebelum bersihkan)
+# Paten 3: murni CPU, tanpa GPU — audit hanya mencari sisa project Lawu lama
+
+echo "=== AUDIT SERVER LAWU LAMA ==="
+
+echo "1. Proses yang dengarkan port Lawu (80/8080/8081):"
+sudo ss -tlnp | grep -E ':(80|8080|8081)\b' || echo "   (kosong)"
+
+echo "2. Service systemd Lawu/llama lama:"
+systemctl list-units --type=service --all | grep -iE 'lawu|llama|tantivy' || echo "   (kosong)"
+systemctl list-unit-files | grep -iE 'lawu|llama|tantivy' || echo "   (tidak ada unit file)"
+
+echo "3. Cron jobs Lawu lama:"
+crontab -l 2>/dev/null | grep -iE 'lawu|llama' || echo "   (user crontab kosong)"
+sudo crontab -l -u lawu 2>/dev/null || echo "   (crontab user lawu tidak ada)"
+ls /etc/cron.d/ 2>/dev/null | grep -i lawu || echo "   (/etc/cron.d bersih)"
+
+echo "4. User lawu lama:"
+id lawu 2>/dev/null || echo "   (user lawu tidak ada)"
+grep -E '^lawu:' /etc/passwd || echo "   (tidak ada di /etc/passwd)"
+
+echo "5. Direktori & binary Lawu lama:"
+ls -la /opt/lawu 2>/dev/null || echo "   /opt/lawu tidak ada"
+ls -la /mnt/data/ebooks 2>/dev/null || echo "   /mnt/data/ebooks tidak ada"
+ls -la /mnt/data/tantivy_index 2>/dev/null || echo "   /mnt/data/tantivy_index tidak ada"
+ls -la ~/llama.cpp 2>/dev/null || echo "   ~/llama.cpp tidak ada"
+ls -la ~/.cargo/bin/lawu-server 2>/dev/null || echo "   ~/.cargo/bin/lawu-server tidak ada"
+ls -la ~/models/lawu-2.5-fine-*.gguf 2>/dev/null || echo "   ~/models tidak ada model GGUF Lawu"
+
+echo "6. sysctl & Nginx config Lawu lama:"
+ls /etc/sysctl.d/ 2>/dev/null | grep -i lawu || echo "   (sysctl bersih)"
+ls /etc/nginx/sites-enabled/ 2>/dev/null | grep -i lawu || echo "   (nginx bersih)"
+
+echo "7. Log Lawu lama:"
+ls /var/log/lawu 2>/dev/null || echo "   /var/log/lawu tidak ada"`
+
+const CLEANUP_STOP = `# 0.B — Stop & disable service Lawu/llama lama
+# HATI-HATI: ini menghentikan service Lawu lama yang sedang berjalan
+
+# 1) Stop & disable semua service systemd Lawu/llama lama
+for svc in llama-lawu lawu-2.5-fine lawu tantivy; do
+  sudo systemctl stop "$svc" 2>/dev/null || true
+  sudo systemctl disable "$svc" 2>/dev/null || true
+done
+
+# 2) Hapus unit file systemd lama (daemon-reload setelahnya)
+sudo rm -f /etc/systemd/system/llama-lawu.service
+sudo rm -f /etc/systemd/system/lawu-2.5-fine.service
+sudo rm -f /etc/systemd/system/lawu.service
+sudo rm -f /etc/systemd/system/tantivy.service
+sudo systemctl daemon-reload
+
+# 3) Kill proses yang masih dengarkan port Lawu (8080 inference, 8081 API)
+sudo ss -tlnp | grep -E ':(8080|8081)\b' \\
+  | grep -oP 'pid=\\K[0-9]+' | sort -u \\
+  | while read -r pid; do sudo kill "$pid" 2>/dev/null || true; done
+
+# 4) Hapus cron jobs Lawu lama (user crontab + /etc/cron.d)
+sudo crontab -r -u lawu 2>/dev/null || true
+# Untuk crontab user biasa: hapus baris yang mengandung /opt/lawu/ atau lawu-
+crontab -l 2>/dev/null | grep -v -E '/opt/lawu/|lawu-2.5-fine' | crontab - 2>/dev/null || true
+sudo rm -f /etc/cron.d/lawu* 2>/dev/null`
+
+const CLEANUP_BACKUP = `# 0.C — Backup data Lawu lama (OPSIONAL, sebelum hapus permanen)
+# Jalankan ini JIKA Anda ingin jaga-jaga ada data ebook/index/markdown lama
+# yang belum dimigrasi. Jika server benar-benar kosong/scrapped, lewati langkah ini.
+
+STAMP=$(date +%Y%m%d_%H%M)
+BACKUP_DIR="/mnt/data/backup-pre-clean-$STAMP"
+sudo mkdir -p "$BACKUP_DIR"
+
+# Backup koleksi ebook, index Tantivy, dan markdown hasil ekstraksi
+sudo tar -czf "$BACKUP_DIR/lawu-old-data.tar.gz" \\
+  /opt/lawu \\
+  /mnt/data/ebooks \\
+  /mnt/data/tantivy_index \\
+  /mnt/data/processed_markdowns \\
+  2>/dev/null || true
+
+# Backup config systemd & sysctl lama (arsip referensi)
+sudo tar -czf "$BACKUP_DIR/lawu-old-configs.tar.gz" \\
+  /etc/systemd/system/llama-lawu.service \\
+  /etc/systemd/system/lawu-2.5-fine.service \\
+  /etc/sysctl.d/99-lawu-fine.conf \\
+  /etc/nginx/sites-available/lawu \\
+  2>/dev/null || true
+
+# Catat ringkasan backup
+sudo du -sh "$BACKUP_DIR"/* 2>/dev/null
+sudo chmod -R lawu:lawu "$BACKUP_DIR" 2>/dev/null || true
+echo "Backup Lawu lama tersimpan di: $BACKUP_DIR"`
+
+const CLEANUP_REMOVE = `# 0.D — Hapus direktori & binary Lawu lama
+# PERINGATAN: langkah ini MENGHAPUS PERMANEN. Pastikan 0.C (backup) sudah dilakukan
+# jika ada data yang ingin disimpan.
+
+# 1) Hapus direktori aplikasi Lawu (/opt/lawu berisi skrip watch/backup/reindex)
+sudo rm -rf /opt/lawu
+
+# 2) Hapus binary lawu-server lama (hasil 'cargo install' atau build lama)
+rm -f ~/.cargo/bin/lawu-server
+
+# 3) Hapus source tree llama.cpp lama (akan di-clone ulang di Langkah 6)
+rm -rf ~/llama.cpp
+
+# 4) Hapus model GGUF Lawu lama (HATI-HATI — file besar, butuh waktu dihapus)
+#    Jika ingin simpan model agar tidak perlu re-download/re-quant, COMMENT baris ini.
+rm -f ~/models/lawu-2.5-fine-*.gguf
+
+# 5) Hapus index Tantivy & markdown hasil ekstraksi lama
+#    (JIKA ingin mulai indexing dari nol. Jika ingin pakai index lama, COMMENT baris ini.)
+sudo rm -rf /mnt/data/tantivy_index
+sudo rm -rf /mnt/data/processed_markdowns
+
+# 6) Kosongkan incoming/ (file ebook yang belum diproses oleh watcher lama)
+#    (JIKA ingin simpa koleksi ebook, COMMENT baris ini — hanya kosongkan incoming)
+# sudo rm -rf /mnt/data/ebooks/incoming/*`
+
+const CLEANUP_USER = `# 0.E — Hapus user & group 'lawu' lama
+# User ini akan dibuat ulang bersih di Langkah 7 (systemd).
+# Jika server Anda TIDAK pernah pakai user 'lawu' sebelumnya, lewati langkah ini.
+
+# 1) Pastikan tidak ada proses yang masih berjalan sebagai user lawu
+sudo pkill -u lawu 2>/dev/null || true
+sleep 2
+
+# 2) Hapus user lawu lama BESERTA home directory-nya (-r)
+#    Home directory user lawu berisi: ~/.cargo, ~/llama.cpp, ~/models — sudah di-backup di 0.C
+sudo userdel -r lawu 2>/dev/null || true
+
+# 3) Hapus group 'lawu' jika masih tersisa (userdel biasanya hapus grup primer otomatis)
+sudo groupdel lawu 2>/dev/null || true
+
+# 4) Verifikasi tidak ada file sisa milik UID lawu lama (orphaned files)
+sudo find / -path /proc -prune -o -path /sys -prune -o -path /dev -prune \\
+  -path /run -prune -o -nouser -print 2>/dev/null | head -20 || true`
+
+const CLEANUP_CONFIG = `# 0.F — Bersihkan sysctl, Nginx config, dan log Lawu lama
+
+# 1) Hapus sysctl custom Lawu lama (akan dibuat ulang bersih di Langkah 2)
+sudo rm -f /etc/sysctl.d/99-lawu-fine.conf
+sudo sysctl --system 2>/dev/null || true
+
+# 2) Hapus Nginx config Lawu lama (akan dibuat ulang bersih di Langkah 10)
+sudo rm -f /etc/nginx/sites-enabled/lawu
+sudo rm -f /etc/nginx/sites-available/lawu
+# Reload nginx jika masih aktif (bisa gagal jika nginx tidak terpasang — abaikan)
+sudo nginx -t 2>/dev/null && sudo systemctl reload nginx 2>/dev/null || true
+
+# 3) Bersihkan log Lawu lama (file log + entry journald lama)
+sudo rm -rf /var/log/lawu
+# Rotasi & vacuum journald: simpan 3 hari terakhir saja untuk hemat SSD
+sudo journalctl --rotate 2>/dev/null || true
+sudo journalctl --vacuum-time=3d 2>/dev/null || true
+
+# 4) (OPSIONAL) Bersihkan cache build Cargo lama — hemat SSD 128GB
+rm -rf ~/.cargo/registry/cache 2>/dev/null || true
+rm -rf ~/.cargo/registry/src 2>/dev/null || true
+rm -rf target 2>/dev/null || true`
+
+const CLEANUP_VERIFY = `# 0.G — Verifikasi server bersih (FINAL CHECK)
+# Jalankan setelah 0.A–0.F selesai. Semua check harus cetak "✓ Bersih".
+
+echo "=== AUDIT FINAL — SERVER BERSIH? ==="
+
+echo "1. Port Lawu (8080/8081 harus kosong):"
+sudo ss -tlnp | grep -E ':(8080|8081)\b' && echo "   ✗ MASIH ADA proses!" || echo "   ✓ Bersih"
+
+echo "2. Service systemd Lawu/llama (harus kosong):"
+systemctl list-units --type=service --all | grep -iE 'lawu|llama' && echo "   ✗ MASIH ADA service!" || echo "   ✓ Bersih"
+systemctl list-unit-files | grep -iE 'lawu|llama' && echo "   ✗ MASIH ADA unit file!" || echo "   ✓ Bersih"
+
+echo "3. User lawu (harus tidak ada):"
+id lawu 2>/dev/null && echo "   ✗ MASIH ADA user!" || echo "   ✓ Bersih"
+
+echo "4. Direktori Lawu (harus tidak ada):"
+ls /opt/lawu ~/llama.cpp ~/.cargo/bin/lawu-server 2>/dev/null && echo "   ✗ MASIH ADA file!" || echo "   ✓ Bersih"
+
+echo "5. Cron Lawu (harus kosong):"
+crontab -l 2>/dev/null | grep -iE 'lawu|llama' && echo "   ✗ MASIH ADA cron!" || echo "   ✓ Bersih"
+sudo crontab -l -u lawu 2>/dev/null && echo "   ✗ MASIH ADA cron lawu!" || echo "   ✓ Bersih"
+ls /etc/cron.d/ | grep -i lawu && echo "   ✗ MASIH ADA cron.d!" || echo "   ✓ Bersih"
+
+echo "6. sysctl Lawu (harus tidak ada):"
+ls /etc/sysctl.d/ | grep -i lawu && echo "   ✗ MASIH ADA sysctl!" || echo "   ✓ Bersih"
+
+echo "7. Nginx Lawu (harus tidak ada):"
+ls /etc/nginx/sites-enabled/lawu 2>/dev/null && echo "   ✗ MASIH ADA nginx config!" || echo "   ✓ Bersih"
+
+echo "8. Log Lawu (harus tidak ada):"
+ls /var/log/lawu 2>/dev/null && echo "   ✗ MASIH ADA log!" || echo "   ✓ Bersih"
+
+echo ""
+echo "=========================================="
+echo "✅ SERVER BERSIH — siap instalasi Lawu-2.5-Fine."
+echo "   Lanjut ke Langkah 1: Ringkasan Arsitektur."
+echo "=========================================="`
 
 const ARCH = `┌─────────────────────────── SERVER DEBIAN 13 — i5-10400 ───────────────────────────┐
 │                                                                                   │
@@ -363,6 +568,38 @@ export function GuideView() {
       </div>
 
       <div className="mt-6 space-y-8">
+        <Section
+          id="cleanup"
+          step="0"
+          title="Bersihkan Server Sebelum Instalasi"
+          desc="Jika server pernah dipakai project Lawu versi lama (atau eksperimen sebelumnya), jalankan langkah ini DULU agar instalasi baru tidak bentrok dengan service/port/cron lama. Skip jika server masih fresh."
+        >
+          <Alert variant="destructive">
+            <ShieldAlert />
+            <AlertTitle>Peringatan Data-Loss — Baca sebelum eksekusi!</AlertTitle>
+            <AlertDescription>
+              <p>
+                Langkah <strong>0.D</strong> &amp; <strong>0.E</strong>{' '}
+                menghapus permanen direktori, binary, model GGUF, dan user{' '}
+                <code className="rounded bg-destructive/10 px-1 py-0.5 text-xs">lawu</code>.
+                Pastikan Anda menjalankan{' '}
+                <strong>0.C (backup)</strong> terlebih dahulu jika ada data ebook/index/model
+                yang ingin disimpan. Semua perintah pakai{' '}
+                <code className="rounded bg-destructive/10 px-1 py-0.5 text-xs">|| true</code>{' '}
+                agar tidak gagal jika file sudah tidak ada — aman dijalankan ulang.
+              </p>
+            </AlertDescription>
+          </Alert>
+
+          <CodeBlock code={CLEANUP_AUDIT} filename="0.A-audit-server.sh" />
+          <CodeBlock code={CLEANUP_STOP} filename="0.B-stop-services.sh" />
+          <CodeBlock code={CLEANUP_BACKUP} filename="0.C-backup-old.sh" />
+          <CodeBlock code={CLEANUP_REMOVE} filename="0.D-remove-files.sh" />
+          <CodeBlock code={CLEANUP_USER} filename="0.E-remove-user.sh" />
+          <CodeBlock code={CLEANUP_CONFIG} filename="0.F-clean-configs.sh" />
+          <CodeBlock code={CLEANUP_VERIFY} filename="0.G-verify-clean.sh" />
+        </Section>
+
         <Section id="arsitektur" step="1" title="Ringkasan Arsitektur" desc="Alur data end-to-end dari HDD koleksi ebook hingga dashboard.">
           <CodeBlock code={ARCH} filename="arsitektur.txt" />
         </Section>

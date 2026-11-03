@@ -1164,34 +1164,42 @@ ls -lh ~/models/lawu-2.5-fine-f16.gguf
 # 5) Cek metadata GGUF
 ~/src/llama.cpp/build/bin/llama-gguf-dump ~/models/lawu-2.5-fine-f16.gguf | head -20`
 
-const GGUF_QUANTIZE = `# 12.B — Kuantisasi GGUF F16 → Q4_K_M (hemat RAM untuk CPU inference)
+const GGUF_QUANTIZE = `# 12.B — Kuantisasi GGUF F16 → Q3_K_M (RAM 8GB tuning untuk 7B model)
+# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 12.A, TANPA sudo) <<<
+# RAM 8GB: pakai Q3_K_M (3.6GB) — Q4_K_M (4.4GB) terlalu mepet
 
-# Sebagai user lawu
-sudo su - lawu
 cd ~/src/llama.cpp
 
-# 1) Kuantisasi ke Q4_K_M (4-bit, K-quant medium)
-#    Trade-off optimal: ukuran ~4.4GB, kualitas mendekati F16, throughput tinggi
+# 1) Kuantisasi ke Q3_K_M (3-bit, K-quant medium) — RAM 8GB optimal
+#    Trade-off: ukuran ~3.6GB, kualitas sedikit turun dari Q4_K_M, throughput tinggi
+#    RAM 8GB budget: 3.6GB model + 0.5GB KV + 2.5GB OS + 1.4GB Axum/Tantivy = ~8GB (safe)
 ./build/bin/llama-quantize \\
   ~/models/lawu-2.5-fine-f16.gguf \\
-  ~/models/lawu-2.5-fine-q4_k_m.gguf Q4_K_M
+  ~/models/lawu-2.5-fine-q3_k_m.gguf Q3_K_M
 
 # 2) Verifikasi hasil kuantisasi
-ls -lh ~/models/lawu-2.5-fine-q4_k_m.gguf
-# Estimasi: 7B Q4_K_M ≈ 4.4 GB
+ls -lh ~/models/lawu-2.5-fine-q3_k_m.gguf
+# Estimasi: 7B Q3_K_M ≈ 3.6 GB
 
-# 3) (OPSIONAL) Kuantisasi alternatif untuk testing
-./build/bin/llama-quantize \\
-  ~/models/lawu-2.5-fine-f16.gguf \\
-  ~/models/lawu-2.5-fine-q5_k_m.gguf Q5_K_M
-# Q5_K_M ≈ 5.2 GB — kualitas lebih baik, throughput sedikit lebih lambat
+# 3) (OPSIONAL) Jika RAM upgrade ke 16GB nanti, re-quantize ke Q4_K_M (kualitas lebih baik)
+#    ATAU jika mau test Q4_K_M sekarang (RAM mepet, bisa OOM saat inference):
+#    ./build/bin/llama-quantize \\
+#      ~/models/lawu-2.5-fine-f16.gguf \\
+#      ~/models/lawu-2.5-fine-q4_k_m.gguf Q4_K_M
+#    Q4_K_M ≈ 4.4 GB — throughput ~7-11 tok/s, BISA OOM kalau prompt panjang
 
-# 4) Hapus GGUF F16 setelah quantize sukses (hemat HDD)
-#    SIMPAN F16 jika Anda berencana re-quantize ke format lain nanti
+# 4) Update nama file model di Langkah 13 (LLAMA_SERVE) & Langkah 14 (SYSTEMD_LLAMA)
+#    Ganti 'lawu-2.5-fine-q4_k_m.gguf' → 'lawu-2.5-fine-q3_k_m.gguf'
+#    (Panduan web sudah otomatis pakai q3_k_m, tapi systemd service file perlu update manual)
+
+# 5) Hapus GGUF F16 setelah quantize sukses (hemat HDD 500GB)
+#    SIMPAN F16 jika Anda berencana re-quantize ke Q4_K_M/Q5_K_M nanti (saat RAM upgrade)
 rm -f ~/models/lawu-2.5-fine-f16.gguf
 
-# 5) Verifikasi akhir model
-~/src/llama.cpp/build/bin/llama-gguf-dump ~/models/lawu-2.5-fine-q4_k_m.gguf | head -30`
+# 6) Verifikasi akhir model — cek metadata GGUF
+~/src/llama.cpp/build/bin/llama-gguf-dump ~/models/lawu-2.5-fine-q3_k_m.gguf | head -30
+# Harus cetak: general.architecture = qwen2, general.file_type = Q3_K_M,
+#              tokenizer.ggml.model = qwen2, dll.`
 
 // ======================================================================
 // LANGKAH 13 — SERVE llama.cpp
@@ -1206,7 +1214,7 @@ cd ~/src/llama.cpp
 
 # 1) Tes serve manual dulu (sebelum systemd di Langkah 14)
 ./build/bin/llama-server \\
-  -m ~/models/lawu-2.5-fine-q4_k_m.gguf \\
+  -m ~/models/lawu-2.5-fine-q3_k_m.gguf \\
   --alias lawu-2.5-fine \\
   -t 4 \\
   --mmap \\
@@ -1223,12 +1231,12 @@ cd ~/src/llama.cpp
 #   --host 127.0.0.1 = bind localhost SAJA (akses via Nginx reverse proxy)
 #   --port 8080  = port inference
 
-# RAM 8GB BUDGET (7B Q4_K_M):
-#   Model mmap load   : ~4.4GB
+# RAM 8GB BUDGET (7B Q3_K_M):
+#   Model mmap load   : ~3.6GB
 #   KV cache ctx 2048  : ~0.5GB
 #   Axum + Tantivy    : ~0.6GB
-#   OS + cache         : ~2.5GB
-#   TOTAL              : ~8.0GB (MEPET — jika OOM saat inference, pakai 3B model)
+#   OS + cache         : ~3.3GB
+#   TOTAL              : ~8.0GB (aman — ada ~1.3GB headroom untuk page cache)
 
 # 2) Di terminal lain, test endpoint OpenAI-compatible
 curl http://127.0.0.1:8080/v1/models | jq
@@ -1241,10 +1249,10 @@ curl http://127.0.0.1:8080/v1/chat/completions \\
     "max_tokens": 100
   }' | jq
 
-# 3) Estimasi throughput RAM 8GB (i5-10400, -t 4):
+# 3) Estimasi throughput RAM 8GB (i5-10400, -t 4, 7B model):
+#    7B Q3_K_M (3.6GB)  : ~10-15 tok/s (RECOMMENDED — aman, kualitas masih bagus)
 #    7B Q4_K_M (4.4GB)  : ~7-11 tok/s (mepet, bisa OOM kalau prompt panjang)
-#    3B Q4_K_M (2GB)    : ~25-35 tok/s (RECOMMENDED — headroom besar)
-#    7B Q3_K_M (3.6GB)  : ~10-15 tok/s (kompromi kualitas vs RAM)
+#    3B Q4_K_M (2GB)    : ~25-35 tok/s (headroom terbesar, throughput tertinggi)
 
 # 4) Jika OOM saat inference (kill by kernel), ALTERNATIF:
 #    a) Pakai model lebih kecil: Qwen2.5-Coder-3B Q4_K_M (~2GB)
@@ -1281,7 +1289,7 @@ After=mnt-data.mount
 User=lawu
 Group=lawu
 Type=simple
-ExecStart=/home/lawu/src/llama.cpp/build/bin/llama-server -m /home/lawu/models/lawu-2.5-fine-q4_k_m.gguf --alias lawu-2.5-fine -t 4 --mmap -c 2048 --host 127.0.0.1 --port 8080
+ExecStart=/home/lawu/src/llama.cpp/build/bin/llama-server -m /home/lawu/models/lawu-2.5-fine-q3_k_m.gguf --alias lawu-2.5-fine -t 4 --mmap -c 2048 --host 127.0.0.1 --port 8080
 Restart=always
 RestartSec=3
 LimitNOFILE=65535

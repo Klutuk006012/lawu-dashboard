@@ -164,7 +164,7 @@ export function MonitorView() {
         </p>
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <HardwareCard icon={Cpu} title={LAWU_HARDWARE.cpu} detail={LAWU_HARDWARE.cpuDetail} />
-          <HardwareCard icon={MemoryStick} title={LAWU_HARDWARE.ram} detail="Cukup untuk model 7B Q4_K_M (~4,5 GB)" />
+          <HardwareCard icon={MemoryStick} title={LAWU_HARDWARE.ram} detail="Cukup untuk model 7B Q3_K_M (~3,6 GB)" />
           <HardwareCard icon={HardDrive} title={LAWU_HARDWARE.ssd} detail="Debian 13 + binari Rust + llama.cpp" role={LAWU_HARDWARE.ssdRole} />
           <HardwareCard icon={HardDrive} title={LAWU_HARDWARE.hdd} detail="Koleksi ebook, processed_markdowns, tantivy_index" role={LAWU_HARDWARE.hddRole} />
         </div>

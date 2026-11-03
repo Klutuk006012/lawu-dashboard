@@ -170,7 +170,7 @@ function SidebarContent({
             <Cpu className="h-3 w-3" /> i5-10400
           </Badge>
           <Badge variant="secondary" className="gap-1 text-[10px] font-normal">
-            <MemoryStick className="h-3 w-3" /> 16 GB
+            <MemoryStick className="h-3 w-3" /> 8 GB
           </Badge>
           <Badge variant="secondary" className="gap-1 text-[10px] font-normal">
             <HardDrive className="h-3 w-3" /> SSD 128 · HDD 500
@@ -266,7 +266,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="hidden font-normal sm:inline-flex">
-                fine-tune codex + reasoning · GGUF Q4_K_M
+                fine-tune codex + reasoning · GGUF Q3_K_M
               </Badge>
               <Button
                 variant="ghost"

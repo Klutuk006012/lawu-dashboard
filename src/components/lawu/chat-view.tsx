@@ -12,7 +12,7 @@ import type { ChatMessage } from '@/lib/lawu'
 const SUGGESTIONS = [
   'Jelaskan arsitektur Tantivy untuk index 15.000 ebook di HDD 500GB',
   'Bagaimana tuning sysctl paling ampuh untuk server Debian 13 saya?',
-  'Bandingkan Q4_K_M vs Q5_K_M untuk i5-10400 murni CPU',
+  'Bandingkan Q3_K_M vs Q4_K_M untuk i5-10400 murni CPU',
   'Rancang watch_ebooks.sh dengan inotifywait + notifikasi Telegram',
 ]
 
@@ -139,7 +139,7 @@ export function ChatView({
               <Badge variant="secondary" className="mx-0.5 font-medium">
                 Mode Simulasi
               </Badge>
-              ; di server nyata nanti via llama.cpp GGUF (Q4_K_M) murni CPU di i5-10400.
+              ; di server nyata nanti via llama.cpp GGUF (Q3_K_M) murni CPU di i5-10400.
             </p>
             <div className="mt-6 grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
               {SUGGESTIONS.map((s) => (

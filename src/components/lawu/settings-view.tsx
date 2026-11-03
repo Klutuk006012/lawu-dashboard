@@ -170,7 +170,7 @@ export function SettingsView() {
           <div className="rounded-lg bg-secondary px-4 py-3">
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Memori</p>
             <p className="mt-0.5 text-sm font-semibold">{LAWU_HARDWARE.ram}</p>
-            <p className="text-xs text-muted-foreground">Model 7B Q4_K_M ≈ 4,5 GB</p>
+            <p className="text-xs text-muted-foreground">Model 7B Q3_K_M ≈ 3,6 GB</p>
           </div>
           <div className="rounded-lg bg-secondary px-4 py-3">
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Penyimpanan</p>

@@ -1260,11 +1260,11 @@ const LLAMA_SERVE = `# 13.A — Jalankan llama-server (OpenAI-compatible endpoin
 cd ~/src/llama.cpp
 
 # 1) Tes serve manual dulu (sebelum systemd di Langkah 14)
+#    NOTE: --mmap sudah TIDAK ada di llama.cpp b12069+ (mmap default ON, tidak perlu flag)
 ./build/bin/llama-server \\
   -m ~/models/lawu-2.5-fine-q3_k_m.gguf \\
   --alias lawu-2.5-fine \\
   -t 4 \\
-  --mmap \\
   -c 2048 \\
   --host 127.0.0.1 \\
   --port 8080
@@ -1273,10 +1273,10 @@ cd ~/src/llama.cpp
 #   -m           = path model GGUF
 #   --alias      = nama model di endpoint OpenAI-compatible
 #   -t 4         = 4 thread (sisakan 2 thread untuk OS + Axum + Tantivy)
-#   --mmap        = memory-map file model (WAJIB — hemat RAM, pakai page cache OS)
 #   -c 2048      = context window 2K token (hemat KV cache RAM ~512MB)
 #   --host 127.0.0.1 = bind localhost SAJA (akses via Nginx reverse proxy)
 #   --port 8080  = port inference
+#   (mmap otomatis ON — model load via memory-map, hemat RAM)
 
 # RAM 8GB BUDGET (7B Q3_K_M):
 #   Model mmap load   : ~3.6GB
@@ -1336,7 +1336,7 @@ After=mnt-data.mount
 User=lawu
 Group=lawu
 Type=simple
-ExecStart=/home/lawu/src/llama.cpp/build/bin/llama-server -m /home/lawu/models/lawu-2.5-fine-q3_k_m.gguf --alias lawu-2.5-fine -t 4 --mmap -c 2048 --host 127.0.0.1 --port 8080
+ExecStart=/home/lawu/src/llama.cpp/build/bin/llama-server -m /home/lawu/models/lawu-2.5-fine-q3_k_m.gguf --alias lawu-2.5-fine -t 4 -c 2048 --host 127.0.0.1 --port 8080
 Restart=always
 RestartSec=3
 LimitNOFILE=65535
@@ -2010,7 +2010,7 @@ export function GuideView() {
           id="llama-serve"
           step="13"
           title="Serve llama.cpp (OpenAI-compatible)"
-          desc="Jalankan llama-server dengan -t 4, --mmap, -c 2048 (RAM 8GB tuning), bind 127.0.0.1:8080. Test endpoint /v1/models & /v1/chat/completions. Estimasi 7-11 tok/s (7B) atau 25-35 tok/s (3B) di i5-10400."
+          desc="Jalankan llama-server dengan -t 4, -c 2048 (RAM 8GB tuning, mmap default ON), bind 127.0.0.1:8080. Test endpoint /v1/models & /v1/chat/completions. Estimasi 10-15 tok/s (7B Q3_K_M) di i5-10400."
         >
           <CodeBlock code={LLAMA_SERVE} filename="13.A-serve-llama.sh" />
         </Section>

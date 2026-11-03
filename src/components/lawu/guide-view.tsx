@@ -1895,13 +1895,33 @@ export function GuideView() {
           <CodeBlock code={DISK_SSD_TUNING} filename="3.D-ssd-tuning.sh" />
         </Section>
 
-        {/* ─── LANGKAH 4: FIREWALL & SSH ─── */}
+        {/* ─── LANGKAH 4: FIREWALL & SSH (OPSIONAL — bisa di-skip saat setup awal) ─── */}
         <Section
           id="firewall"
           step="4"
-          title="Firewall (UFW) & SSH Hardening"
-          desc="Default deny incoming, hanya buka port 22 (SSH), 80 (HTTP), 443 (HTTPS). Disable SSH password auth, wajib SSH key. Install fail2ban untuk auto-ban IP brute-force."
+          title="Firewall (UFW) & SSH Hardening [OPSIONAL — bisa di-skip dulu]"
+          desc="⚡ DISARANKAN SKIP saat setup awal. Jalankan hardening SETELAH semua service (Langkah 5-17) jalan, supaya debugging lebih mudah (SSH password masih aktif). Default deny incoming, hanya buka port 22/80/443. Disable SSH password auth, wajib SSH key. Install fail2ban untuk auto-ban IP brute-force."
         >
+          <Alert>
+            <ShieldAlert />
+            <AlertTitle>⚡ Hardening belakangan aja — supaya tidak terkunci saat setup</AlertTitle>
+            <AlertDescription>
+              <p>
+                Saat setup awal (Langkah 5-17), JANGAN aktifkan hardening dulu. Pakai SSH password
+                biasa supaya gampang test endpoint dari laptop. Setelah semua service jalan + test
+                sukses (Langkah 19 Go-Live Checklist OK), baru aktifkan hardening ini.
+              </p>
+              <p className="mt-2">
+                <strong>Jika Anda sudah aktifkan hardening dan ingin disable:</strong>{' '}
+                <code className="rounded bg-muted px-1 py-0.5 text-xs">sudo ufw disable</code> +{' '}
+                <code className="rounded bg-muted px-1 py-0.5 text-xs">
+                  sudo systemctl stop fail2ban
+                </code>{' '}
+                + restore <code className="rounded bg-muted px-1 py-0.5 text-xs">sshd_config</code>{' '}
+                backup (PasswordAuthentication yes).
+              </p>
+            </AlertDescription>
+          </Alert>
           <Alert variant="destructive">
             <ShieldAlert />
             <AlertTitle>Jangan terkunci dari server!</AlertTitle>

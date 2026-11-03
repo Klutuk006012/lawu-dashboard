@@ -1,0 +1,51 @@
+[Unit]
+Description=Lawu-2.5-Fine Dashboard (Next.js 16)
+Documentation=https://github.com/lawu-project/lawu-2.5-fine
+After=network-online.target lawu-server.service lawu-llama.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=lawu-web
+Group=lawu-web
+
+# Next.js standalone server (port 3000)
+ExecStart=/usr/bin/bun /opt/lawu-dashboard/.next/standalone/server.js
+WorkingDirectory=/opt/lawu-dashboard
+
+# Environment
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOSTNAME=0.0.0.0
+Environment=LAWU_BACKEND_URL=http://127.0.0.1:3001
+Environment=DATABASE_URL=file:/opt/lawu-dashboard/prisma/dev.db
+Environment=NEXTAUTH_SECRET=lawu-2.5-fine-secret-change-in-production
+Environment=NEXTAUTH_URL=http://192.168.111.103
+
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/opt/lawu-dashboard
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictNamespaces=true
+RestrictRealtime=true
+MemoryDenyWriteExecute=false
+LockPersonality=true
+
+LimitNOFILE=65536
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=lawu-dashboard
+
+[Install]
+WantedBy=multi-user.target

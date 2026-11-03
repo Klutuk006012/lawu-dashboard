@@ -2,9 +2,6 @@
 
 import * as React from 'react'
 import {
-  Cpu,
-  HardDrive,
-  MemoryStick,
   MessageCircleWarning,
   Radio,
   RefreshCw,
@@ -19,38 +16,13 @@ import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { useToast } from '@/hooks/use-toast'
-import { LAWU_HARDWARE, type AlertItem, type SettingsMap, type StatsResponse } from '@/lib/lawu'
+import { type AlertItem, type SettingsMap, type StatsResponse } from '@/lib/lawu'
 
 const LEVEL_STYLE: Record<string, { label: string; className: string }> = {
   info: { label: 'Info', className: 'bg-[#e8f0fe] text-[#1a73e8] dark:bg-[#1d2a3f] dark:text-[#8ab4f8]' },
   success: { label: 'Sukses', className: 'bg-[#e6f4ea] text-[#137333] dark:bg-[#1b2f22] dark:text-[#81c995]' },
   warning: { label: 'Peringatan', className: 'bg-[#fef7e0] text-[#b06000] dark:bg-[#3a2e12] dark:text-[#fdd663]' },
   error: { label: 'Kritis', className: 'bg-[#fce8e6] text-[#c5221f] dark:bg-[#3c1f1d] dark:text-[#f28b82]' },
-}
-
-function HardwareCard({
-  icon: Icon,
-  title,
-  detail,
-  role,
-}: {
-  icon: React.ElementType
-  title: string
-  detail: string
-  role?: string
-}) {
-  return (
-    <div className="rounded-xl border bg-card p-4 shadow-sm">
-      <div className="flex items-center gap-2">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary text-primary">
-          <Icon className="h-4.5 w-4.5" />
-        </div>
-        <p className="text-sm font-semibold">{title}</p>
-      </div>
-      <p className="mt-2 text-xs text-muted-foreground">{detail}</p>
-      {role && <p className="mt-1 font-mono text-[11px] text-muted-foreground">{role}</p>}
-    </div>
-  )
 }
 
 function MetricRow({ label, value, max, unit }: { label: string; value: number; max: number; unit: string }) {
@@ -156,22 +128,8 @@ export function MonitorView() {
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-6">
-      {/* Spesifikasi hardware */}
-      <section aria-label="Spesifikasi server target">
-        <h2 className="text-lg font-semibold tracking-tight">Spesifikasi Server Target</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Angka resmi proyek — dipakai di seluruh panduan implementasi Rust.
-        </p>
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <HardwareCard icon={Cpu} title={LAWU_HARDWARE.cpu} detail={LAWU_HARDWARE.cpuDetail} />
-          <HardwareCard icon={MemoryStick} title={LAWU_HARDWARE.ram} detail="Cukup untuk model 7B Q3_K_M (~3,6 GB)" />
-          <HardwareCard icon={HardDrive} title={LAWU_HARDWARE.ssd} detail="Debian 13 + binari Rust + llama.cpp" role={LAWU_HARDWARE.ssdRole} />
-          <HardwareCard icon={HardDrive} title={LAWU_HARDWARE.hdd} detail="Koleksi ebook, processed_markdowns, tantivy_index" role={LAWU_HARDWARE.hddRole} />
-        </div>
-      </section>
-
       {/* Metrik live (simulasi) */}
-      <section aria-label="Metrik sistem" className="mt-8">
+      <section aria-label="Metrik sistem">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold tracking-tight">Metrik Sistem (Simulasi)</h2>
           <Badge variant="secondary" className="gap-1">
@@ -180,21 +138,21 @@ export function MonitorView() {
           </Badge>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Di produksi, angka ini disajikan endpoint <code className="rounded bg-secondary px-1 py-0.5 font-mono text-[11px]">GET /api/stats</code> milik server Rust Axum.
+          Pratinjau metrik yang akan disajikan saat layanan produksi aktif.
         </p>
         <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
           <div className="rounded-xl border bg-card p-4 shadow-sm">
             {m ? (
               <div className="space-y-4">
-                <MetricRow label={`CPU Load — ${LAWU_HARDWARE.cpu}`} value={m.cpuPct} max={100} unit="%" />
-                <MetricRow label="RAM Terpakai" value={m.ramUsedGb} max={m.ramTotalGb} unit="GB" />
+                <MetricRow label="Beban CPU" value={m.cpuPct} max={100} unit="%" />
+                <MetricRow label="Memori Terpakai" value={m.ramUsedGb} max={m.ramTotalGb} unit="GB" />
                 <div className="grid grid-cols-2 gap-4">
-                  <MetricRow label="SSD OS" value={m.ssdUsedGb} max={m.ssdTotalGb} unit="GB" />
-                  <MetricRow label="HDD DATA" value={m.hddUsedGb} max={m.hddTotalGb} unit="GB" />
+                  <MetricRow label="Penyimpanan OS" value={m.ssdUsedGb} max={m.ssdTotalGb} unit="GB" />
+                  <MetricRow label="Penyimpanan Data" value={m.hddUsedGb} max={m.hddTotalGb} unit="GB" />
                 </div>
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <div className="rounded-lg bg-secondary px-3 py-2">
-                    <p className="text-[11px] text-muted-foreground">Throughput llama.cpp</p>
+                    <p className="text-[11px] text-muted-foreground">Throughput Model</p>
                     <p className="text-sm font-semibold tabular-nums">{m.llamaTokPerSec} tok/dtk</p>
                   </div>
                   <div className="rounded-lg bg-secondary px-3 py-2">

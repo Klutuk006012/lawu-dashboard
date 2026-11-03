@@ -2,15 +2,13 @@
 
 import * as React from 'react'
 import { useTheme } from 'next-themes'
-import { KeyRound, Monitor, Palette, Save, ServerCog } from 'lucide-react'
+import { KeyRound, Palette, Save, ServerCog } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
-import { Separator } from '@/components/ui/separator'
 import { useToast } from '@/hooks/use-toast'
-import { LAWU_HARDWARE } from '@/lib/lawu'
 
 export function SettingsView() {
   const { toast } = useToast()
@@ -49,10 +47,10 @@ export function SettingsView() {
       })
       if (!res.ok) throw new Error()
       toast({
-        title: 'Pengaturan LLM tersimpan',
+        title: 'Pengaturan tersimpan',
         description: connected
-          ? 'Konsol chat akan mencoba endpoint llama.cpp Anda.'
-          : 'Konsol chat tetap berjalan pada mode simulasi (SDK).',
+          ? 'Konsol chat akan mencoba endpoint model Anda.'
+          : 'Konsol chat tetap berjalan pada mode simulasi.',
       })
       setApiKey('')
     } catch {
@@ -64,12 +62,12 @@ export function SettingsView() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6">
-      {/* Endpoint LLM */}
+      {/* Endpoint Model */}
       <section aria-label="Endpoint model" className="rounded-xl border bg-card p-5 shadow-sm">
         <div className="flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-base font-semibold">
             <ServerCog className="h-4.5 w-4.5 text-primary" />
-            Endpoint Model — Lawu-2.5-Fine
+            Endpoint Model
           </h2>
           <Badge
             className={
@@ -78,13 +76,13 @@ export function SettingsView() {
                 : 'bg-[#fef7e0] text-[#b06000] dark:bg-[#3a2e12] dark:text-[#fdd663]'
             }
           >
-            {connected ? 'llama.cpp (terhubung)' : 'Simulasi (SDK)'}
+            {connected ? 'Terhubung' : 'Simulasi'}
           </Badge>
         </div>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Isi base URL server llama.cpp Anda (endpoint OpenAI-compatible{' '}
-          <code className="rounded bg-secondary px-1 py-0.5 font-mono text-[11px]">/v1/chat/completions</code>) bila sudah
-          jalan di i5-10400. Kosongkan untuk tetap memakai mode simulasi.
+          Isi alamat endpoint model Anda (format{' '}
+          <code className="rounded bg-secondary px-1 py-0.5 font-mono text-[11px]">/v1/chat/completions</code>)
+          bila sudah tersedia. Kosongkan untuk tetap memakai mode simulasi.
         </p>
 
         <div className="mt-4 space-y-3">
@@ -96,7 +94,7 @@ export function SettingsView() {
               id="llm-url"
               value={baseUrl}
               onChange={(e) => setBaseUrl(e.target.value)}
-              placeholder="http://<IP-SERVER-i5-10400>:8080"
+              placeholder="http://alamat-endpoint-model-anda:8080"
               className="mt-1 h-10"
             />
           </div>
@@ -144,7 +142,7 @@ export function SettingsView() {
           <div>
             <p className="text-sm font-medium">Mode Gelap</p>
             <p className="text-xs text-muted-foreground">
-              Light: kertas #F8F7F5 + aksen #1A73E8 · Dark: #121212 + aksen #8AB4F8
+              Beralih antara tema terang (kertas bersih) dan gelap (nyaman di mata).
             </p>
           </div>
           <Switch
@@ -152,46 +150,6 @@ export function SettingsView() {
             onCheckedChange={(v) => setTheme(v ? 'dark' : 'light')}
             aria-label="Aktifkan mode gelap"
           />
-        </div>
-      </section>
-
-      {/* Info sistem */}
-      <section aria-label="Info sistem" className="mt-5 rounded-xl border bg-card p-5 shadow-sm">
-        <h2 className="flex items-center gap-2 text-base font-semibold">
-          <Monitor className="h-4.5 w-4.5 text-primary" />
-          Info Sistem
-        </h2>
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="rounded-lg bg-secondary px-4 py-3">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">CPU</p>
-            <p className="mt-0.5 text-sm font-semibold">{LAWU_HARDWARE.cpu}</p>
-            <p className="text-xs text-muted-foreground">{LAWU_HARDWARE.cpuDetail}</p>
-          </div>
-          <div className="rounded-lg bg-secondary px-4 py-3">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Memori</p>
-            <p className="mt-0.5 text-sm font-semibold">{LAWU_HARDWARE.ram}</p>
-            <p className="text-xs text-muted-foreground">Model 7B Q3_K_M ≈ 3,6 GB</p>
-          </div>
-          <div className="rounded-lg bg-secondary px-4 py-3">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Penyimpanan</p>
-            <p className="mt-0.5 text-sm font-semibold">{LAWU_HARDWARE.ssd}</p>
-            <p className="text-xs text-muted-foreground">{LAWU_HARDWARE.ssdRole}</p>
-          </div>
-          <div className="rounded-lg bg-secondary px-4 py-3">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Data</p>
-            <p className="mt-0.5 text-sm font-semibold">{LAWU_HARDWARE.hdd}</p>
-            <p className="text-xs text-muted-foreground">{LAWU_HARDWARE.hddRole}</p>
-          </div>
-        </div>
-        <Separator className="my-4" />
-        <div className="flex flex-wrap gap-2">
-          {['Next.js 16 · App Router', 'Tailwind CSS 4', 'shadcn/ui', 'Prisma + SQLite', 'z-ai SDK (simulasi LLM)', 'Target prod: Rust Axum + Tantivy'].map(
-            (s) => (
-              <Badge key={s} variant="secondary" className="font-normal">
-                {s}
-              </Badge>
-            )
-          )}
         </div>
       </section>
     </div>

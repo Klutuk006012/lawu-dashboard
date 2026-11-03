@@ -10,10 +10,10 @@ import { cn } from '@/lib/utils'
 import type { ChatMessage } from '@/lib/lawu'
 
 const SUGGESTIONS = [
-  'Jelaskan arsitektur Tantivy untuk index 15.000 ebook di HDD 500GB',
-  'Bagaimana tuning sysctl paling ampuh untuk server Debian 13 saya?',
-  'Bandingkan Q3_K_M vs Q4_K_M untuk i5-10400 murni CPU',
-  'Rancang watch_ebooks.sh dengan inotifywait + notifikasi Telegram',
+  'Jelaskan cara kerja pencarian ebook ini secara menyeluruh',
+  'Apa saja fitur utama dashboard Lawu-2.5-Fine?',
+  'Bantu saya memahami modul monitoring & alert',
+  'Ringkas langkah-langkah menyiapkan server produksi',
 ]
 
 function TypingDots() {
@@ -43,7 +43,6 @@ export function ChatView({
   const [input, setInput] = React.useState('')
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
-  const [backend, setBackend] = React.useState<'simulasi' | 'llamacpp'>('simulasi')
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const textareaRef = React.useRef<HTMLTextAreaElement>(null)
 
@@ -99,7 +98,6 @@ export function ChatView({
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Gagal mengirim pesan')
 
-      setBackend(data.backend ?? 'simulasi')
       setMessages((prev) => [
         ...prev.filter((m) => m.id !== optimistic.id),
         data.userMessage,
@@ -135,11 +133,12 @@ export function ChatView({
             </div>
             <h2 className="text-2xl font-semibold tracking-tight">Lawu-2.5-Fine</h2>
             <p className="mt-2 max-w-md text-sm text-muted-foreground">
-              Custom fine-tune (codex + reasoning) — gaya mirip GLM. Saat ini berjalan dalam{' '}
+              Asisten cerdas untuk mesin pencari ebook Lawu. Tanya apa saja seputar koleksi,
+              fitur, atau panduan implementasi. Saat ini berjalan dalam{' '}
               <Badge variant="secondary" className="mx-0.5 font-medium">
                 Mode Simulasi
               </Badge>
-              ; di server nyata nanti via llama.cpp GGUF (Q3_K_M) murni CPU di i5-10400.
+              .
             </p>
             <div className="mt-6 grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
               {SUGGESTIONS.map((s) => (
@@ -230,8 +229,7 @@ export function ChatView({
           </Button>
         </div>
         <p className="mt-2 text-center text-[11px] text-muted-foreground">
-          Enter untuk kirim · Shift+Enter baris baru · backend:{' '}
-          <span className="font-medium">{backend === 'llamacpp' ? 'llama.cpp (terhubung)' : 'simulasi (SDK)'}</span>
+          Enter untuk kirim · Shift+Enter baris baru
         </p>
       </div>
     </div>

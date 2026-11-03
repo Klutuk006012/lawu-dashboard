@@ -15,10 +15,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lawu-2.5-Fine — Dashboard Search Engine Ebook",
+  title: "Lawu-2.5-Fine — Dashboard Mesin Pencari Ebook",
   description:
-    "Web dashboard proyek Lawu-2.5-Fine: konsol chat model fine-tune, pencarian ebook (BM25/Tantivy), monitoring server Debian 13, dan panduan implementasi Rust.",
-  keywords: ["Lawu", "Tantivy", "Axum", "Rust", "llama.cpp", "GGUF", "ebook search", "Debian 13"],
+    "Dashboard Lawu-2.5-Fine: konsol chat cerdas, pencarian ebook, monitoring layanan, dan panduan implementasi server.",
+  keywords: ["Lawu", "ebook", "pencarian", "dashboard", "Lawu-2.5-Fine"],
   authors: [{ name: "Lawu Project" }],
 };
 

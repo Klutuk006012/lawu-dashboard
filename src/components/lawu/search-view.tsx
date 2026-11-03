@@ -92,7 +92,7 @@ export function SearchView() {
       {/* Ringkasan index */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <MiniStat label="Dokumen Terindeks" value={String(stats?.docs.total ?? '—')} />
-        <MiniStat label="Ukuran Index Tantivy" value={`${stats?.docs.indexSizeMb ?? '—'} MB`} />
+        <MiniStat label="Ukuran Indeks" value={`${stats?.docs.indexSizeMb ?? '—'} MB`} />
         <MiniStat label="Ukuran Sumber" value={`${stats?.docs.sourceSizeMb ?? '—'} MB`} />
         <MiniStat label="Terakhir Diindeks" value={lastIndexed} />
       </div>
@@ -153,7 +153,7 @@ export function SearchView() {
       </form>
 
       <p className="mt-3 text-xs text-muted-foreground">
-        {data ? `${data.total} dokumen cocok — diurutkan per kategori lalu judul (skema multi-field Tantivy: title, body, path, file_type, category)` : 'Memuat…'}
+        {data ? `${data.total} dokumen cocok — diurutkan per kategori lalu judul.` : 'Memuat…'}
       </p>
 
       {/* Hasil */}

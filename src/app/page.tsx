@@ -5,12 +5,8 @@ import { useTheme } from 'next-themes'
 import {
   BookMarked,
   BookOpenText,
-  Bot,
-  Cpu,
-  HardDrive,
-  MemoryStick,
-  MessageSquarePlus,
   Menu,
+  MessageSquarePlus,
   Moon,
   Server,
   Settings2,
@@ -18,11 +14,10 @@ import {
   Trash2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
-import { LAWU_HARDWARE, type ConversationSummary, type ViewKey } from '@/lib/lawu'
+import type { ConversationSummary, ViewKey } from '@/lib/lawu'
 import { ChatView } from '@/components/lawu/chat-view'
 import { SearchView } from '@/components/lawu/search-view'
 import { MonitorView } from '@/components/lawu/monitor-view'
@@ -32,28 +27,46 @@ import { SettingsView } from '@/components/lawu/settings-view'
 const NAV: { key: ViewKey; label: string; icon: React.ElementType }[] = [
   { key: 'chat', label: 'Konsol Chat', icon: BookOpenText },
   { key: 'search', label: 'Pencarian Ebook', icon: BookMarked },
-  { key: 'monitor', label: 'Monitoring & Alert', icon: Cpu },
-  { key: 'guide', label: 'Panduan Server Rust', icon: Server },
+  { key: 'monitor', label: 'Monitoring & Alert', icon: BookOpenText },
+  { key: 'guide', label: 'Panduan Implementasi', icon: Server },
   { key: 'settings', label: 'Pengaturan', icon: Settings2 },
 ]
 
 const VIEW_TITLE: Record<ViewKey, string> = {
-  chat: 'Konsol Chat — Lawu-2.5-Fine',
+  chat: 'Konsol Chat',
   search: 'Pencarian Ebook',
   monitor: 'Monitoring & Alert',
-  guide: 'Panduan Server Rust',
+  guide: 'Panduan Implementasi Server',
   settings: 'Pengaturan',
+}
+
+// Logo Gunung Lawu — tiga puncak (Hargo Dalem, Hargo Dumilah, Hargo Dimulyo)
+function MountainMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" fill="none" className={className} aria-hidden>
+      <path
+        d="M3 26 L11 12 L16 19 L21 8 L29 26 Z"
+        fill="currentColor"
+        opacity="0.95"
+      />
+      <path
+        d="M11 12 L13.5 15.5 L10.5 16.2 Z M21 8 L23.5 12.5 L18.5 13 Z"
+        fill="var(--background)"
+        opacity="0.9"
+      />
+    </svg>
+  )
 }
 
 function Logo() {
   return (
     <div className="flex items-center gap-2.5">
       <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-        <Bot className="h-5 w-5" />
+        <MountainMark className="h-5 w-5" />
       </div>
       <div className="leading-tight">
         <p className="text-sm font-semibold tracking-tight">Lawu-2.5-Fine</p>
-        <p className="text-[10.5px] text-muted-foreground">Ebook Search Engine · Dashboard</p>
+        <p className="text-[10.5px] text-muted-foreground">Mesin Pencari Ebook · Dashboard</p>
       </div>
     </div>
   )
@@ -163,20 +176,6 @@ function SidebarContent({
           </ul>
         </ScrollArea>
       </div>
-
-      <div className="border-t px-4 py-3">
-        <div className="flex flex-wrap gap-1.5">
-          <Badge variant="secondary" className="gap-1 text-[10px] font-normal">
-            <Cpu className="h-3 w-3" /> i5-10400
-          </Badge>
-          <Badge variant="secondary" className="gap-1 text-[10px] font-normal">
-            <MemoryStick className="h-3 w-3" /> 8 GB
-          </Badge>
-          <Badge variant="secondary" className="gap-1 text-[10px] font-normal">
-            <HardDrive className="h-3 w-3" /> SSD 128 · HDD 500
-          </Badge>
-        </div>
-      </div>
     </div>
   )
 }
@@ -265,9 +264,6 @@ export default function Home() {
               </h1>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="hidden font-normal sm:inline-flex">
-                fine-tune codex + reasoning · GGUF Q3_K_M
-              </Badge>
               <Button
                 variant="ghost"
                 size="icon"
@@ -295,12 +291,13 @@ export default function Home() {
 
           {/* Footer sticky: mt-auto menjaga tetap di dasar; konten panjang mendorongnya turun */}
           <footer className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t px-4 py-2.5 text-[11px] text-muted-foreground">
-            <p>
-              Lawu-2.5-Fine · {LAWU_HARDWARE.cpu} · {LAWU_HARDWARE.ram} · Debian 13
+            <p className="flex items-center gap-1.5">
+              <MountainMark className="h-3 w-3 text-primary" />
+              Lawu-2.5-Fine · Mesin Pencari Ebook
             </p>
             <p className="flex items-center gap-1.5">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#34a853]" aria-hidden />
-              Index Tantivy: aktif · Telegram: simulasi · llama.cpp: menyusul
+              Layanan aktif
             </p>
           </footer>
         </div>

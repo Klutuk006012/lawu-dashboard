@@ -144,7 +144,7 @@ sudo rm -rf /opt/lawu
 # 2) Hapus binary lawu-server lama
 rm -f ~/.cargo/bin/lawu-server
 
-# 3) Hapus source tree llama.cpp lama (akan di-clone ulang di Langkah 11)
+# 3) Hapus source tree llama.cpp lama (akan di-clone ulang di Langkah 10)
 rm -rf ~/llama.cpp
 
 # 4) Hapus model GGUF Lawu lama (HATI-HATI — file besar)
@@ -179,11 +179,11 @@ sudo find / -path /proc -prune -o -path /sys -prune -o -path /dev -prune \\
 
 const CLEANUP_CONFIG = `# 0.F — Bersihkan sysctl, Nginx config, dan log Lawu lama
 
-# 1) Hapus sysctl custom Lawu lama (akan dibuat ulang bersih di Langkah 6)
+# 1) Hapus sysctl custom Lawu lama (akan dibuat ulang bersih di Langkah 5)
 sudo rm -f /etc/sysctl.d/99-lawu-fine.conf
 sudo sysctl --system 2>/dev/null || true
 
-# 2) Hapus Nginx config Lawu lama (akan dibuat ulang bersih di Langkah 17)
+# 2) Hapus Nginx config Lawu lama (akan dibuat ulang bersih di Langkah 16)
 sudo rm -f /etc/nginx/sites-enabled/lawu
 sudo rm -f /etc/nginx/sites-available/lawu
 sudo nginx -t 2>/dev/null && sudo systemctl reload nginx 2>/dev/null || true
@@ -337,7 +337,7 @@ sudo -u lawu sudo -n whoami 2>&1 | grep -q 'not in the sudoers' \\
 # Atau switch ke lawu: 'sudo su - lawu' lalu exit kembali ke admin
 
 # CATATAN: Semua perintah sudo di Langkah 0-6, 14-17 jalankan sebagai USER ADMIN.
-#          Langkah 7-13 (Rust build, llama.cpp build) jalankan sebagai USER LAWU
+#          Langkah 6-13 (Rust build, llama.cpp build) jalankan sebagai USER LAWU
 #          (sudo su - lawu, tanpa sudo prefix).`
 
 const USER_DIRS = `# 2.B — Buat struktur direktori Lawu & set ownership
@@ -439,7 +439,7 @@ echo "UUID=$UUID  /mnt/data  ext4  defaults,noatime,nodiratime,data=writeback  0
 
 #   noatime       = jangan update access time (hemat write SSD/HDD, cepat)
 #   data=writeback = mode journaling paling cepat (risiko minor korupsi jika power loss)
-#                    AMAN karena ada backup harian (Langkah 15)
+#                    AMAN karena ada backup harian (Langkah 14)
 #
 #   UNTUK PRODUKSI SENSITIF: ganti data=writeback → data=ordered (default, lebih aman)
 
@@ -466,16 +466,16 @@ echo 'ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="0", ATTR
   | sudo tee /etc/udev/rules.d/60-ssd-scheduler.rules
 sudo udevadm control --reload-rules
 
-# 3) (OPSIONAL) Kurangi swappiness khusus SSD (ditimpa Langkah 6 sysctl)
+# 3) (OPSIONAL) Kurangi swappiness khusus SSD (ditimpa Langkah 5 sysctl)
 # SSD 128GB cepat penuh jika swap aktif — swap harus di HDD atau disabled
 sudo swapoff --all 2>/dev/null || true
 sudo sed -i '/swap/d' /etc/fstab  # hapus entry swap lama`
 
 // ======================================================================
-// LANGKAH 4 — FIREWALL & SSH HARDENING
+// LANGKAH 18 — HARDENING SERVER (TERAKHIR SEBELUM GO-LIVE)
 // ======================================================================
 
-const FIREWALL_UFW = `# 4.A — Konfigurasi firewall UFW (default deny, hanya buka port yang perlu)
+const FIREWALL_UFW = `# 18.A — Konfigurasi firewall UFW (default deny, hanya buka port yang perlu)
 # Paten 4: Linux only — ufw = front-end iptables/nftables (Debian default)
 
 # 1) Reset UFW ke kondisi default (bersih)
@@ -488,7 +488,7 @@ sudo ufw default allow outgoing
 # 3) Izinkan SSH (port 22) — WAJIB sebelum enable, kalau tidak Anda terkunci!
 sudo ufw allow 22/tcp comment 'SSH admin'
 
-# 4) Izinkan HTTP (port 80) & HTTPS (port 443) untuk Nginx reverse proxy (Langkah 17)
+# 4) Izinkan HTTP (port 80) & HTTPS (port 443) untuk Nginx reverse proxy (Langkah 16)
 sudo ufw allow 80/tcp comment 'Nginx HTTP'
 sudo ufw allow 443/tcp comment 'Nginx HTTPS'
 
@@ -503,7 +503,7 @@ sudo ufw --force enable
 sudo ufw status verbose
 sudo ufw status numbered`
 
-const SSH_HARDENING = `# 4.B — SSH hardening (cegah brute-force & privilege escalation)
+const SSH_HARDENING = `# 18.B — SSH hardening (cegah brute-force & privilege escalation)
 
 # 1) Backup config SSH lama
 sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak.$(date +%Y%m%d)
@@ -534,7 +534,7 @@ sudo systemctl status sshd --no-pager
 #    Jika gagal login, Anda bisa kembalikan config backup dari sesi yang masih hidup:
 #    sudo cp /etc/ssh/sshd_config.bak.* /etc/ssh/sshd_config && sudo systemctl restart sshd`
 
-const SSH_KEY = `# 4.C — Generate SSH key pair (di mesin admin/laptop Anda, BUKAN di server)
+const SSH_KEY = `# 18.C — Generate SSH key pair (di mesin admin/laptop Anda, BUKAN di server)
 
 # 1) Di laptop admin Anda — generate ed25519 key (modern, aman, ringan)
 ssh-keygen -t ed25519 -a 100 -C "admin@lawu-server" -f ~/.ssh/lawu_admin
@@ -545,11 +545,11 @@ ssh-copy-id -i ~/.ssh/lawu_admin.pub lawu@<IP-SERVER>
 # 3) Test login dengan key (tanpa password)
 ssh -i ~/.ssh/lawu_admin lawu@<IP-SERVER>
 
-# 4) Setelah login dengan key berhasil, password login otomatis disabled (Langkah 4.B)
+# 4) Setelah login dengan key berhasil, password login otomatis disabled (Langkah 18.B)
 #    Verifikasi: SSH dengan password harus DITOLAK
 ssh lawu@<IP-SERVER>   # harus gagal: Permission denied (publickey)`
 
-const FAIL2BAN = `# 4.D — Install & konfigurasi fail2ban (auto-ban IP setelah 3x gagal SSH)
+const FAIL2BAN = `# 18.D — Install & konfigurasi fail2ban (auto-ban IP setelah 3x gagal SSH)
 
 # 1) fail2ban sudah diinstall di Langkah 1.B — konfigurasi sekarang
 sudo tee /etc/fail2ban/jail.d/lawu-sshd.local > /dev/null <<'F2B'
@@ -576,7 +576,7 @@ sudo fail2ban-client status sshd
 # Untuk unban: sudo fail2ban-client set sshd unbanip <IP>`
 
 // ======================================================================
-// LANGKAH 5 — RINGKASAN ARSITEKTUR
+// LANGKAH 4 — RINGKASAN ARSITEKTUR
 // ======================================================================
 
 const ARCH = `┌─────────────────────────── SERVER DEBIAN 13 — i5-10400 ───────────────────────────┐
@@ -596,7 +596,7 @@ const ARCH = `┌─────────────────────
 └───────────────────────────────────────────────────────────────────────────────────┘`
 
 // ======================================================================
-// LANGKAH 6 — KERNEL TUNING (sysctl)
+// LANGKAH 5 — KERNEL TUNING (sysctl)
 // ======================================================================
 
 const SYSCTL = `# 6.A — Tulis config sysctl Lawu ke file (heredoc — LANGSUNG JALANKAN)
@@ -656,7 +656,7 @@ LIMITS
 sudo systemctl daemon-reload`
 
 // ======================================================================
-// LANGKAH 7 — INSTALL RUST TOOLCHAIN
+// LANGKAH 6 — INSTALL RUST TOOLCHAIN
 // ======================================================================
 
 const RUST_INSTALL = `# 7.A — Install Rust via rustup (official installer, open source Apache-2.0/MIT)
@@ -696,7 +696,7 @@ echo 'export RUSTFLAGS="-C target-cpu=native"' >> ~/.bashrc
 source ~/.bashrc`
 
 const RUST_VERIFY = `# 7.B — Verifikasi Rust toolchain dengan build hello-world
-# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 7.A, TANPA sudo) <<<
+# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 6.A, TANPA sudo) <<<
 # JANGAN jalankan 'sudo su - lawu' di sini — Anda SUDAH sebagai lawu dari 7.A.
 # Jika Anda sudah exit dari lawu, login ulang: 'sudo su - lawu' dari user admin.
 
@@ -706,7 +706,7 @@ whoami    # harus cetak: lawu
 # 2) Source cargo env (wajib setiap shell baru — atau tambah ke ~/.bashrc)
 source ~/.cargo/env
 
-# Jika 'source ~/.cargo/env' gagal → Langkah 7.A belum dijalankan.
+# Jika 'source ~/.cargo/env' gagal → Langkah 6.A belum dijalankan.
 # KEMBALI ke 7.A: curl https://sh.rustup.rs | sh ...
 # Jika ~/.cargo/env tidak ada setelah 7.A → rustup install gagal,
 # cek log error di 7.A (mungkin butuh build-essential/gcc di Langkah 1.B)
@@ -735,12 +735,12 @@ echo 'export RUSTFLAGS="-C target-cpu=native"' >> ~/.bashrc
 cd / && rm -rf /tmp/hello_lawu`
 
 // ======================================================================
-// LANGKAH 8 — PROYEK CARGO lawu-server
+// LANGKAH 7 — PROYEK CARGO lawu-server
 // ======================================================================
 
 const CARGO_NEW = `# 8.A — Inisialisasi project Cargo lawu-server
-# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 7, TANPA sudo) <<<
-# JANGAN jalankan 'sudo su - lawu' di sini — Anda SUDAH sebagai lawu dari Langkah 7.
+# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 6, TANPA sudo) <<<
+# JANGAN jalankan 'sudo su - lawu' di sini — Anda SUDAH sebagai lawu dari Langkah 6.
 # Jika Anda sudah exit dari lawu, login ulang: 'sudo su - lawu' dari user admin.
 
 # 1) Verifikasi Anda sebagai lawu + cargo di PATH
@@ -808,15 +808,15 @@ const CARGO_BUILD = `# 8.B — Build lawu-server (release mode, optimasi native 
 source ~/.cargo/env
 cd ~/lawu-server
 
-# 1) Copy Cargo.toml dari Langkah 8.A ke file (paste via editor)
+# 1) Copy Cargo.toml dari Langkah 7.A ke file (paste via editor)
 nano Cargo.toml
 # (paste konten, Ctrl+O, Enter, Ctrl+X)
 
-# 2) Copy src/main.rs dari Langkah 10 ke file
+# 2) Copy src/main.rs dari Langkah 9 ke file
 nano src/main.rs
 # (paste konten, Ctrl+O, Enter, Ctrl+X)
 
-# 3) Copy src/schema.rs dari Langkah 9 ke file
+# 3) Copy src/schema.rs dari Langkah 8 ke file
 mkdir -p src
 nano src/schema.rs
 # (paste konten, Ctrl+O, Enter, Ctrl+X)
@@ -834,7 +834,7 @@ ldd ~/.cargo/bin/lawu-server
 # JANGAN ada libcuda / libnvrtc / libGPU`
 
 // ======================================================================
-// LANGKAH 9 — SKEMA TANTIVY
+// LANGKAH 8 — SKEMA TANTIVY
 // ======================================================================
 
 const TANTIVY = `// ~/lawu-server/src/schema.rs
@@ -880,7 +880,7 @@ pub fn build_schema() -> Schema {
 // writer.commit()?;  // posting list BM25 siap dicari`
 
 // ======================================================================
-// LANGKAH 10 — ENDPOINT API AXUM
+// LANGKAH 9 — ENDPOINT API AXUM
 // ======================================================================
 
 const AXUM_API = `// ~/lawu-server/src/main.rs
@@ -1051,13 +1051,13 @@ async fn telegram_test_handler() -> Json<serde_json::Value> {
 }`
 
 // ======================================================================
-// LANGKAH 11 — BUILD llama.cpp
+// LANGKAH 10 — BUILD llama.cpp
 // ======================================================================
 
 const LLAMA_CLONE = `# 11.A — Clone & build llama.cpp (open source MIT)
 # Paten 3: murni CPU. Paten 5: llama.cpp = MIT license.
 # llama.cpp TIDAK butuh GPU — pure CPU dengan optimasi AVX2 otomatis di i5-10400.
-# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 10, TANPA sudo) <<<
+# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 9, TANPA sudo) <<<
 
 # 1) Verifikasi sebagai lawu + di home directory
 whoami    # harus: lawu
@@ -1085,7 +1085,7 @@ head -3 LICENSE
 # Harus cetak: MIT License + copyright holder`
 
 const LLAMA_BUILD = `# 11.B — Build llama.cpp dengan static linking + optimasi CPU native (AVX2 i5-10400)
-# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 11.A, TANPA sudo) <<<
+# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 10.A, TANPA sudo) <<<
 # Static linking = binary mandiri, tidak butuh .so eksternal → mudah untuk systemd
 
 cd ~/src/llama.cpp
@@ -1138,11 +1138,11 @@ ldd build/bin/llama-server | grep -iE 'cuda|nvrtc|cudnn|libgpu' \\
 # Jika masih OOM (jarang), turunkan -j 3 → -j 2`
 
 // ======================================================================
-// LANGKAH 12 — KONVERSI & KUANTISASI GGUF
+// LANGKAH 11 — KONVERSI & KUANTISASI GGUF
 // ======================================================================
 
 const GGUF_CONVERT = `# 12.A — Dapatkan model GGUF (PILIH SALAH SATU OPDI)
-# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 11, TANPA sudo) <<<
+# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 10, TANPA sudo) <<<
 #
 # PENTING: ~/models/ adalah SYMLINK ke /mnt/data/models/ (HDD).
 # Semua file model fisik disimpan di HDD (3.6GB+), bukan SSD 128GB.
@@ -1173,7 +1173,7 @@ df -h /mnt/data   # HDD usage naik ~3.6GB
 # File: GGUF (binary). Test bisa dibaca llama-server:
 ~/src/llama.cpp/build/bin/llama-server --version   # pastikan binary OK
 
-# SKIP ke Langkah 13 (serve) — tidak perlu quantize (sudah Q3_K_M dari bartowski)
+# SKIP ke Langkah 12 (serve) — tidak perlu quantize (sudah Q3_K_M dari bartowski)
 
 # ════════════════════════════════════════════════════════════
 # OPSI 2 (LENGKAP): Convert HuggingFace → GGUF F16 → Q3_K_M sendiri
@@ -1181,38 +1181,38 @@ df -h /mnt/data   # HDD usage naik ~3.6GB
 # Pilih opsi ini jika Anda punya model fine-tune Lawu sendiri,
 # atau mau proses lengkap untuk dokumentasi.
 
-# 12.A.1 — Download HF model (14GB, butuh waktu lama)
+# 11.A.1 — Download HF model (14GB, butuh waktu lama)
 cd ~/models
 git lfs install   # pastikan git-lfs aktif
 git clone https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct \\
   ~/models/lawu-2.5-fine-hf
 # Estimasi: 14GB, 10-30 menit tergantung bandwidth
 
-# 12.A.2 — Buat venv Python (jika belum ada dari Langkah 1.C)
+# 11.A.2 — Buat venv Python (jika belum ada dari Langkah 1.C)
 python3 -m venv ~/venvs/lawu
 source ~/venvs/lawu/bin/activate
 
-# 12.A.3 — Install llama.cpp Python deps
+# 11.A.3 — Install llama.cpp Python deps
 cd ~/src/llama.cpp
 pip install -r requirements.txt
 
-# 12.A.4 — Convert HF → GGUF F16 (full precision, ukuran besar)
+# 11.A.4 — Convert HF → GGUF F16 (full precision, ukuran besar)
 python3 convert_hf_to_gguf.py ~/models/lawu-2.5-fine-hf \\
   --outfile ~/models/lawu-2.5-fine-f16.gguf \\
   --outtype f16
 deactivate
 
-# 12.A.5 — Verifikasi GGUF F16 (di HDD via symlink)
+# 11.A.5 — Verifikasi GGUF F16 (di HDD via symlink)
 ls -lh ~/models/lawu-2.5-fine-f16.gguf
 # Estimasi: 7B F16 ≈ 14 GB
 
-# 12.A.6 — Cek metadata GGUF (opsional, jika binary llama-gguf-dump ada)
+# 11.A.6 — Cek metadata GGUF (opsional, jika binary llama-gguf-dump ada)
 ~/src/llama.cpp/build/bin/llama-gguf-dump ~/models/lawu-2.5-fine-f16.gguf | head -20
 
-# Lanjut ke Langkah 12.B (quantize F16 → Q3_K_M)`
+# Lanjut ke Langkah 11.B (quantize F16 → Q3_K_M)`
 
 const GGUF_QUANTIZE = `# 12.B — Kuantisasi GGUF F16 → Q3_K_M (RAM 8GB tuning untuk 7B model)
-# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 12.A, TANPA sudo) <<<
+# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 11.A, TANPA sudo) <<<
 # RAM 8GB: pakai Q3_K_M (3.6GB) — Q4_K_M (4.4GB) terlalu mepet
 
 cd ~/src/llama.cpp
@@ -1235,7 +1235,7 @@ ls -lh ~/models/lawu-2.5-fine-q3_k_m.gguf
 #      ~/models/lawu-2.5-fine-q4_k_m.gguf Q4_K_M
 #    Q4_K_M ≈ 4.4 GB — throughput ~7-11 tok/s, BISA OOM kalau prompt panjang
 
-# 4) Update nama file model di Langkah 13 (LLAMA_SERVE) & Langkah 14 (SYSTEMD_LLAMA)
+# 4) Update nama file model di Langkah 12 (LLAMA_SERVE) & Langkah 13 (SYSTEMD_LLAMA)
 #    Ganti 'lawu-2.5-fine-q4_k_m.gguf' → 'lawu-2.5-fine-q3_k_m.gguf'
 #    (Panduan web sudah otomatis pakai q3_k_m, tapi systemd service file perlu update manual)
 
@@ -1249,17 +1249,17 @@ rm -f ~/models/lawu-2.5-fine-f16.gguf
 #              tokenizer.ggml.model = qwen2, dll.`
 
 // ======================================================================
-// LANGKAH 13 — SERVE llama.cpp
+// LANGKAH 12 — SERVE llama.cpp
 // ======================================================================
 
 const LLAMA_SERVE = `# 13.A — Jalankan llama-server (OpenAI-compatible endpoint)
-# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 12, TANPA sudo) <<<
+# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 11, TANPA sudo) <<<
 # RAM 8GB: pakai -t 4 + -c 2048 (bukan -t 6 + -c 4096 — itu untuk RAM 16GB)
 # Alternatif: pakai model 3B (Qwen2.5-Coder-3B) untuk headroom lebih besar
 
 cd ~/src/llama.cpp
 
-# 1) Tes serve manual dulu (sebelum systemd di Langkah 14)
+# 1) Tes serve manual dulu (sebelum systemd di Langkah 13)
 #    NOTE: --mmap sudah TIDAK ada di llama.cpp b12069+ (mmap default ON, tidak perlu flag)
 ./build/bin/llama-server \\
   -m ~/models/lawu-2.5-fine-q3_k_m.gguf \\
@@ -1307,10 +1307,10 @@ curl http://127.0.0.1:8080/v1/chat/completions \\
 #    c) Aktifkan swap ke HDD (BUKAN SSD): sudo mkswap /dev/sdb2 + swapon
 #    d) Kurangi thread: -t 4 → -t 3
 
-# 5) Stop manual serve (Ctrl+C), lanjut setup systemd di Langkah 14`
+# 5) Stop manual serve (Ctrl+C), lanjut setup systemd di Langkah 13`
 
 // ======================================================================
-// LANGKAH 14 — SYSTEMD UNITS
+// LANGKAH 13 — SYSTEMD UNITS
 // ======================================================================
 
 const SYSTEMD_USER = `# 14.A — Pastikan user lawu bisa jalankan service systemd
@@ -1423,7 +1423,7 @@ curl -X POST http://127.0.0.1:8081/api/search \\
   -d '{"query":"test","limit":5}' | jq`
 
 // ======================================================================
-// LANGKAH 15 — OTOMASI PEMANTAUAN
+// LANGKAH 14 — OTOMASI PEMANTAUAN
 // ======================================================================
 
 const WATCH_SCRIPT = `# /opt/lawu/scripts/watch_ebooks.sh — File Watcher & Notifikasi Real-time
@@ -1543,7 +1543,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart lawu-2.5-fine`
 
 // ======================================================================
-// LANGKAH 16 — LOAD TESTING k6
+// LANGKAH 15 — LOAD TESTING k6
 // ======================================================================
 
 const K6_INSTALL = `# 16.A — Install k6 (open source AGPL-3.0, aman)
@@ -1589,7 +1589,7 @@ export default function () {
 // Lihat report HTML: k6 run --out json=results.json ~/src/load_test.js && k6 report --format json results.json`
 
 // ======================================================================
-// LANGKAH 17 — NGINX REVERSE PROXY
+// LANGKAH 16 — NGINX REVERSE PROXY
 // ======================================================================
 
 const NGINX = `# 17 — Tulis config Nginx (heredoc — LANGSUNG JALANKAN)
@@ -1654,7 +1654,7 @@ sudo systemctl reload nginx
 sudo systemctl status nginx --no-pager`
 
 // ======================================================================
-// LANGKAH 18 — INTEGRASI DASHBOARD
+// LANGKAH 17 — INTEGRASI DASHBOARD
 // ======================================================================
 
 const INTEGRATE = `1. Buka tab "Pengaturan" di dashboard Lawu-2.5-Fine ini.
@@ -1791,10 +1791,10 @@ export function GuideView() {
           <Terminal className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
           <div>
             <strong className="text-foreground">Urutan eksekusi yang disarankan:</strong>{' '}
-            Langkah 0 (bersihkan) → 1 (prerequisites) → 2 (user &amp; dir) → 3 (disk) → 4
-            (firewall) → 5-6 (arsitektur &amp; sysctl) → 7 (Rust) → 8-10 (Axum API) → 11-13
-            (llama.cpp) → 14 (systemd) → 15 (otomasi) → 16 (load test) → 17 (Nginx) → 18
-            (integrasi) → 19 (go-live checklist).
+            Langkah 0 (bersihkan) → 1 (prerequisites) → 2 (user &amp; dir) → 3 (disk) → 4-9
+            (arsitektur, sysctl, Rust, Axum API) → 10-12 (llama.cpp build, model, serve) →
+            13 (systemd) → 14 (otomasi) → 15 (load test) → 16 (Nginx) → 17 (integrasi) →
+            <strong>18 (HARDENING — terakhir!)</strong> → 19 (go-live checklist).
           </div>
         </div>
         <div className="mt-2 flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-50 p-3 text-xs text-muted-foreground dark:bg-amber-950/30">
@@ -1803,10 +1803,10 @@ export function GuideView() {
             <strong className="text-foreground">⚠ User Context — siapa menjalankan apa?</strong>{' '}
             User <code className="rounded bg-muted px-1 py-0.5 text-[10px]">lawu</code> sengaja
             dibuat TANPA sudo (principle of least privilege). Semua perintah <code className="rounded bg-muted px-1 py-0.5 text-[10px]">sudo ...</code>{' '}
-            di Langkah <strong>0-6, 14-17</strong> wajib dijalankan sebagai{' '}
+            di Langkah <strong>0-3 &amp; 13-17</strong> wajib dijalankan sebagai{' '}
             <strong>user admin Anda</strong> (user yang dibuat saat install Debian, punya sudo).
             <br />
-            Baru di Langkah <strong>7-13</strong> (Rust, Cargo, llama.cpp build) Anda{' '}
+            Baru di Langkah <strong>6-12</strong> (Rust, Cargo, llama.cpp build) Anda{' '}
             <code className="rounded bg-muted px-1 py-0.5 text-[10px]">sudo su - lawu</code> dan
             menjalankan sebagai user <code className="rounded bg-muted px-1 py-0.5 text-[10px]">lawu</code>{' '}
             (tanpa sudo — build tidak butuh root).
@@ -1899,163 +1899,119 @@ export function GuideView() {
           <CodeBlock code={DISK_SSD_TUNING} filename="3.D-ssd-tuning.sh" />
         </Section>
 
-        {/* ─── LANGKAH 4: FIREWALL & SSH (OPSIONAL — bisa di-skip saat setup awal) ─── */}
-        <Section
-          id="firewall"
-          step="4"
-          title="Firewall (UFW) & SSH Hardening [OPSIONAL — bisa di-skip dulu]"
-          desc="⚡ DISARANKAN SKIP saat setup awal. Jalankan hardening SETELAH semua service (Langkah 5-17) jalan, supaya debugging lebih mudah (SSH password masih aktif). Default deny incoming, hanya buka port 22/80/443. Disable SSH password auth, wajib SSH key. Install fail2ban untuk auto-ban IP brute-force."
-        >
-          <Alert>
-            <ShieldAlert />
-            <AlertTitle>⚡ Hardening belakangan aja — supaya tidak terkunci saat setup</AlertTitle>
-            <AlertDescription>
-              <p>
-                Saat setup awal (Langkah 5-17), JANGAN aktifkan hardening dulu. Pakai SSH password
-                biasa supaya gampang test endpoint dari laptop. Setelah semua service jalan + test
-                sukses (Langkah 19 Go-Live Checklist OK), baru aktifkan hardening ini.
-              </p>
-              <p className="mt-2">
-                <strong>Jika Anda sudah aktifkan hardening dan ingin disable:</strong>{' '}
-                <code className="rounded bg-muted px-1 py-0.5 text-xs">sudo ufw disable</code> +{' '}
-                <code className="rounded bg-muted px-1 py-0.5 text-xs">
-                  sudo systemctl stop fail2ban
-                </code>{' '}
-                + restore <code className="rounded bg-muted px-1 py-0.5 text-xs">sshd_config</code>{' '}
-                backup (PasswordAuthentication yes).
-              </p>
-            </AlertDescription>
-          </Alert>
-          <Alert variant="destructive">
-            <ShieldAlert />
-            <AlertTitle>Jangan terkunci dari server!</AlertTitle>
-            <AlertDescription>
-              <p>
-                Sebelum enable UFW &amp; disable SSH password, PASTIKAN Anda sudah setup SSH key
-                (Langkah 4.C) DAN test login dengan key di terminal terpisah. Jika gagal, Anda bisa
-                kembalikan config dari sesi yang masih hidup.
-              </p>
-            </AlertDescription>
-          </Alert>
-          <CodeBlock code={FIREWALL_UFW} filename="4.A-ufw-firewall.sh" />
-          <CodeBlock code={SSH_HARDENING} filename="4.B-sshd-hardening.sh" />
-          <CodeBlock code={SSH_KEY} filename="4.C-ssh-key-setup.sh" />
-          <CodeBlock code={FAIL2BAN} filename="4.D-fail2ban-sshd.sh" />
-        </Section>
-
-        {/* ─── LANGKAH 5: ARSITEKTUR ─── */}
+        {/* ─── LANGKAH 4: ARSITEKTUR ─── */}
         <Section
           id="arsitektur"
-          step="5"
+          step="4"
           title="Ringkasan Arsitektur"
-          desc="Alur data end-to-end dari HDD koleksi ebook hingga dashboard web, termasuk firewall & binding localhost-only."
+          desc="Alur data end-to-end dari HDD koleksi ebook hingga dashboard web, termasuk binding localhost-only."
         >
           <CodeBlock code={ARCH} filename="arsitektur.txt" />
         </Section>
 
-        {/* ─── LANGKAH 6: SYSCTL ─── */}
+        {/* ─── LANGKAH 5: SYSCTL ─── */}
         <Section
           id="sysctl"
-          step="6"
+          step="5"
           title="Spesifikasi Infrastruktur & Kernel Tuning (sysctl)"
           desc="Parameter kernel di /etc/sysctl.d/99-lawu-fine.conf + limits.conf untuk file descriptor besar (Axum + Tantivy)."
         >
-          <CodeBlock code={SYSCTL} filename="6.A-apply-sysctl.sh" />
-          <CodeBlock code={LIMITS_CONF} filename="6.B-apply-limits.sh" />
+          <CodeBlock code={SYSCTL} filename="5.A-apply-sysctl.sh" />
+          <CodeBlock code={LIMITS_CONF} filename="5.B-apply-limits.sh" />
         </Section>
 
-        {/* ─── LANGKAH 7: RUST ─── */}
+        {/* ─── LANGKAH 6: RUST ─── */}
         <Section
           id="rust"
-          step="7"
+          step="6"
           title="Install Rust Toolchain"
           desc="Install Rust via rustup (stable + rustfmt + clippy), set RUSTFLAGS target-cpu=native untuk optimasi AVX2 di i5-10400. Verifikasi murni CPU — tidak ada dependency GPU."
         >
-          <CodeBlock code={RUST_INSTALL} filename="7.A-install-rustup.sh" />
-          <CodeBlock code={RUST_VERIFY} filename="7.B-verify-rust-cpu.sh" />
+          <CodeBlock code={RUST_INSTALL} filename="6.A-install-rustup.sh" />
+          <CodeBlock code={RUST_VERIFY} filename="6.B-verify-rust-cpu.sh" />
         </Section>
 
-        {/* ─── LANGKAH 8: CARGO ─── */}
+        {/* ─── LANGKAH 7: CARGO ─── */}
         <Section
           id="cargo"
-          step="8"
+          step="7"
           title="Proyek Cargo — lawu-server"
           desc="Inisialisasi project Cargo, paste Cargo.toml + main.rs + schema.rs, build release dengan optimasi native CPU, install binary ke ~/.cargo/bin/."
         >
-          <CodeBlock code={CARGO_NEW} filename="8.A-cargo-init.sh" />
+          <CodeBlock code={CARGO_NEW} filename="7.A-cargo-init.sh" />
           <CodeBlock code={CARGO_TOML} filename="~/lawu-server/Cargo.toml" />
-          <CodeBlock code={CARGO_BUILD} filename="8.B-build-release.sh" />
+          <CodeBlock code={CARGO_BUILD} filename="7.B-build-release.sh" />
         </Section>
 
-        {/* ─── LANGKAH 9: TANTIVY ─── */}
+        {/* ─── LANGKAH 8: TANTIVY ─── */}
         <Section
           id="tantivy"
-          step="9"
+          step="8"
           title="Skema Full-Text Tantivy"
-          desc="Skema multi-field (title, body, path, file_type, category, pages, size_bytes, indexed_at) dengan BM25 scoring, FAST field untuk sort numerik."
+          desc="Skema multi-field (title, body, path, file_type, category, pages, size_bytes) dengan BM25 scoring, FAST field untuk sort numerik."
         >
           <CodeBlock code={TANTIVY} filename="~/lawu-server/src/schema.rs" />
         </Section>
 
-        {/* ─── LANGKAH 10: AXUM API ─── */}
+        {/* ─── LANGKAH 9: AXUM API ─── */}
         <Section
           id="api"
-          step="10"
+          step="9"
           title="Endpoint API Backend (Axum)"
           desc="GET /api/stats · POST /api/search (QueryParser + TopDocs) · POST /api/telegram/test. Bind 127.0.0.1:8081 (akses via Nginx reverse proxy)."
         >
           <CodeBlock code={AXUM_API} filename="~/lawu-server/src/main.rs" />
         </Section>
 
-        {/* ─── LANGKAH 11: BUILD LLAMA.CPP ─── */}
+        {/* ─── LANGKAH 10: BUILD LLAMA.CPP ─── */}
         <Section
           id="llama-build"
-          step="11"
+          step="10"
           title="Build llama.cpp (Pure CPU)"
           desc="Clone repo llama.cpp (MIT license), build dengan GGML_NATIVE=ON + AVX2 + FMA + F16C untuk i5-10400. Verifikasi binary TIDAK ada dependency CUDA/GPU."
         >
-          <CodeBlock code={LLAMA_CLONE} filename="11.A-clone-llamacpp.sh" />
-          <CodeBlock code={LLAMA_BUILD} filename="11.B-build-cmake.sh" />
+          <CodeBlock code={LLAMA_CLONE} filename="10.A-clone-llamacpp.sh" />
+          <CodeBlock code={LLAMA_BUILD} filename="10.B-build-cmake.sh" />
         </Section>
 
-        {/* ─── LANGKAH 12: GGUF QUANTIZE ─── */}
+        {/* ─── LANGKAH 11: GGUF QUANTIZE ─── */}
         <Section
           id="gguf"
-          step="12"
-          title="Konversi & Kuantisasi Model GGUF"
-          desc="Konversi HuggingFace → GGUF F16, lalu kuantisasi ke Q4_K_M (4.4 GB untuk model 7B). Verifikasi metadata GGUF."
+          step="11"
+          title="Dapatkan Model GGUF (Q3_K_M untuk RAM 8GB)"
+          desc="Opsi 1 (recommended): wget pre-quantized Qwen2.5-Coder-7B Q3_K_M (3.55GB) langsung ke HDD. Opsi 2: convert HF → F16 → quantize sendiri."
         >
-          <CodeBlock code={GGUF_CONVERT} filename="12.A-convert-hf-to-gguf.sh" />
-          <CodeBlock code={GGUF_QUANTIZE} filename="12.B-quantize-q4_k_m.sh" />
+          <CodeBlock code={GGUF_CONVERT} filename="11.A-get-model-gguf.sh" />
+          <CodeBlock code={GGUF_QUANTIZE} filename="11.B-quantize-q3_k_m.sh" />
         </Section>
 
-        {/* ─── LANGKAH 13: SERVE LLAMA ─── */}
+        {/* ─── LANGKAH 12: SERVE LLAMA ─── */}
         <Section
           id="llama-serve"
-          step="13"
+          step="12"
           title="Serve llama.cpp (OpenAI-compatible)"
           desc="Jalankan llama-server dengan -t 4, -c 2048 (RAM 8GB tuning, mmap default ON), bind 127.0.0.1:8080. Test endpoint /v1/models & /v1/chat/completions. Estimasi 10-15 tok/s (7B Q3_K_M) di i5-10400."
         >
-          <CodeBlock code={LLAMA_SERVE} filename="13.A-serve-llama.sh" />
+          <CodeBlock code={LLAMA_SERVE} filename="12.A-serve-llama.sh" />
         </Section>
 
-        {/* ─── LANGKAH 14: SYSTEMD ─── */}
+        {/* ─── LANGKAH 13: SYSTEMD ─── */}
         <Section
           id="systemd"
-          step="14"
+          step="13"
           title="Unit systemd (Auto-restart & Boot)"
           desc="Dua service: llama-lawu (inference) & lawu-2.5-fine (API Axum). Hardening systemd (NoNewPrivileges, ProtectSystem, PrivateTmp). Auto-restart on crash."
         >
-          <CodeBlock code={SYSTEMD_USER} filename="14.A-verify-user.sh" />
+          <CodeBlock code={SYSTEMD_USER} filename="13.A-verify-user.sh" />
           <CodeBlock code={SYSTEMD_LLAMA} filename="/etc/systemd/system/llama-lawu.service" />
           <CodeBlock code={SYSTEMD_AXUM} filename="/etc/systemd/system/lawu-2.5-fine.service" />
-          <CodeBlock code={SYSTEMD_ENABLE} filename="14.B-enable-services.sh" />
+          <CodeBlock code={SYSTEMD_ENABLE} filename="13.B-enable-services.sh" />
         </Section>
 
-        {/* ─── LANGKAH 15: OTOMASI ─── */}
+        {/* ─── LANGKAH 14: OTOMASI ─── */}
         <Section
           id="otomasi"
-          step="15"
+          step="14"
           title="Otomasi Pemantauan & Operasional"
           desc="File watcher inotifywait, backup harian (retensi 7 hari), laporan error harian via Telegram. Cron jobs & environment file /etc/lawu/env."
         >
@@ -2066,35 +2022,76 @@ export function GuideView() {
           <CodeBlock code={CRONTAB} filename="crontab -e (user lawu)" />
         </Section>
 
-        {/* ─── LANGKAH 16: K6 LOAD TEST ─── */}
+        {/* ─── LANGKAH 15: K6 LOAD TEST ─── */}
         <Section
           id="k6"
-          step="16"
+          step="15"
           title="Pengujian Beban (Load Testing k6)"
           desc="Install k6 (AGPL-3.0, open source). Target: p95 latency /api/search < 300ms dengan 20 VUs selama 2 menit. Error rate < 1%."
         >
-          <CodeBlock code={K6_INSTALL} filename="16.A-install-k6.sh" />
+          <CodeBlock code={K6_INSTALL} filename="15.A-install-k6.sh" />
           <CodeBlock code={K6} filename="~/src/load_test.js" />
         </Section>
 
-        {/* ─── LANGKAH 17: NGINX ─── */}
+        {/* ─── LANGKAH 16: NGINX ─── */}
         <Section
           id="nginx"
-          step="17"
+          step="16"
           title="Reverse Proxy Nginx"
           desc="Satu port 80: dashboard/API Rust di root, inference llama.cpp di /v1/. Security headers, client_max_body_size 100MB untuk upload ebook, buffering off untuk streaming chat."
         >
-          <CodeBlock code={NGINX} filename="/etc/nginx/sites-available/lawu" />
+          <CodeBlock code={NGINX} filename="16-apply-nginx-config.sh" />
         </Section>
 
-        {/* ─── LANGKAH 18: INTEGRASI ─── */}
+        {/* ─── LANGKAH 17: INTEGRASI ─── */}
         <Section
           id="integrasi"
-          step="18"
+          step="17"
           title="Integrasi dengan Dashboard"
           desc="Hubungkan dashboard ini ke server nyata: setting endpoint LLM di tab Pengaturan, arahkan fetch ke Nginx :80, setup Telegram bot token."
         >
           <CodeBlock code={INTEGRATE} filename="integrasi-dashboard.txt" />
+        </Section>
+
+        {/* ─── LANGKAH 18: HARDENING (SETELAH SEMUA SERVICE JALAN!) ─── */}
+        <Section
+          id="hardening"
+          step="18"
+          title="⚡ Hardening Server (Jalankan SETELAH semua service jalan!)"
+          desc="⭐ POSISI TERAKHIR — get it running FIRST, lock it down LAST. UFW default deny (allow 22/80/443), SSH key-only, fail2ban. HANYA jalankan setelah: systemd active, HTTP 200, chat completion sukses, k6 lulus."
+        >
+          <Alert>
+            <ShieldAlert />
+            <AlertTitle>⚡ Kenapa hardening di langkah terakhir?</AlertTitle>
+            <AlertDescription>
+              <p>
+                Pelajaran dari incident: hardening (disable SSH password) di awal setup bisa membuat
+                Anda <strong>terkunci dari server sendiri</strong> saat debugging. SSH password aktif
+                = bisa SSH dari laptop kapan saja kalau ada error. Setelah semua service jalan + test
+                sukses, baru amankan.
+              </p>
+              <p className="mt-2">
+                <strong>Urutan hardening yang aman:</strong> (1) setup SSH key + test login dengan
+                key <em>harus sukses</em> → (2) baru disable password auth → (3) enable UFW → (4)
+                fail2ban terakhir.
+              </p>
+            </AlertDescription>
+          </Alert>
+          <Alert variant="destructive">
+            <ShieldAlert />
+            <AlertTitle>Jangan terkunci dari server!</AlertTitle>
+            <AlertDescription>
+              <p>
+                Sebelum disable SSH password, PASTIKAN Anda sudah setup SSH key (Langkah 18.C) DAN
+                test login dengan key di terminal terpisah. Jika gagal, kembalikan config dari sesi
+                yang masih hidup: <code className="rounded bg-muted px-1 py-0.5 text-xs">sudo cp /etc/ssh/sshd_config.bak.* /etc/ssh/sshd_config &amp;&amp; sudo systemctl restart sshd</code>
+              </p>
+            </AlertDescription>
+          </Alert>
+          <CodeBlock code={FIREWALL_UFW} filename="18.A-ufw-firewall.sh" />
+          <CodeBlock code={SSH_HARDENING} filename="18.B-sshd-hardening.sh" />
+          <CodeBlock code={SSH_KEY} filename="18.C-ssh-key-setup.sh" />
+          <CodeBlock code={FAIL2BAN} filename="18.D-fail2ban-sshd.sh" />
         </Section>
 
         {/* ─── LANGKAH 19: GO-LIVE CHECKLIST ─── */}

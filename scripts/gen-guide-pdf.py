@@ -106,29 +106,14 @@ SECTIONS = [
         ]
     },
     {
-        "id": "firewall", "step": "4", "title": "Firewall (UFW) & SSH Hardening",
-        "desc": "Default deny incoming, hanya buka port 22 (SSH), 80 (HTTP), 443 (HTTPS). Disable SSH password auth, wajib SSH key. Install fail2ban untuk auto-ban IP brute-force.",
-        "alert": {
-            "variant": "destructive",
-            "title": "Jangan terkunci dari server!",
-            "body": "Sebelum enable UFW &amp; disable SSH password, PASTIKAN Anda sudah setup SSH key (Langkah 4.C) DAN test login dengan key di terminal terpisah. Jika gagal, Anda bisa kembalikan config dari sesi yang masih hidup."
-        },
-        "blocks": [
-            ("4.A-ufw-firewall.sh", "FIREWALL_UFW"),
-            ("4.B-sshd-hardening.sh", "SSH_HARDENING"),
-            ("4.C-ssh-key-setup.sh", "SSH_KEY"),
-            ("4.D-fail2ban-sshd.sh", "FAIL2BAN"),
-        ]
-    },
-    {
-        "id": "arsitektur", "step": "5", "title": "Ringkasan Arsitektur",
+        "id": "arsitektur", "step": "4", "title": "Ringkasan Arsitektur",
         "desc": "Alur data end-to-end dari HDD koleksi ebook hingga dashboard web, termasuk firewall & binding localhost-only.",
         "blocks": [
             ("arsitektur.txt", "ARCH"),
         ]
     },
     {
-        "id": "sysctl", "step": "6", "title": "Spesifikasi Infrastruktur & Kernel Tuning (sysctl)",
+        "id": "sysctl", "step": "5", "title": "Spesifikasi Infrastruktur & Kernel Tuning (sysctl)",
         "desc": "Parameter kernel di /etc/sysctl.d/99-lawu-fine.conf + limits.conf untuk file descriptor besar (Axum + Tantivy).",
         "blocks": [
             ("6.A-apply-sysctl.sh", "SYSCTL"),
@@ -136,7 +121,7 @@ SECTIONS = [
         ]
     },
     {
-        "id": "rust", "step": "7", "title": "Install Rust Toolchain",
+        "id": "rust", "step": "6", "title": "Install Rust Toolchain",
         "desc": "Install Rust via rustup (stable + rustfmt + clippy), set RUSTFLAGS target-cpu=native untuk optimasi AVX2 di i5-10400. Verifikasi murni CPU — tidak ada dependency GPU.",
         "blocks": [
             ("7.A-install-rustup.sh", "RUST_INSTALL"),
@@ -144,38 +129,38 @@ SECTIONS = [
         ]
     },
     {
-        "id": "cargo", "step": "8", "title": "Proyek Cargo — lawu-server",
+        "id": "cargo", "step": "7", "title": "Proyek Cargo — lawu-server",
         "desc": "Inisialisasi project Cargo, paste Cargo.toml + main.rs + schema.rs, build release dengan optimasi native CPU, install binary ke ~/.cargo/bin/.",
         "blocks": [
-            ("8.A-cargo-init.sh", "CARGO_NEW"),
+            ("7.A-cargo-init.sh", "CARGO_NEW"),
             ("~/lawu-server/Cargo.toml", "CARGO_TOML"),
-            ("8.B-build-release.sh", "CARGO_BUILD"),
+            ("7.B-build-release.sh", "CARGO_BUILD"),
         ]
     },
     {
-        "id": "tantivy", "step": "9", "title": "Skema Full-Text Tantivy",
+        "id": "tantivy", "step": "8", "title": "Skema Full-Text Tantivy",
         "desc": "Skema multi-field (title, body, path, file_type, category, pages, size_bytes, indexed_at) dengan BM25 scoring, FAST field untuk sort numerik.",
         "blocks": [
             ("~/lawu-server/src/schema.rs", "TANTIVY"),
         ]
     },
     {
-        "id": "api", "step": "10", "title": "Endpoint API Backend (Axum)",
+        "id": "api", "step": "9", "title": "Endpoint API Backend (Axum)",
         "desc": "GET /api/stats · POST /api/search (QueryParser + TopDocs) · POST /api/telegram/test. Bind 127.0.0.1:8081 (akses via Nginx reverse proxy).",
         "blocks": [
             ("~/lawu-server/src/main.rs", "AXUM_API"),
         ]
     },
     {
-        "id": "llama-build", "step": "11", "title": "Build llama.cpp (Pure CPU)",
+        "id": "llama-build", "step": "10", "title": "Build llama.cpp (Pure CPU)",
         "desc": "Clone repo llama.cpp (MIT license), build dengan GGML_NATIVE=ON + AVX2 + FMA + F16C untuk i5-10400. Verifikasi binary TIDAK ada dependency CUDA/GPU.",
         "blocks": [
-            ("11.A-clone-llamacpp.sh", "LLAMA_CLONE"),
-            ("11.B-build-cmake.sh", "LLAMA_BUILD"),
+            ("10.A-clone-llamacpp.sh", "LLAMA_CLONE"),
+            ("10.B-build-cmake.sh", "LLAMA_BUILD"),
         ]
     },
     {
-        "id": "gguf", "step": "12", "title": "Konversi & Kuantisasi Model GGUF",
+        "id": "gguf", "step": "11", "title": "Konversi & Kuantisasi Model GGUF",
         "desc": "Konversi HuggingFace → GGUF F16, lalu kuantisasi ke Q4_K_M (4.4 GB untuk model 7B). Verifikasi metadata GGUF.",
         "blocks": [
             ("12.A-convert-hf-to-gguf.sh", "GGUF_CONVERT"),
@@ -183,14 +168,14 @@ SECTIONS = [
         ]
     },
     {
-        "id": "llama-serve", "step": "13", "title": "Serve llama.cpp (OpenAI-compatible)",
+        "id": "llama-serve", "step": "12", "title": "Serve llama.cpp (OpenAI-compatible)",
         "desc": "Jalankan llama-server dengan -t 6, --mmap, -c 4096, bind 127.0.0.1:8080. Test endpoint /v1/models & /v1/chat/completions. Estimasi 9-14 tok/s di i5-10400.",
         "blocks": [
-            ("13.A-serve-llama.sh", "LLAMA_SERVE"),
+            ("12.A-serve-llama.sh", "LLAMA_SERVE"),
         ]
     },
     {
-        "id": "systemd", "step": "14", "title": "Unit systemd (Auto-restart & Boot)",
+        "id": "systemd", "step": "13", "title": "Unit systemd (Auto-restart & Boot)",
         "desc": "Dua service: llama-lawu (inference) & lawu-2.5-fine (API Axum). Hardening systemd (NoNewPrivileges, ProtectSystem, PrivateTmp). Auto-restart on crash.",
         "blocks": [
             ("14.A-write-llama-service.sh", "SYSTEMD_LLAMA"),
@@ -199,7 +184,7 @@ SECTIONS = [
         ]
     },
     {
-        "id": "otomasi", "step": "15", "title": "Otomasi Pemantauan & Operasional",
+        "id": "otomasi", "step": "14", "title": "Otomasi Pemantauan & Operasional",
         "desc": "File watcher inotifywait, backup harian (retensi 7 hari), laporan error harian via Telegram. Cron jobs & environment file /etc/lawu/env.",
         "blocks": [
             ("/opt/lawu/scripts/watch_ebooks.sh", "WATCH_SCRIPT"),
@@ -210,25 +195,40 @@ SECTIONS = [
         ]
     },
     {
-        "id": "k6", "step": "16", "title": "Pengujian Beban (Load Testing k6)",
+        "id": "k6", "step": "15", "title": "Pengujian Beban (Load Testing k6)",
         "desc": "Install k6 (AGPL-3.0, open source). Target: p95 latency /api/search < 300ms dengan 20 VUs selama 2 menit. Error rate < 1%.",
         "blocks": [
-            ("16.A-install-k6.sh", "K6_INSTALL"),
+            ("15.A-install-k6.sh", "K6_INSTALL"),
             ("~/src/load_test.js", "K6"),
         ]
     },
     {
-        "id": "nginx", "step": "17", "title": "Reverse Proxy Nginx",
+        "id": "nginx", "step": "16", "title": "Reverse Proxy Nginx",
         "desc": "Satu port 80: dashboard/API Rust di root, inference llama.cpp di /v1/. Security headers, client_max_body_size 100MB untuk upload ebook, buffering off untuk streaming chat.",
         "blocks": [
-            ("17-apply-nginx-config.sh", "NGINX"),
+            ("16-apply-nginx-config.sh", "NGINX"),
         ]
     },
     {
-        "id": "integrasi", "step": "18", "title": "Integrasi dengan Dashboard",
+        "id": "integrasi", "step": "17", "title": "Integrasi dengan Dashboard",
         "desc": "Hubungkan dashboard ini ke server nyata: setting endpoint LLM di tab Pengaturan, arahkan fetch ke Nginx :80, setup Telegram bot token.",
         "blocks": [
             ("integrasi-dashboard.txt", "INTEGRATE"),
+        ]
+    },
+    {
+        "id": "hardening", "step": "18", "title": "⚡ Hardening Server (TERAKHIR — setelah semua service jalan)",
+        "desc": "⭐ POSISI TERAKHIR — get it running FIRST, lock it down LAST. Default deny incoming (allow 22/80/443), SSH key-only, fail2ban. HANYA jalankan setelah semua service aktif + test sukses.",
+        "alert": {
+            "variant": "warning",
+            "title": "Jangan terkunci dari server!",
+            "body": "Sebelum enable UFW &amp; disable SSH password, PASTIKAN Anda sudah setup SSH key (Langkah 18.C) DAN test login dengan key di terminal terpisah. Jika gagal, kembalikan config backup: sudo cp /etc/ssh/sshd_config.bak.* /etc/ssh/sshd_config && sudo systemctl restart sshd."
+        },
+        "blocks": [
+            ("18.A-ufw-firewall.sh", "FIREWALL_UFW"),
+            ("18.B-sshd-hardening.sh", "SSH_HARDENING"),
+            ("18.C-ssh-key-setup.sh", "SSH_KEY"),
+            ("18.D-fail2ban-sshd.sh", "FAIL2BAN"),
         ]
     },
     {

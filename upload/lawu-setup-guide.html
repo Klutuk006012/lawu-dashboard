@@ -423,21 +423,21 @@
 <li class="toc-item"><span class="toc-step">1</span><a href="#prereq" class="toc-link">Prerequisites &amp; Update Sistem</a></li>
 <li class="toc-item"><span class="toc-step">2</span><a href="#user-setup" class="toc-link">Setup User lawu &amp; Struktur Direktori</a></li>
 <li class="toc-item"><span class="toc-step">3</span><a href="#disk" class="toc-link">Mount &amp; Format HDD/SSD</a></li>
-<li class="toc-item"><span class="toc-step">4</span><a href="#firewall" class="toc-link">Firewall (UFW) &amp; SSH Hardening</a></li>
-<li class="toc-item"><span class="toc-step">5</span><a href="#arsitektur" class="toc-link">Ringkasan Arsitektur</a></li>
-<li class="toc-item"><span class="toc-step">6</span><a href="#sysctl" class="toc-link">Spesifikasi Infrastruktur &amp; Kernel Tuning (sysctl)</a></li>
-<li class="toc-item"><span class="toc-step">7</span><a href="#rust" class="toc-link">Install Rust Toolchain</a></li>
-<li class="toc-item"><span class="toc-step">8</span><a href="#cargo" class="toc-link">Proyek Cargo — lawu-server</a></li>
-<li class="toc-item"><span class="toc-step">9</span><a href="#tantivy" class="toc-link">Skema Full-Text Tantivy</a></li>
-<li class="toc-item"><span class="toc-step">10</span><a href="#api" class="toc-link">Endpoint API Backend (Axum)</a></li>
-<li class="toc-item"><span class="toc-step">11</span><a href="#llama-build" class="toc-link">Build llama.cpp (Pure CPU)</a></li>
-<li class="toc-item"><span class="toc-step">12</span><a href="#gguf" class="toc-link">Konversi &amp; Kuantisasi Model GGUF</a></li>
-<li class="toc-item"><span class="toc-step">13</span><a href="#llama-serve" class="toc-link">Serve llama.cpp (OpenAI-compatible)</a></li>
-<li class="toc-item"><span class="toc-step">14</span><a href="#systemd" class="toc-link">Unit systemd (Auto-restart &amp; Boot)</a></li>
-<li class="toc-item"><span class="toc-step">15</span><a href="#otomasi" class="toc-link">Otomasi Pemantauan &amp; Operasional</a></li>
-<li class="toc-item"><span class="toc-step">16</span><a href="#k6" class="toc-link">Pengujian Beban (Load Testing k6)</a></li>
-<li class="toc-item"><span class="toc-step">17</span><a href="#nginx" class="toc-link">Reverse Proxy Nginx</a></li>
-<li class="toc-item"><span class="toc-step">18</span><a href="#integrasi" class="toc-link">Integrasi dengan Dashboard</a></li>
+<li class="toc-item"><span class="toc-step">4</span><a href="#arsitektur" class="toc-link">Ringkasan Arsitektur</a></li>
+<li class="toc-item"><span class="toc-step">5</span><a href="#sysctl" class="toc-link">Spesifikasi Infrastruktur &amp; Kernel Tuning (sysctl)</a></li>
+<li class="toc-item"><span class="toc-step">6</span><a href="#rust" class="toc-link">Install Rust Toolchain</a></li>
+<li class="toc-item"><span class="toc-step">7</span><a href="#cargo" class="toc-link">Proyek Cargo — lawu-server</a></li>
+<li class="toc-item"><span class="toc-step">8</span><a href="#tantivy" class="toc-link">Skema Full-Text Tantivy</a></li>
+<li class="toc-item"><span class="toc-step">9</span><a href="#api" class="toc-link">Endpoint API Backend (Axum)</a></li>
+<li class="toc-item"><span class="toc-step">10</span><a href="#llama-build" class="toc-link">Build llama.cpp (Pure CPU)</a></li>
+<li class="toc-item"><span class="toc-step">11</span><a href="#gguf" class="toc-link">Konversi &amp; Kuantisasi Model GGUF</a></li>
+<li class="toc-item"><span class="toc-step">12</span><a href="#llama-serve" class="toc-link">Serve llama.cpp (OpenAI-compatible)</a></li>
+<li class="toc-item"><span class="toc-step">13</span><a href="#systemd" class="toc-link">Unit systemd (Auto-restart &amp; Boot)</a></li>
+<li class="toc-item"><span class="toc-step">14</span><a href="#otomasi" class="toc-link">Otomasi Pemantauan &amp; Operasional</a></li>
+<li class="toc-item"><span class="toc-step">15</span><a href="#k6" class="toc-link">Pengujian Beban (Load Testing k6)</a></li>
+<li class="toc-item"><span class="toc-step">16</span><a href="#nginx" class="toc-link">Reverse Proxy Nginx</a></li>
+<li class="toc-item"><span class="toc-step">17</span><a href="#integrasi" class="toc-link">Integrasi dengan Dashboard</a></li>
+<li class="toc-item"><span class="toc-step">18</span><a href="#hardening" class="toc-link">⚡ Hardening Server (TERAKHIR — setelah semua service jalan)</a></li>
 <li class="toc-item"><span class="toc-step">19</span><a href="#checklist" class="toc-link">Final Go-Live Checklist</a></li>
   </ul>
 
@@ -587,7 +587,7 @@ sudo rm -rf /opt/lawu
 # 2) Hapus binary lawu-server lama
 rm -f ~/.cargo/bin/lawu-server
 
-# 3) Hapus source tree llama.cpp lama (akan di-clone ulang di Langkah 11)
+# 3) Hapus source tree llama.cpp lama (akan di-clone ulang di Langkah 10)
 rm -rf ~/llama.cpp
 
 # 4) Hapus model GGUF Lawu lama (HATI-HATI — file besar)
@@ -632,11 +632,11 @@ sudo find / -path /proc -prune -o -path /sys -prune -o -path /dev -prune \
           </div>
           <pre class="code-content"><code># 0.F — Bersihkan sysctl, Nginx config, dan log Lawu lama
 
-# 1) Hapus sysctl custom Lawu lama (akan dibuat ulang bersih di Langkah 6)
+# 1) Hapus sysctl custom Lawu lama (akan dibuat ulang bersih di Langkah 5)
 sudo rm -f /etc/sysctl.d/99-lawu-fine.conf
 sudo sysctl --system 2&gt;/dev/null || true
 
-# 2) Hapus Nginx config Lawu lama (akan dibuat ulang bersih di Langkah 17)
+# 2) Hapus Nginx config Lawu lama (akan dibuat ulang bersih di Langkah 16)
 sudo rm -f /etc/nginx/sites-enabled/lawu
 sudo rm -f /etc/nginx/sites-available/lawu
 sudo nginx -t 2&gt;/dev/null &amp;&amp; sudo systemctl reload nginx 2&gt;/dev/null || true
@@ -835,7 +835,7 @@ sudo -u lawu sudo -n whoami 2&gt;&amp;1 | grep -q 'not in the sudoers' \
 # Atau switch ke lawu: 'sudo su - lawu' lalu exit kembali ke admin
 
 # CATATAN: Semua perintah sudo di Langkah 0-6, 14-17 jalankan sebagai USER ADMIN.
-#          Langkah 7-13 (Rust build, llama.cpp build) jalankan sebagai USER LAWU
+#          Langkah 6-13 (Rust build, llama.cpp build) jalankan sebagai USER LAWU
 #          (sudo su - lawu, tanpa sudo prefix).</code></pre>
         </div>
         <div class="code-block">
@@ -974,7 +974,7 @@ echo "UUID=$UUID  /mnt/data  ext4  defaults,noatime,nodiratime,data=writeback  0
 
 #   noatime       = jangan update access time (hemat write SSD/HDD, cepat)
 #   data=writeback = mode journaling paling cepat (risiko minor korupsi jika power loss)
-#                    AMAN karena ada backup harian (Langkah 15)
+#                    AMAN karena ada backup harian (Langkah 14)
 #
 #   UNTUK PRODUKSI SENSITIF: ganti data=writeback → data=ordered (default, lebih aman)
 
@@ -1006,7 +1006,7 @@ echo 'ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="0", ATTR
   | sudo tee /etc/udev/rules.d/60-ssd-scheduler.rules
 sudo udevadm control --reload-rules
 
-# 3) (OPSIONAL) Kurangi swappiness khusus SSD (ditimpa Langkah 6 sysctl)
+# 3) (OPSIONAL) Kurangi swappiness khusus SSD (ditimpa Langkah 5 sysctl)
 # SSD 128GB cepat penuh jika swap aktif — swap harus di HDD atau disabled
 sudo swapoff --all 2&gt;/dev/null || true
 sudo sed -i '/swap/d' /etc/fstab  # hapus entry swap lama</code></pre>
@@ -1014,150 +1014,9 @@ sudo sed -i '/swap/d' /etc/fstab  # hapus entry swap lama</code></pre>
       </div>
     </section>
 
-    <section id="firewall" class="guide-section">
-      <div class="section-header">
-        <span class="step-badge">4</span>
-        <div>
-          <h2 class="section-title">Firewall (UFW) &amp; SSH Hardening</h2>
-          <p class="section-desc">Default deny incoming, hanya buka port 22 (SSH), 80 (HTTP), 443 (HTTPS). Disable SSH password auth, wajib SSH key. Install fail2ban untuk auto-ban IP brute-force.</p>
-        </div>
-      </div>
-      
-        <div class="alert alert-destructive">
-          <div class="alert-icon">⚠</div>
-          <div class="alert-content">
-            <div class="alert-title">Jangan terkunci dari server!</div>
-            <div class="alert-body">Sebelum enable UFW &amp; disable SSH password, PASTIKAN Anda sudah setup SSH key (Langkah 4.C) DAN test login dengan key di terminal terpisah. Jika gagal, Anda bisa kembalikan config dari sesi yang masih hidup.</div>
-          </div>
-        </div>
-      <div class="section-blocks">
-        
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-filename">4.A-ufw-firewall.sh</span>
-            <span class="code-lang">sh</span>
-          </div>
-          <pre class="code-content"><code># 4.A — Konfigurasi firewall UFW (default deny, hanya buka port yang perlu)
-# Paten 4: Linux only — ufw = front-end iptables/nftables (Debian default)
-
-# 1) Reset UFW ke kondisi default (bersih)
-sudo ufw --force reset
-
-# 2) Default policy: tolak incoming, izinkan outgoing
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-
-# 3) Izinkan SSH (port 22) — WAJIB sebelum enable, kalau tidak Anda terkunci!
-sudo ufw allow 22/tcp comment 'SSH admin'
-
-# 4) Izinkan HTTP (port 80) &amp; HTTPS (port 443) untuk Nginx reverse proxy (Langkah 17)
-sudo ufw allow 80/tcp comment 'Nginx HTTP'
-sudo ufw allow 443/tcp comment 'Nginx HTTPS'
-
-# 5) (OPSIONAL) Batasi akses internal-only untuk port inference &amp; API
-#    Hanya izinkan dari localhost (Axum &amp; llama.cpp sudah bind 127.0.0.1, jadi tidak perlu)
-#    JANGAN buka 8080/8081 ke publik — hanya via Nginx reverse proxy
-
-# 6) Enable UFW
-sudo ufw --force enable
-
-# 7) Verifikasi status
-sudo ufw status verbose
-sudo ufw status numbered</code></pre>
-        </div>
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-filename">4.B-sshd-hardening.sh</span>
-            <span class="code-lang">sh</span>
-          </div>
-          <pre class="code-content"><code># 4.B — SSH hardening (cegah brute-force &amp; privilege escalation)
-
-# 1) Backup config SSH lama
-sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak.$(date +%Y%m%d)
-
-# 2) Edit /etc/ssh/sshd_config — tambah/baris berikut (di akhir file):
-sudo tee -a /etc/ssh/sshd_config &gt; /dev/null &lt;&lt;'SSHCONF'
-
-# ===== Lawu-2.5-Fine SSH Hardening =====
-PermitRootLogin no              # root tidak boleh SSH langsung
-PasswordAuthentication no       # WAJIB pakai SSH key, bukan password
-PubkeyAuthentication yes
-KbdInteractiveAuthentication no
-ChallengeResponseAuthentication no
-X11Forwarding no               # tidak perlu X11 di server
-AllowTcpForwarding no          # cegah SSH tunneling abuse
-AllowAgentForwarding no
-ClientAliveInterval 300        # disconnect idle setelah 5 menit
-ClientAliveCountMax 2          # 2x ping = 10 menit max idle
-MaxAuthTries 3                 # max 3 percobaan login
-LoginGraceTime 30              # timeout login 30 detik
-SSHCONF
-
-# 3) Restart SSH daemon
-sudo systemctl restart sshd
-sudo systemctl status sshd --no-pager
-
-# 4) SEBELUM tutup sesi ini: BUKA TERMINAL BARU &amp; test login SSH dengan key
-#    Jika gagal login, Anda bisa kembalikan config backup dari sesi yang masih hidup:
-#    sudo cp /etc/ssh/sshd_config.bak.* /etc/ssh/sshd_config &amp;&amp; sudo systemctl restart sshd</code></pre>
-        </div>
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-filename">4.C-ssh-key-setup.sh</span>
-            <span class="code-lang">sh</span>
-          </div>
-          <pre class="code-content"><code># 4.C — Generate SSH key pair (di mesin admin/laptop Anda, BUKAN di server)
-
-# 1) Di laptop admin Anda — generate ed25519 key (modern, aman, ringan)
-ssh-keygen -t ed25519 -a 100 -C "admin@lawu-server" -f ~/.ssh/lawu_admin
-
-# 2) Copy public key ke server lawu (masukkan password sekali, setelah ini pakai key)
-ssh-copy-id -i ~/.ssh/lawu_admin.pub lawu@&lt;IP-SERVER&gt;
-
-# 3) Test login dengan key (tanpa password)
-ssh -i ~/.ssh/lawu_admin lawu@&lt;IP-SERVER&gt;
-
-# 4) Setelah login dengan key berhasil, password login otomatis disabled (Langkah 4.B)
-#    Verifikasi: SSH dengan password harus DITOLAK
-ssh lawu@&lt;IP-SERVER&gt;   # harus gagal: Permission denied (publickey)</code></pre>
-        </div>
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-filename">4.D-fail2ban-sshd.sh</span>
-            <span class="code-lang">sh</span>
-          </div>
-          <pre class="code-content"><code># 4.D — Install &amp; konfigurasi fail2ban (auto-ban IP setelah 3x gagal SSH)
-
-# 1) fail2ban sudah diinstall di Langkah 1.B — konfigurasi sekarang
-sudo tee /etc/fail2ban/jail.d/lawu-sshd.local &gt; /dev/null &lt;&lt;'F2B'
-[sshd]
-enabled  = true
-port     = 22
-filter   = sshd
-backend  = systemd
-maxretry = 3
-findtime = 600
-bantime  = 3600
-ignoreip = 127.0.0.1/8 ::1
-F2B
-
-# 2) Restart fail2ban
-sudo systemctl restart fail2ban
-sudo systemctl enable fail2ban
-
-# 3) Verifikasi jail aktif
-sudo fail2ban-client status sshd
-
-# 4) (Lewat waktu) Cek IP yang di-ban
-sudo fail2ban-client status sshd
-# Untuk unban: sudo fail2ban-client set sshd unbanip &lt;IP&gt;</code></pre>
-        </div>
-      </div>
-    </section>
-
     <section id="arsitektur" class="guide-section">
       <div class="section-header">
-        <span class="step-badge">5</span>
+        <span class="step-badge">4</span>
         <div>
           <h2 class="section-title">Ringkasan Arsitektur</h2>
           <p class="section-desc">Alur data end-to-end dari HDD koleksi ebook hingga dashboard web, termasuk firewall &amp; binding localhost-only.</p>
@@ -1192,7 +1051,7 @@ sudo fail2ban-client status sshd
 
     <section id="sysctl" class="guide-section">
       <div class="section-header">
-        <span class="step-badge">6</span>
+        <span class="step-badge">5</span>
         <div>
           <h2 class="section-title">Spesifikasi Infrastruktur &amp; Kernel Tuning (sysctl)</h2>
           <p class="section-desc">Parameter kernel di /etc/sysctl.d/99-lawu-fine.conf + limits.conf untuk file descriptor besar (Axum + Tantivy).</p>
@@ -1272,7 +1131,7 @@ sudo systemctl daemon-reload</code></pre>
 
     <section id="rust" class="guide-section">
       <div class="section-header">
-        <span class="step-badge">7</span>
+        <span class="step-badge">6</span>
         <div>
           <h2 class="section-title">Install Rust Toolchain</h2>
           <p class="section-desc">Install Rust via rustup (stable + rustfmt + clippy), set RUSTFLAGS target-cpu=native untuk optimasi AVX2 di i5-10400. Verifikasi murni CPU — tidak ada dependency GPU.</p>
@@ -1328,7 +1187,7 @@ source ~/.bashrc</code></pre>
             <span class="code-lang">sh</span>
           </div>
           <pre class="code-content"><code># 7.B — Verifikasi Rust toolchain dengan build hello-world
-# &gt;&gt;&gt; RUN AS: user lawu (masih sebagai lawu dari Langkah 7.A, TANPA sudo) &lt;&lt;&lt;
+# &gt;&gt;&gt; RUN AS: user lawu (masih sebagai lawu dari Langkah 6.A, TANPA sudo) &lt;&lt;&lt;
 # JANGAN jalankan 'sudo su - lawu' di sini — Anda SUDAH sebagai lawu dari 7.A.
 # Jika Anda sudah exit dari lawu, login ulang: 'sudo su - lawu' dari user admin.
 
@@ -1338,7 +1197,7 @@ whoami    # harus cetak: lawu
 # 2) Source cargo env (wajib setiap shell baru — atau tambah ke ~/.bashrc)
 source ~/.cargo/env
 
-# Jika 'source ~/.cargo/env' gagal → Langkah 7.A belum dijalankan.
+# Jika 'source ~/.cargo/env' gagal → Langkah 6.A belum dijalankan.
 # KEMBALI ke 7.A: curl https://sh.rustup.rs | sh ...
 # Jika ~/.cargo/env tidak ada setelah 7.A → rustup install gagal,
 # cek log error di 7.A (mungkin butuh build-essential/gcc di Langkah 1.B)
@@ -1371,7 +1230,7 @@ cd / &amp;&amp; rm -rf /tmp/hello_lawu</code></pre>
 
     <section id="cargo" class="guide-section">
       <div class="section-header">
-        <span class="step-badge">8</span>
+        <span class="step-badge">7</span>
         <div>
           <h2 class="section-title">Proyek Cargo — lawu-server</h2>
           <p class="section-desc">Inisialisasi project Cargo, paste Cargo.toml + main.rs + schema.rs, build release dengan optimasi native CPU, install binary ke ~/.cargo/bin/.</p>
@@ -1382,12 +1241,12 @@ cd / &amp;&amp; rm -rf /tmp/hello_lawu</code></pre>
         
         <div class="code-block">
           <div class="code-header">
-            <span class="code-filename">8.A-cargo-init.sh</span>
+            <span class="code-filename">7.A-cargo-init.sh</span>
             <span class="code-lang">sh</span>
           </div>
           <pre class="code-content"><code># 8.A — Inisialisasi project Cargo lawu-server
-# &gt;&gt;&gt; RUN AS: user lawu (masih sebagai lawu dari Langkah 7, TANPA sudo) &lt;&lt;&lt;
-# JANGAN jalankan 'sudo su - lawu' di sini — Anda SUDAH sebagai lawu dari Langkah 7.
+# &gt;&gt;&gt; RUN AS: user lawu (masih sebagai lawu dari Langkah 6, TANPA sudo) &lt;&lt;&lt;
+# JANGAN jalankan 'sudo su - lawu' di sini — Anda SUDAH sebagai lawu dari Langkah 6.
 # Jika Anda sudah exit dari lawu, login ulang: 'sudo su - lawu' dari user admin.
 
 # 1) Verifikasi Anda sebagai lawu + cargo di PATH
@@ -1456,7 +1315,7 @@ panic = "abort"     # hemat binary size, tanpa unwind tables</code></pre>
         </div>
         <div class="code-block">
           <div class="code-header">
-            <span class="code-filename">8.B-build-release.sh</span>
+            <span class="code-filename">7.B-build-release.sh</span>
             <span class="code-lang">sh</span>
           </div>
           <pre class="code-content"><code># 8.B — Build lawu-server (release mode, optimasi native CPU)
@@ -1465,15 +1324,15 @@ panic = "abort"     # hemat binary size, tanpa unwind tables</code></pre>
 source ~/.cargo/env
 cd ~/lawu-server
 
-# 1) Copy Cargo.toml dari Langkah 8.A ke file (paste via editor)
+# 1) Copy Cargo.toml dari Langkah 7.A ke file (paste via editor)
 nano Cargo.toml
 # (paste konten, Ctrl+O, Enter, Ctrl+X)
 
-# 2) Copy src/main.rs dari Langkah 10 ke file
+# 2) Copy src/main.rs dari Langkah 9 ke file
 nano src/main.rs
 # (paste konten, Ctrl+O, Enter, Ctrl+X)
 
-# 3) Copy src/schema.rs dari Langkah 9 ke file
+# 3) Copy src/schema.rs dari Langkah 8 ke file
 mkdir -p src
 nano src/schema.rs
 # (paste konten, Ctrl+O, Enter, Ctrl+X)
@@ -1495,7 +1354,7 @@ ldd ~/.cargo/bin/lawu-server
 
     <section id="tantivy" class="guide-section">
       <div class="section-header">
-        <span class="step-badge">9</span>
+        <span class="step-badge">8</span>
         <div>
           <h2 class="section-title">Skema Full-Text Tantivy</h2>
           <p class="section-desc">Skema multi-field (title, body, path, file_type, category, pages, size_bytes, indexed_at) dengan BM25 scoring, FAST field untuk sort numerik.</p>
@@ -1556,7 +1415,7 @@ pub fn build_schema() -&gt; Schema {
 
     <section id="api" class="guide-section">
       <div class="section-header">
-        <span class="step-badge">10</span>
+        <span class="step-badge">9</span>
         <div>
           <h2 class="section-title">Endpoint API Backend (Axum)</h2>
           <p class="section-desc">GET /api/stats · POST /api/search (QueryParser + TopDocs) · POST /api/telegram/test. Bind 127.0.0.1:8081 (akses via Nginx reverse proxy).</p>
@@ -1742,7 +1601,7 @@ async fn telegram_test_handler() -&gt; Json&lt;serde_json::Value&gt; {
 
     <section id="llama-build" class="guide-section">
       <div class="section-header">
-        <span class="step-badge">11</span>
+        <span class="step-badge">10</span>
         <div>
           <h2 class="section-title">Build llama.cpp (Pure CPU)</h2>
           <p class="section-desc">Clone repo llama.cpp (MIT license), build dengan GGML_NATIVE=ON + AVX2 + FMA + F16C untuk i5-10400. Verifikasi binary TIDAK ada dependency CUDA/GPU.</p>
@@ -1753,13 +1612,13 @@ async fn telegram_test_handler() -&gt; Json&lt;serde_json::Value&gt; {
         
         <div class="code-block">
           <div class="code-header">
-            <span class="code-filename">11.A-clone-llamacpp.sh</span>
+            <span class="code-filename">10.A-clone-llamacpp.sh</span>
             <span class="code-lang">sh</span>
           </div>
           <pre class="code-content"><code># 11.A — Clone &amp; build llama.cpp (open source MIT)
 # Paten 3: murni CPU. Paten 5: llama.cpp = MIT license.
 # llama.cpp TIDAK butuh GPU — pure CPU dengan optimasi AVX2 otomatis di i5-10400.
-# &gt;&gt;&gt; RUN AS: user lawu (masih sebagai lawu dari Langkah 10, TANPA sudo) &lt;&lt;&lt;
+# &gt;&gt;&gt; RUN AS: user lawu (masih sebagai lawu dari Langkah 9, TANPA sudo) &lt;&lt;&lt;
 
 # 1) Verifikasi sebagai lawu + di home directory
 whoami    # harus: lawu
@@ -1788,11 +1647,11 @@ head -3 LICENSE
         </div>
         <div class="code-block">
           <div class="code-header">
-            <span class="code-filename">11.B-build-cmake.sh</span>
+            <span class="code-filename">10.B-build-cmake.sh</span>
             <span class="code-lang">sh</span>
           </div>
           <pre class="code-content"><code># 11.B — Build llama.cpp dengan static linking + optimasi CPU native (AVX2 i5-10400)
-# &gt;&gt;&gt; RUN AS: user lawu (masih sebagai lawu dari Langkah 11.A, TANPA sudo) &lt;&lt;&lt;
+# &gt;&gt;&gt; RUN AS: user lawu (masih sebagai lawu dari Langkah 10.A, TANPA sudo) &lt;&lt;&lt;
 # Static linking = binary mandiri, tidak butuh .so eksternal → mudah untuk systemd
 
 cd ~/src/llama.cpp
@@ -1849,7 +1708,7 @@ ldd build/bin/llama-server | grep -iE 'cuda|nvrtc|cudnn|libgpu' \
 
     <section id="gguf" class="guide-section">
       <div class="section-header">
-        <span class="step-badge">12</span>
+        <span class="step-badge">11</span>
         <div>
           <h2 class="section-title">Konversi &amp; Kuantisasi Model GGUF</h2>
           <p class="section-desc">Konversi HuggingFace → GGUF F16, lalu kuantisasi ke Q4_K_M (4.4 GB untuk model 7B). Verifikasi metadata GGUF.</p>
@@ -1864,7 +1723,7 @@ ldd build/bin/llama-server | grep -iE 'cuda|nvrtc|cudnn|libgpu' \
             <span class="code-lang">sh</span>
           </div>
           <pre class="code-content"><code># 12.A — Dapatkan model GGUF (PILIH SALAH SATU OPDI)
-# &gt;&gt;&gt; RUN AS: user lawu (masih sebagai lawu dari Langkah 11, TANPA sudo) &lt;&lt;&lt;
+# &gt;&gt;&gt; RUN AS: user lawu (masih sebagai lawu dari Langkah 10, TANPA sudo) &lt;&lt;&lt;
 #
 # PENTING: ~/models/ adalah SYMLINK ke /mnt/data/models/ (HDD).
 # Semua file model fisik disimpan di HDD (3.6GB+), bukan SSD 128GB.
@@ -1895,7 +1754,7 @@ df -h /mnt/data   # HDD usage naik ~3.6GB
 # File: GGUF (binary). Test bisa dibaca llama-server:
 ~/src/llama.cpp/build/bin/llama-server --version   # pastikan binary OK
 
-# SKIP ke Langkah 13 (serve) — tidak perlu quantize (sudah Q3_K_M dari bartowski)
+# SKIP ke Langkah 12 (serve) — tidak perlu quantize (sudah Q3_K_M dari bartowski)
 
 # ════════════════════════════════════════════════════════════
 # OPSI 2 (LENGKAP): Convert HuggingFace → GGUF F16 → Q3_K_M sendiri
@@ -1903,35 +1762,35 @@ df -h /mnt/data   # HDD usage naik ~3.6GB
 # Pilih opsi ini jika Anda punya model fine-tune Lawu sendiri,
 # atau mau proses lengkap untuk dokumentasi.
 
-# 12.A.1 — Download HF model (14GB, butuh waktu lama)
+# 11.A.1 — Download HF model (14GB, butuh waktu lama)
 cd ~/models
 git lfs install   # pastikan git-lfs aktif
 git clone https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct \
   ~/models/lawu-2.5-fine-hf
 # Estimasi: 14GB, 10-30 menit tergantung bandwidth
 
-# 12.A.2 — Buat venv Python (jika belum ada dari Langkah 1.C)
+# 11.A.2 — Buat venv Python (jika belum ada dari Langkah 1.C)
 python3 -m venv ~/venvs/lawu
 source ~/venvs/lawu/bin/activate
 
-# 12.A.3 — Install llama.cpp Python deps
+# 11.A.3 — Install llama.cpp Python deps
 cd ~/src/llama.cpp
 pip install -r requirements.txt
 
-# 12.A.4 — Convert HF → GGUF F16 (full precision, ukuran besar)
+# 11.A.4 — Convert HF → GGUF F16 (full precision, ukuran besar)
 python3 convert_hf_to_gguf.py ~/models/lawu-2.5-fine-hf \
   --outfile ~/models/lawu-2.5-fine-f16.gguf \
   --outtype f16
 deactivate
 
-# 12.A.5 — Verifikasi GGUF F16 (di HDD via symlink)
+# 11.A.5 — Verifikasi GGUF F16 (di HDD via symlink)
 ls -lh ~/models/lawu-2.5-fine-f16.gguf
 # Estimasi: 7B F16 ≈ 14 GB
 
-# 12.A.6 — Cek metadata GGUF (opsional, jika binary llama-gguf-dump ada)
+# 11.A.6 — Cek metadata GGUF (opsional, jika binary llama-gguf-dump ada)
 ~/src/llama.cpp/build/bin/llama-gguf-dump ~/models/lawu-2.5-fine-f16.gguf | head -20
 
-# Lanjut ke Langkah 12.B (quantize F16 → Q3_K_M)</code></pre>
+# Lanjut ke Langkah 11.B (quantize F16 → Q3_K_M)</code></pre>
         </div>
         <div class="code-block">
           <div class="code-header">
@@ -1939,7 +1798,7 @@ ls -lh ~/models/lawu-2.5-fine-f16.gguf
             <span class="code-lang">sh</span>
           </div>
           <pre class="code-content"><code># 12.B — Kuantisasi GGUF F16 → Q3_K_M (RAM 8GB tuning untuk 7B model)
-# &gt;&gt;&gt; RUN AS: user lawu (masih sebagai lawu dari Langkah 12.A, TANPA sudo) &lt;&lt;&lt;
+# &gt;&gt;&gt; RUN AS: user lawu (masih sebagai lawu dari Langkah 11.A, TANPA sudo) &lt;&lt;&lt;
 # RAM 8GB: pakai Q3_K_M (3.6GB) — Q4_K_M (4.4GB) terlalu mepet
 
 cd ~/src/llama.cpp
@@ -1962,7 +1821,7 @@ ls -lh ~/models/lawu-2.5-fine-q3_k_m.gguf
 #      ~/models/lawu-2.5-fine-q4_k_m.gguf Q4_K_M
 #    Q4_K_M ≈ 4.4 GB — throughput ~7-11 tok/s, BISA OOM kalau prompt panjang
 
-# 4) Update nama file model di Langkah 13 (LLAMA_SERVE) &amp; Langkah 14 (SYSTEMD_LLAMA)
+# 4) Update nama file model di Langkah 12 (LLAMA_SERVE) &amp; Langkah 13 (SYSTEMD_LLAMA)
 #    Ganti 'lawu-2.5-fine-q4_k_m.gguf' → 'lawu-2.5-fine-q3_k_m.gguf'
 #    (Panduan web sudah otomatis pakai q3_k_m, tapi systemd service file perlu update manual)
 
@@ -1980,7 +1839,7 @@ rm -f ~/models/lawu-2.5-fine-f16.gguf
 
     <section id="llama-serve" class="guide-section">
       <div class="section-header">
-        <span class="step-badge">13</span>
+        <span class="step-badge">12</span>
         <div>
           <h2 class="section-title">Serve llama.cpp (OpenAI-compatible)</h2>
           <p class="section-desc">Jalankan llama-server dengan -t 6, --mmap, -c 4096, bind 127.0.0.1:8080. Test endpoint /v1/models &amp; /v1/chat/completions. Estimasi 9-14 tok/s di i5-10400.</p>
@@ -1991,17 +1850,17 @@ rm -f ~/models/lawu-2.5-fine-f16.gguf
         
         <div class="code-block">
           <div class="code-header">
-            <span class="code-filename">13.A-serve-llama.sh</span>
+            <span class="code-filename">12.A-serve-llama.sh</span>
             <span class="code-lang">sh</span>
           </div>
           <pre class="code-content"><code># 13.A — Jalankan llama-server (OpenAI-compatible endpoint)
-# &gt;&gt;&gt; RUN AS: user lawu (masih sebagai lawu dari Langkah 12, TANPA sudo) &lt;&lt;&lt;
+# &gt;&gt;&gt; RUN AS: user lawu (masih sebagai lawu dari Langkah 11, TANPA sudo) &lt;&lt;&lt;
 # RAM 8GB: pakai -t 4 + -c 2048 (bukan -t 6 + -c 4096 — itu untuk RAM 16GB)
 # Alternatif: pakai model 3B (Qwen2.5-Coder-3B) untuk headroom lebih besar
 
 cd ~/src/llama.cpp
 
-# 1) Tes serve manual dulu (sebelum systemd di Langkah 14)
+# 1) Tes serve manual dulu (sebelum systemd di Langkah 13)
 #    NOTE: --mmap sudah TIDAK ada di llama.cpp b12069+ (mmap default ON, tidak perlu flag)
 ./build/bin/llama-server \
   -m ~/models/lawu-2.5-fine-q3_k_m.gguf \
@@ -2049,14 +1908,14 @@ curl http://127.0.0.1:8080/v1/chat/completions \
 #    c) Aktifkan swap ke HDD (BUKAN SSD): sudo mkswap /dev/sdb2 + swapon
 #    d) Kurangi thread: -t 4 → -t 3
 
-# 5) Stop manual serve (Ctrl+C), lanjut setup systemd di Langkah 14</code></pre>
+# 5) Stop manual serve (Ctrl+C), lanjut setup systemd di Langkah 13</code></pre>
         </div>
       </div>
     </section>
 
     <section id="systemd" class="guide-section">
       <div class="section-header">
-        <span class="step-badge">14</span>
+        <span class="step-badge">13</span>
         <div>
           <h2 class="section-title">Unit systemd (Auto-restart &amp; Boot)</h2>
           <p class="section-desc">Dua service: llama-lawu (inference) &amp; lawu-2.5-fine (API Axum). Hardening systemd (NoNewPrivileges, ProtectSystem, PrivateTmp). Auto-restart on crash.</p>
@@ -2183,7 +2042,7 @@ curl -X POST http://127.0.0.1:8081/api/search \
 
     <section id="otomasi" class="guide-section">
       <div class="section-header">
-        <span class="step-badge">15</span>
+        <span class="step-badge">14</span>
         <div>
           <h2 class="section-title">Otomasi Pemantauan &amp; Operasional</h2>
           <p class="section-desc">File watcher inotifywait, backup harian (retensi 7 hari), laporan error harian via Telegram. Cron jobs &amp; environment file /etc/lawu/env.</p>
@@ -2338,7 +2197,7 @@ sudo systemctl restart lawu-2.5-fine</code></pre>
 
     <section id="k6" class="guide-section">
       <div class="section-header">
-        <span class="step-badge">16</span>
+        <span class="step-badge">15</span>
         <div>
           <h2 class="section-title">Pengujian Beban (Load Testing k6)</h2>
           <p class="section-desc">Install k6 (AGPL-3.0, open source). Target: p95 latency /api/search &lt; 300ms dengan 20 VUs selama 2 menit. Error rate &lt; 1%.</p>
@@ -2349,7 +2208,7 @@ sudo systemctl restart lawu-2.5-fine</code></pre>
         
         <div class="code-block">
           <div class="code-header">
-            <span class="code-filename">16.A-install-k6.sh</span>
+            <span class="code-filename">15.A-install-k6.sh</span>
             <span class="code-lang">sh</span>
           </div>
           <pre class="code-content"><code># 16.A — Install k6 (open source AGPL-3.0, aman)
@@ -2404,7 +2263,7 @@ export default function () {
 
     <section id="nginx" class="guide-section">
       <div class="section-header">
-        <span class="step-badge">17</span>
+        <span class="step-badge">16</span>
         <div>
           <h2 class="section-title">Reverse Proxy Nginx</h2>
           <p class="section-desc">Satu port 80: dashboard/API Rust di root, inference llama.cpp di /v1/. Security headers, client_max_body_size 100MB untuk upload ebook, buffering off untuk streaming chat.</p>
@@ -2415,7 +2274,7 @@ export default function () {
         
         <div class="code-block">
           <div class="code-header">
-            <span class="code-filename">17-apply-nginx-config.sh</span>
+            <span class="code-filename">16-apply-nginx-config.sh</span>
             <span class="code-lang">sh</span>
           </div>
           <pre class="code-content"><code># 17 — Tulis config Nginx (heredoc — LANGSUNG JALANKAN)
@@ -2484,7 +2343,7 @@ sudo systemctl status nginx --no-pager</code></pre>
 
     <section id="integrasi" class="guide-section">
       <div class="section-header">
-        <span class="step-badge">18</span>
+        <span class="step-badge">17</span>
         <div>
           <h2 class="section-title">Integrasi dengan Dashboard</h2>
           <p class="section-desc">Hubungkan dashboard ini ke server nyata: setting endpoint LLM di tab Pengaturan, arahkan fetch ke Nginx :80, setup Telegram bot token.</p>
@@ -2518,6 +2377,147 @@ curl -X POST http://&lt;IP-SERVER&gt;/api/search \
 curl http://&lt;IP-SERVER&gt;/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model":"lawu-2.5-fine","messages":[{"role":"user","content":"Halo Lawu"}],"max_tokens":50}' | jq</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="hardening" class="guide-section">
+      <div class="section-header">
+        <span class="step-badge">18</span>
+        <div>
+          <h2 class="section-title">⚡ Hardening Server (TERAKHIR — setelah semua service jalan)</h2>
+          <p class="section-desc">⭐ POSISI TERAKHIR — get it running FIRST, lock it down LAST. Default deny incoming (allow 22/80/443), SSH key-only, fail2ban. HANYA jalankan setelah semua service aktif + test sukses.</p>
+        </div>
+      </div>
+      
+        <div class="alert alert-warning">
+          <div class="alert-icon">!</div>
+          <div class="alert-content">
+            <div class="alert-title">Jangan terkunci dari server!</div>
+            <div class="alert-body">Sebelum enable UFW &amp; disable SSH password, PASTIKAN Anda sudah setup SSH key (Langkah 18.C) DAN test login dengan key di terminal terpisah. Jika gagal, kembalikan config backup: sudo cp /etc/ssh/sshd_config.bak.* /etc/ssh/sshd_config && sudo systemctl restart sshd.</div>
+          </div>
+        </div>
+      <div class="section-blocks">
+        
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-filename">18.A-ufw-firewall.sh</span>
+            <span class="code-lang">sh</span>
+          </div>
+          <pre class="code-content"><code># 18.A — Konfigurasi firewall UFW (default deny, hanya buka port yang perlu)
+# Paten 4: Linux only — ufw = front-end iptables/nftables (Debian default)
+
+# 1) Reset UFW ke kondisi default (bersih)
+sudo ufw --force reset
+
+# 2) Default policy: tolak incoming, izinkan outgoing
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+# 3) Izinkan SSH (port 22) — WAJIB sebelum enable, kalau tidak Anda terkunci!
+sudo ufw allow 22/tcp comment 'SSH admin'
+
+# 4) Izinkan HTTP (port 80) &amp; HTTPS (port 443) untuk Nginx reverse proxy (Langkah 16)
+sudo ufw allow 80/tcp comment 'Nginx HTTP'
+sudo ufw allow 443/tcp comment 'Nginx HTTPS'
+
+# 5) (OPSIONAL) Batasi akses internal-only untuk port inference &amp; API
+#    Hanya izinkan dari localhost (Axum &amp; llama.cpp sudah bind 127.0.0.1, jadi tidak perlu)
+#    JANGAN buka 8080/8081 ke publik — hanya via Nginx reverse proxy
+
+# 6) Enable UFW
+sudo ufw --force enable
+
+# 7) Verifikasi status
+sudo ufw status verbose
+sudo ufw status numbered</code></pre>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-filename">18.B-sshd-hardening.sh</span>
+            <span class="code-lang">sh</span>
+          </div>
+          <pre class="code-content"><code># 18.B — SSH hardening (cegah brute-force &amp; privilege escalation)
+
+# 1) Backup config SSH lama
+sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak.$(date +%Y%m%d)
+
+# 2) Edit /etc/ssh/sshd_config — tambah/baris berikut (di akhir file):
+sudo tee -a /etc/ssh/sshd_config &gt; /dev/null &lt;&lt;'SSHCONF'
+
+# ===== Lawu-2.5-Fine SSH Hardening =====
+PermitRootLogin no              # root tidak boleh SSH langsung
+PasswordAuthentication no       # WAJIB pakai SSH key, bukan password
+PubkeyAuthentication yes
+KbdInteractiveAuthentication no
+ChallengeResponseAuthentication no
+X11Forwarding no               # tidak perlu X11 di server
+AllowTcpForwarding no          # cegah SSH tunneling abuse
+AllowAgentForwarding no
+ClientAliveInterval 300        # disconnect idle setelah 5 menit
+ClientAliveCountMax 2          # 2x ping = 10 menit max idle
+MaxAuthTries 3                 # max 3 percobaan login
+LoginGraceTime 30              # timeout login 30 detik
+SSHCONF
+
+# 3) Restart SSH daemon
+sudo systemctl restart sshd
+sudo systemctl status sshd --no-pager
+
+# 4) SEBELUM tutup sesi ini: BUKA TERMINAL BARU &amp; test login SSH dengan key
+#    Jika gagal login, Anda bisa kembalikan config backup dari sesi yang masih hidup:
+#    sudo cp /etc/ssh/sshd_config.bak.* /etc/ssh/sshd_config &amp;&amp; sudo systemctl restart sshd</code></pre>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-filename">18.C-ssh-key-setup.sh</span>
+            <span class="code-lang">sh</span>
+          </div>
+          <pre class="code-content"><code># 18.C — Generate SSH key pair (di mesin admin/laptop Anda, BUKAN di server)
+
+# 1) Di laptop admin Anda — generate ed25519 key (modern, aman, ringan)
+ssh-keygen -t ed25519 -a 100 -C "admin@lawu-server" -f ~/.ssh/lawu_admin
+
+# 2) Copy public key ke server lawu (masukkan password sekali, setelah ini pakai key)
+ssh-copy-id -i ~/.ssh/lawu_admin.pub lawu@&lt;IP-SERVER&gt;
+
+# 3) Test login dengan key (tanpa password)
+ssh -i ~/.ssh/lawu_admin lawu@&lt;IP-SERVER&gt;
+
+# 4) Setelah login dengan key berhasil, password login otomatis disabled (Langkah 18.B)
+#    Verifikasi: SSH dengan password harus DITOLAK
+ssh lawu@&lt;IP-SERVER&gt;   # harus gagal: Permission denied (publickey)</code></pre>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-filename">18.D-fail2ban-sshd.sh</span>
+            <span class="code-lang">sh</span>
+          </div>
+          <pre class="code-content"><code># 18.D — Install &amp; konfigurasi fail2ban (auto-ban IP setelah 3x gagal SSH)
+
+# 1) fail2ban sudah diinstall di Langkah 1.B — konfigurasi sekarang
+sudo tee /etc/fail2ban/jail.d/lawu-sshd.local &gt; /dev/null &lt;&lt;'F2B'
+[sshd]
+enabled  = true
+port     = 22
+filter   = sshd
+backend  = systemd
+maxretry = 3
+findtime = 600
+bantime  = 3600
+ignoreip = 127.0.0.1/8 ::1
+F2B
+
+# 2) Restart fail2ban
+sudo systemctl restart fail2ban
+sudo systemctl enable fail2ban
+
+# 3) Verifikasi jail aktif
+sudo fail2ban-client status sshd
+
+# 4) (Lewat waktu) Cek IP yang di-ban
+sudo fail2ban-client status sshd
+# Untuk unban: sudo fail2ban-client set sshd unbanip &lt;IP&gt;</code></pre>
         </div>
       </div>
     </section>

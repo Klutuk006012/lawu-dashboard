@@ -1,0 +1,319 @@
+     1→nur@srv-fine:~$ # Sebagai root
+     2→chown -R nur:nur /opt/lawu-dashboard
+     3→
+     4→# Edit deploy.sh — ganti check user dari lawu-web ke nur
+     5→sed -i 's/lawu-web/nur/g' /opt/lawu-dashboard/deploy.sh
+     6→
+     7→# Switch ke user nur
+     8→su - nur
+     9→cd /opt/lawu-dashboard
+    10→bash deploy.sh
+    11→chown: changing ownership of '/opt/lawu-dashboard/next.config.ts': Operation not permitted
+    12→chown: changing ownership of '/opt/lawu-dashboard/db/custom.db': Operation not permitted
+    13→chown: changing ownership of '/opt/lawu-dashboard/db': Operation not permitted
+    14→chown: changing ownership of '/opt/lawu-dashboard/docs/PRD.md': Operation not permitted
+    15→chown: changing ownership of '/opt/lawu-dashboard/docs': Operation not permitted
+    16→chown: changing ownership of '/opt/lawu-dashboard/upload/blueprint-page.png': Operation not permitted
+    17→chown: changing ownership of '/opt/lawu-dashboard/upload/features-page.png': Operation not permitted
+    18→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-search-footer-sticky.png': Operation not permitted
+    19→chown: changing ownership of '/opt/lawu-dashboard/upload/Pasted Content_1793580891471.txt': Operation not permitted
+    20→chown: changing ownership of '/opt/lawu-dashboard/upload/Onno W. Purbo, Teknik Prompting dan Responsible AI, 2026.pdf': Operation not permitted
+    21→chown: changing ownership of '/opt/lawu-dashboard/upload/.gitkeep': Operation not permitted
+    22→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-mobile-langkah3.png': Operation not permitted
+    23→chown: changing ownership of '/opt/lawu-dashboard/upload/LLM Engineer'$'\342\200\231''s Handbook_ Master the art of engineering Large -- Paul Iusztin, Maxime Labonne, Alex Vesa -- 2024 -- Packt Publishing, Limited -- isbn13 9781836200079 -- 52cf03e1cedfdc293f453dc715360522 -- Anna'$'\342\200\231''s Archive.epub': Operation not permitted
+    24→chown: changing ownership of '/opt/lawu-dashboard/upload/documents-studio-working.png': Operation not permitted
+    25→chown: changing ownership of '/opt/lawu-dashboard/upload/Dokumentasi_Rencana_Lawu_2.5_Fine.docx': Operation not permitted
+    26→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-dashboard-wiki-integrated.png': Operation not permitted
+    27→chown: changing ownership of '/opt/lawu-dashboard/upload/guide-v31-order.png': Operation not permitted
+    28→chown: changing ownership of '/opt/lawu-dashboard/upload/Onno W. Purbo, Panduan Praktis Kepatuhan UU PDP & Keamanan Data Institusi_ Open Source Approach, 2025.pdf': Operation not permitted
+    29→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-clean-monitor.png': Operation not permitted
+    30→chown: changing ownership of '/opt/lawu-dashboard/upload/Onno W. Purbo, Chat Pintar untuk ASN & Layanan Publik Kabupaten Kota, 2026.pdf': Operation not permitted
+    31→chown: changing ownership of '/opt/lawu-dashboard/upload/RAG from First Principles - Engineering retrieval-augmented -- Jia Huang -- 1, 2026 -- Packt Publishing -- isbn13 9781835888667 -- c34fd84de0f4319e1acc60fea96ef8f2 -- Anna'$'\342\200\231''s Archive.pdf': Operation not permitted
+    32→chown: changing ownership of '/opt/lawu-dashboard/upload/Onno W. Purbo, Panduan Praktis Kepatuhan UU PDP_ Untuk Executive & Pengambil Keputusan, 2025.pdf': Operation not permitted
+    33→chown: changing ownership of '/opt/lawu-dashboard/upload/Machine Learning and AI Beyond the Basics (Raschka, Sebastian) (z-library.sk, 1lib.sk, z-lib.sk).pdf': Operation not permitted
+    34→chown: changing ownership of '/opt/lawu-dashboard/upload/Onno W. Purbo, Kalau Data Pribadi Bocor, Apa Resikonya, 2025.pdf': Operation not permitted
+    35→chown: changing ownership of '/opt/lawu-dashboard/upload/guide-comprehensive-checklist.png': Operation not permitted
+    36→chown: changing ownership of '/opt/lawu-dashboard/upload/Onno W. Purbo, Pemikiran Tentang Keamanan dan Ketahanan Siber Indonesia, 2026.pdf': Operation not permitted
+    37→chown: changing ownership of '/opt/lawu-dashboard/upload/Onno W. Purbo, Arsitek Narasi di Era Mesin_ Literasi AI sebagai Senjata Kompetitif, 2025.pdf': Operation not permitted
+    38→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-dark-mode.png': Operation not permitted
+    39→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-mobile.png': Operation not permitted
+    40→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-final-dashboard.png': Operation not permitted
+    41→chown: changing ownership of '/opt/lawu-dashboard/upload/Building AI Agents with LLMs, RAG, and Knowledge Graphs -- Salvatore Raieli, Gabriele Iuculano -- Expert Insight, 1, 2025 -- Packt Publishing -- isbn13 9781835087060 -- 5b410ce3ee274bc68bd30405ac184c12 -- Anna'$'\342\200\231''s Archive.pdf': Operation not permitted
+    42→chown: changing ownership of '/opt/lawu-dashboard/upload/pdf-cover-preview.png': Operation not permitted
+    43→chown: changing ownership of '/opt/lawu-dashboard/upload/pdf-cover-render.png': Operation not permitted
+    44→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-search-rust.png': Operation not permitted
+    45→chown: changing ownership of '/opt/lawu-dashboard/upload/Hands-On RAG for Production_ Design, Develop, and Deploy -- Ofer Mendelevitch, Forrest Bao -- 1, 2026 may 27 -- O'\''Reilly Media -- isbn13 9788341621719 -- f9fbfa00cf4b14ca056745db1a9a6df9 -- Anna'$'\342\200\231''s Archive.epub': Operation not permitted
+    46→chown: changing ownership of '/opt/lawu-dashboard/upload/login-mountains.jpg': Operation not permitted
+    47→chown: changing ownership of '/opt/lawu-dashboard/upload/Agentic Architectural Patterns for Building Multi-Agent -- Ali Arsanjani, Juan Pablo Bustos -- 2026 -- Packt Publishing -- isbn13 9781806029570 -- 142146213e058c41e51d851292512a58 -- Anna'$'\342\200\231''s Archive.pdf': Operation not permitted
+    48→chown: changing ownership of '/opt/lawu-dashboard/upload/cleanup-guide-section.png': Operation not permitted
+    49→chown: changing ownership of '/opt/lawu-dashboard/upload/Algorithmic Thinking_ Learn Algorithms to Level up Your -- Daniel Zingaro -- 2, 2024 -- No Starch Press, Incorporated -- isbn13 9781718500808 -- ef8106abba346afb3b21535aedafc35e -- Anna'$'\342\200\231''s Archive.pdf': Operation not permitted
+    50→chown: changing ownership of '/opt/lawu-dashboard/upload/Math for Programming Learn the Math, Write Better Code (TruePDF) (Ronald T. Kneusel) (z-library.sk, 1lib.sk, z-lib.sk).pdf': Operation not permitted
+    51→chown: changing ownership of '/opt/lawu-dashboard/upload/Onno W. Purbo, Framework Peringkat Keamanan Siber & Kepatuhan Data Pribadi untuk Dunia Perbankan Indonesia, 2025.pdf': Operation not permitted
+    52→chown: changing ownership of '/opt/lawu-dashboard/upload/Pasted Content_1793580879558.txt': Operation not permitted
+    53→chown: changing ownership of '/opt/lawu-dashboard/upload/AI Agents in Action, Second Edition -- Micheal Lanham -- 2026 -- Manning Publications Co_ LLC -- isbn13 9781633434530 -- fc8747ae2506e123e4bb75510dd6d7dd -- Anna'$'\342\200\231''s Archive.pdf': Operation not permitted
+    54→chown: changing ownership of '/opt/lawu-dashboard/upload/Onno W. Purbo, Gildas Deograt Lumy, Cyber Warfare & Pertahanan Siber Indonesia, 2025.pdf': Operation not permitted
+    55→chown: changing ownership of '/opt/lawu-dashboard/upload/Vue.js 3 Design Patterns and Best Practices Develop scalable and robust applications with Vite, Pinia, and Vue Router (Pablo David Garaguso) (z-library.sk, 1lib.sk, z-lib.sk).pdf': Operation not permitted
+    56→chown: changing ownership of '/opt/lawu-dashboard/upload/guide-comprehensive-top.png': Operation not permitted
+    57→chown: changing ownership of '/opt/lawu-dashboard/upload/pdf-content-sample.png': Operation not permitted
+    58→chown: changing ownership of '/opt/lawu-dashboard/upload/Frontend Development Projects with Vue_js 3_ Learn the -- Maya Shavin; Raymond Camden; Clifford Gurney; Hugo Di -- Second Edition, 2023 -- PACKT -- isbn13 9781803234991 -- 1a6719fdf3dcdfa793d32f8721571947 -- Anna'$'\342\200\231''s Archive.pdf': Operation not permitted
+    59→chown: changing ownership of '/opt/lawu-dashboard/upload/2602.15763v2-GLM-5.2 .pdf': Operation not permitted
+    60→chown: changing ownership of '/opt/lawu-dashboard/upload/lawu-setup-guide.html': Operation not permitted
+    61→chown: changing ownership of '/opt/lawu-dashboard/upload/image-studio-working.png': Operation not permitted
+    62→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-guide-has-specs.png': Operation not permitted
+    63→chown: changing ownership of '/opt/lawu-dashboard/upload/Lawu-2.5-Fine.png': Operation not permitted
+    64→chown: changing ownership of '/opt/lawu-dashboard/upload/Onno W. Purbo, Smart Digital Energy_ Inovasi Teknologi Open Source untuk Pencapaian Target Produksi Migas, 2025.pdf': Operation not permitted
+    65→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-search-integrated.png': Operation not permitted
+    66→chown: changing ownership of '/opt/lawu-dashboard/upload/The Rust Programming Language, 3rd Edition -- Steve Klabnik, Carol Nichols, Chris Krycho -- 3, 2026 -- No Starch Press, Incorporated -- isbn13 9781718504448 -- c72e9de1d9aa337a45103bb7f383a9f3 -- Anna'$'\342\200\231''s Archive.pdf': Operation not permitted
+    67→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-clean-search.png': Operation not permitted
+    68→chown: changing ownership of '/opt/lawu-dashboard/upload/lawu-setup-guide.pdf': Operation not permitted
+    69→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-clean-chat.png': Operation not permitted
+    70→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-search-mobile.png': Operation not permitted
+    71→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-mobile-menu.png': Operation not permitted
+    72→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-final-clean.png': Operation not permitted
+    73→chown: changing ownership of '/opt/lawu-dashboard/upload/LLM Engineer'$'\342\200\231''s Handbook_ Master the art of engineering Large -- Paul Iusztin, Maxime Labonne, Alex Vesa -- 2024 -- Packt Publishing, Limited -- isbn13 9781836200079 -- 52cf03e1cedfdc293f453dc715360522 -- Anna'$'\342\200\231''s Archive.pdf': Operation not permitted
+    74→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-clean-chat-short.png': Operation not permitted
+    75→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-clean-search-long.png': Operation not permitted
+    76→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-clean-settings.png': Operation not permitted
+    77→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/d2f3f320/Agentic Architectural Patterns for Building Multi-Agent -- Ali Arsanjani, Juan Pablo Bustos -- 2026 -- Packt Publishing -- isbn13 9781806029570 -- 142146213e058c41e51d851292512a58 -- Anna'$'\342\200\231''s Archive.pdf': Operation not permitted
+    78→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/d2f3f320': Operation not permitted
+    79→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/c16233f1/Building AI Agents with LLMs, RAG, and Knowledge Graphs -- Salvatore Raieli, Gabriele Iuculano -- Expert Insight, 1, 2025 -- Packt Publishing -- isbn13 9781835087060 -- 5b410ce3ee274bc68bd30405ac184c12 -- Anna'$'\342\200\231''s Archive.pdf': Operation not permitted
+    80→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/c16233f1': Operation not permitted
+    81→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/f954f3ab/Hands-On RAG for Production_ Design, Develop, and Deploy -- Ofer Mendelevitch, Forrest Bao -- 1, 2026 may 27 -- O'\''Reilly Media -- isbn13 9788341621719 -- f9fbfa00cf4b14ca056745db1a9a6df9 -- Anna'$'\342\200\231''s Archive.pdf': Operation not permitted
+    82→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/f954f3ab': Operation not permitted
+    83→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/af1b8adf/LLM Engineer'$'\342\200\231''s Handbook_ Master the art of engineering Large -- Paul Iusztin, Maxime Labonne, Alex Vesa -- 2024 -- Packt Publishing, Limited -- isbn13 9781836200079 -- 52cf03e1cedfdc293f453dc715360522 -- Anna'$'\342\200\231''s Archive.pdf': Operation not permitted
+    84→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/af1b8adf': Operation not permitted
+    85→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/1539a17c/LLM Engineer'$'\342\200\231''s Handbook_ Master the art of engineering Large -- Paul Iusztin, Maxime Labonne, Alex Vesa -- 2024 -- Packt Publishing, Limited -- isbn13 9781836200079 -- 52cf03e1cedfdc293f453dc715360522 -- Anna'$'\342\200\231''s Archive.epub': Operation not permitted
+    86→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/1539a17c': Operation not permitted
+    87→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/567ddf76/Hands-On RAG for Production_ Design, Develop, and Deploy -- Ofer Mendelevitch, Forrest Bao -- 1, 2026 may 27 -- O'\''Reilly Media -- isbn13 9788341621719 -- f9fbfa00cf4b14ca056745db1a9a6df9 -- Anna'$'\342\200\231''s Archive.epub': Operation not permitted
+    88→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/567ddf76': Operation not permitted
+    89→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/751554e5/AI Agents in Action, Second Edition -- Micheal Lanham -- 2026 -- Manning Publications Co_ LLC -- isbn13 9781633434530 -- fc8747ae2506e123e4bb75510dd6d7dd -- Anna'$'\342\200\231''s Archive.pdf': Operation not permitted
+    90→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/751554e5': Operation not permitted
+    91→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/ee4dd08b/RAG-Driven Generative AI_ Build custom retrieval augmented -- Denis Rothman; -- 2024 -- isbn13 9781836200918 -- 932d6a159ffeb7e270f6a964f11619b8 -- Anna'$'\342\200\231''s Archive.pdf': Operation not permitted
+    92→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/ee4dd08b': Operation not permitted
+    93→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/ce8dd922/RAG from First Principles - Engineering retrieval-augmented -- Jia Huang -- 1, 2026 -- Packt Publishing -- isbn13 9781835888667 -- c34fd84de0f4319e1acc60fea96ef8f2 -- Anna'$'\342\200\231''s Archive.pdf': Operation not permitted
+    94→chown: changing ownership of '/opt/lawu-dashboard/upload/folder/ce8dd922': Operation not permitted
+    95→chown: changing ownership of '/opt/lawu-dashboard/upload/folder': Operation not permitted
+    96→chown: changing ownership of '/opt/lawu-dashboard/upload/pdf-toc-render.png': Operation not permitted
+    97→chown: changing ownership of '/opt/lawu-dashboard/upload/video-studio-working.png': Operation not permitted
+    98→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-langkah12-korpus.png': Operation not permitted
+    99→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-search-indonesia.png': Operation not permitted
+   100→chown: changing ownership of '/opt/lawu-dashboard/upload/RAG-Driven Generative AI_ Build custom retrieval augmented -- Denis Rothman; -- 2024 -- isbn13 9781836200918 -- 932d6a159ffeb7e270f6a964f11619b8 -- Anna'$'\342\200\231''s Archive.pdf': Operation not permitted
+   101→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-langkah3-automount.png': Operation not permitted
+   102→chown: changing ownership of '/opt/lawu-dashboard/upload/verify-mobile-disk.png': Operation not permitted
+   103→chown: changing ownership of '/opt/lawu-dashboard/upload/AI-Ready PostgreSQL 18 Building Intelligent Data Systems with Transactions, Analytics, and Vectors (Vibhor Kumar, Marc Linster) (z-library.sk, 1lib.sk, z-lib.sk).pdf': Operation not permitted
+   104→chown: changing ownership of '/opt/lawu-dashboard/upload/Hands-On RAG for Production_ Design, Develop, and Deploy -- Ofer Mendelevitch, Forrest Bao -- 1, 2026 may 27 -- O'\''Reilly Media -- isbn13 9788341621719 -- f9fbfa00cf4b14ca056745db1a9a6df9 -- Anna'$'\342\200\231''s Archive.pdf': Operation not permitted
+   105→chown: changing ownership of '/opt/lawu-dashboard/upload/Onno W. Purbo, Panduan Praktis Pengadaan Barang dan Jasa Bidang IT, 2026.pdf': Operation not permitted
+   106→chown: changing ownership of '/opt/lawu-dashboard/upload': Operation not permitted
+   107→chown: changing ownership of '/opt/lawu-dashboard/public/robots.txt': Operation not permitted
+   108→chown: changing ownership of '/opt/lawu-dashboard/public/logo.svg': Operation not permitted
+   109→chown: changing ownership of '/opt/lawu-dashboard/public/guides/lawu-setup-guide.html': Operation not permitted
+   110→chown: changing ownership of '/opt/lawu-dashboard/public/guides/lawu-setup-guide.pdf': Operation not permitted
+   111→chown: changing ownership of '/opt/lawu-dashboard/public/guides': Operation not permitted
+   112→chown: changing ownership of '/opt/lawu-dashboard/public': Operation not permitted
+   113→chown: changing ownership of '/opt/lawu-dashboard/package.json': Operation not permitted
+   114→chown: changing ownership of '/opt/lawu-dashboard/tool-results/read_1793713185223_b7806f0c122d.txt': Operation not permitted
+   115→chown: changing ownership of '/opt/lawu-dashboard/tool-results/read_1793713184939_b9e6615f1b50.txt': Operation not permitted
+   116→chown: changing ownership of '/opt/lawu-dashboard/tool-results/read_1793713187541_e8e497a9a687.txt': Operation not permitted
+   117→chown: changing ownership of '/opt/lawu-dashboard/tool-results': Operation not permitted
+   118→chown: changing ownership of '/opt/lawu-dashboard/download/README.md': Operation not permitted
+   119→chown: changing ownership of '/opt/lawu-dashboard/download': Operation not permitted
+   120→chown: changing ownership of '/opt/lawu-dashboard/eslint.config.mjs': Operation not permitted
+   121→chown: changing ownership of '/opt/lawu-dashboard/.env': Operation not permitted
+   122→chown: changing ownership of '/opt/lawu-dashboard/tests/python-runtime-build.sh': Operation not permitted
+   123→chown: changing ownership of '/opt/lawu-dashboard/tests/database-runtime-build.sh': Operation not permitted
+   124→chown: changing ownership of '/opt/lawu-dashboard/tests/python-runtime-container.sh': Operation not permitted
+   125→chown: changing ownership of '/opt/lawu-dashboard/tests': Operation not permitted
+   126→chown: changing ownership of '/opt/lawu-dashboard/examples/websocket/server.ts': Operation not permitted
+   127→chown: changing ownership of '/opt/lawu-dashboard/examples/websocket/frontend.tsx': Operation not permitted
+   128→chown: changing ownership of '/opt/lawu-dashboard/examples/websocket': Operation not permitted
+   129→chown: changing ownership of '/opt/lawu-dashboard/examples': Operation not permitted
+   130→chown: changing ownership of '/opt/lawu-dashboard/lawu-dashboard.service': Operation not permitted
+   131→chown: changing ownership of '/opt/lawu-dashboard/.env.production': Operation not permitted
+   132→chown: changing ownership of '/opt/lawu-dashboard/scripts/html-to-pdf.cjs': Operation not permitted
+   133→chown: changing ownership of '/opt/lawu-dashboard/scripts/gen-guide-pdf.py': Operation not permitted
+   134→chown: changing ownership of '/opt/lawu-dashboard/scripts': Operation not permitted
+   135→chown: changing ownership of '/opt/lawu-dashboard/.zscripts/mini-services-start.sh': Operation not permitted
+   136→chown: changing ownership of '/opt/lawu-dashboard/.zscripts/build.sh': Operation not permitted
+   137→chown: changing ownership of '/opt/lawu-dashboard/.zscripts/dev.pid': Operation not permitted
+   138→chown: changing ownership of '/opt/lawu-dashboard/.zscripts/python-runtime-build.sh': Operation not permitted
+   139→chown: changing ownership of '/opt/lawu-dashboard/.zscripts/dev.sh': Operation not permitted
+   140→chown: changing ownership of '/opt/lawu-dashboard/.zscripts/database-runtime-build.sh': Operation not permitted
+   141→chown: changing ownership of '/opt/lawu-dashboard/.zscripts/mini-services-install.sh': Operation not permitted
+   142→chown: changing ownership of '/opt/lawu-dashboard/.zscripts/mini-services-build.sh': Operation not permitted
+   143→chown: changing ownership of '/opt/lawu-dashboard/.zscripts/start.sh': Operation not permitted
+   144→chown: changing ownership of '/opt/lawu-dashboard/.zscripts': Operation not permitted
+   145→chown: changing ownership of '/opt/lawu-dashboard/.gitignore': Operation not permitted
+   146→chown: changing ownership of '/opt/lawu-dashboard/deploy.sh': Operation not permitted
+   147→chown: changing ownership of '/opt/lawu-dashboard/Caddyfile': Operation not permitted
+   148→chown: changing ownership of '/opt/lawu-dashboard/components.json': Operation not permitted
+   149→chown: changing ownership of '/opt/lawu-dashboard/postcss.config.mjs': Operation not permitted
+   150→chown: changing ownership of '/opt/lawu-dashboard/tsconfig.json': Operation not permitted
+   151→chown: changing ownership of '/opt/lawu-dashboard/.git/config': Operation not permitted
+   152→chown: changing ownership of '/opt/lawu-dashboard/.git/logs/HEAD': Operation not permitted
+   153→chown: changing ownership of '/opt/lawu-dashboard/.git/logs/refs/remotes/origin/HEAD': Operation not permitted
+   154→chown: changing ownership of '/opt/lawu-dashboard/.git/logs/refs/remotes/origin': Operation not permitted
+   155→chown: changing ownership of '/opt/lawu-dashboard/.git/logs/refs/remotes': Operation not permitted
+   156→chown: changing ownership of '/opt/lawu-dashboard/.git/logs/refs/heads/main': Operation not permitted
+   157→chown: changing ownership of '/opt/lawu-dashboard/.git/logs/refs/heads': Operation not permitted
+   158→chown: changing ownership of '/opt/lawu-dashboard/.git/logs/refs': Operation not permitted
+   159→chown: changing ownership of '/opt/lawu-dashboard/.git/logs': Operation not permitted
+   160→chown: changing ownership of '/opt/lawu-dashboard/.git/objects/info': Operation not permitted
+   161→chown: changing ownership of '/opt/lawu-dashboard/.git/objects/pack/pack-f068b6cd340cb6bd2d7224df80bdf10da6973e00.pack': Operation not permitted
+   162→chown: changing ownership of '/opt/lawu-dashboard/.git/objects/pack/pack-f068b6cd340cb6bd2d7224df80bdf10da6973e00.rev': Operation not permitted
+   163→chown: changing ownership of '/opt/lawu-dashboard/.git/objects/pack/pack-f068b6cd340cb6bd2d7224df80bdf10da6973e00.idx': Operation not permitted
+   164→chown: changing ownership of '/opt/lawu-dashboard/.git/objects/pack': Operation not permitted
+   165→chown: changing ownership of '/opt/lawu-dashboard/.git/objects': Operation not permitted
+   166→chown: changing ownership of '/opt/lawu-dashboard/.git/packed-refs': Operation not permitted
+   167→chown: changing ownership of '/opt/lawu-dashboard/.git/info/exclude': Operation not permitted
+   168→chown: changing ownership of '/opt/lawu-dashboard/.git/info': Operation not permitted
+   169→chown: changing ownership of '/opt/lawu-dashboard/.git/index': Operation not permitted
+   170→chown: changing ownership of '/opt/lawu-dashboard/.git/branches': Operation not permitted
+   171→chown: changing ownership of '/opt/lawu-dashboard/.git/HEAD': Operation not permitted
+   172→chown: changing ownership of '/opt/lawu-dashboard/.git/hooks/applypatch-msg.sample': Operation not permitted
+   173→chown: changing ownership of '/opt/lawu-dashboard/.git/hooks/pre-rebase.sample': Operation not permitted
+   174→chown: changing ownership of '/opt/lawu-dashboard/.git/hooks/push-to-checkout.sample': Operation not permitted
+   175→chown: changing ownership of '/opt/lawu-dashboard/.git/hooks/pre-receive.sample': Operation not permitted
+   176→chown: changing ownership of '/opt/lawu-dashboard/.git/hooks/fsmonitor-watchman.sample': Operation not permitted
+   177→chown: changing ownership of '/opt/lawu-dashboard/.git/hooks/pre-merge-commit.sample': Operation not permitted
+   178→chown: changing ownership of '/opt/lawu-dashboard/.git/hooks/pre-commit.sample': Operation not permitted
+   179→chown: changing ownership of '/opt/lawu-dashboard/.git/hooks/commit-msg.sample': Operation not permitted
+   180→chown: changing ownership of '/opt/lawu-dashboard/.git/hooks/sendemail-validate.sample': Operation not permitted
+   181→chown: changing ownership of '/opt/lawu-dashboard/.git/hooks/pre-applypatch.sample': Operation not permitted
+   182→chown: changing ownership of '/opt/lawu-dashboard/.git/hooks/pre-push.sample': Operation not permitted
+   183→chown: changing ownership of '/opt/lawu-dashboard/.git/hooks/post-update.sample': Operation not permitted
+   184→chown: changing ownership of '/opt/lawu-dashboard/.git/hooks/prepare-commit-msg.sample': Operation not permitted
+   185→chown: changing ownership of '/opt/lawu-dashboard/.git/hooks/update.sample': Operation not permitted
+   186→chown: changing ownership of '/opt/lawu-dashboard/.git/hooks': Operation not permitted
+   187→chown: changing ownership of '/opt/lawu-dashboard/.git/description': Operation not permitted
+   188→chown: changing ownership of '/opt/lawu-dashboard/.git/refs/remotes/origin/HEAD': Operation not permitted
+   189→chown: changing ownership of '/opt/lawu-dashboard/.git/refs/remotes/origin': Operation not permitted
+   190→chown: changing ownership of '/opt/lawu-dashboard/.git/refs/remotes': Operation not permitted
+   191→chown: changing ownership of '/opt/lawu-dashboard/.git/refs/tags': Operation not permitted
+   192→chown: changing ownership of '/opt/lawu-dashboard/.git/refs/heads/main': Operation not permitted
+   193→chown: changing ownership of '/opt/lawu-dashboard/.git/refs/heads': Operation not permitted
+   194→chown: changing ownership of '/opt/lawu-dashboard/.git/refs': Operation not permitted
+   195→chown: changing ownership of '/opt/lawu-dashboard/.git': Operation not permitted
+   196→chown: changing ownership of '/opt/lawu-dashboard/mini-services/.gitkeep': Operation not permitted
+   197→chown: changing ownership of '/opt/lawu-dashboard/mini-services': Operation not permitted
+   198→chown: changing ownership of '/opt/lawu-dashboard/prisma/schema.prisma': Operation not permitted
+   199→chown: changing ownership of '/opt/lawu-dashboard/prisma/seed.ts': Operation not permitted
+   200→chown: changing ownership of '/opt/lawu-dashboard/prisma': Operation not permitted
+   201→chown: changing ownership of '/opt/lawu-dashboard/tailwind.config.ts': Operation not permitted
+   202→chown: changing ownership of '/opt/lawu-dashboard/bun.lock': Operation not permitted
+   203→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/avatar.tsx': Operation not permitted
+   204→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/navigation-menu.tsx': Operation not permitted
+   205→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/sidebar.tsx': Operation not permitted
+   206→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/toast.tsx': Operation not permitted
+   207→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/popover.tsx': Operation not permitted
+   208→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/chart.tsx': Operation not permitted
+   209→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/dropdown-menu.tsx': Operation not permitted
+   210→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/alert.tsx': Operation not permitted
+   211→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/toaster.tsx': Operation not permitted
+   212→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/menubar.tsx': Operation not permitted
+   213→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/alert-dialog.tsx': Operation not permitted
+   214→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/breadcrumb.tsx': Operation not permitted
+   215→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/pagination.tsx': Operation not permitted
+   216→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/drawer.tsx': Operation not permitted
+   217→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/accordion.tsx': Operation not permitted
+   218→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/label.tsx': Operation not permitted
+   219→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/collapsible.tsx': Operation not permitted
+   220→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/dialog.tsx': Operation not permitted
+   221→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/toggle.tsx': Operation not permitted
+   222→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/context-menu.tsx': Operation not permitted
+   223→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/carousel.tsx': Operation not permitted
+   224→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/select.tsx': Operation not permitted
+   225→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/table.tsx': Operation not permitted
+   226→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/badge.tsx': Operation not permitted
+   227→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/calendar.tsx': Operation not permitted
+   228→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/button.tsx': Operation not permitted
+   229→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/scroll-area.tsx': Operation not permitted
+   230→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/toggle-group.tsx': Operation not permitted
+   231→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/skeleton.tsx': Operation not permitted
+   232→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/checkbox.tsx': Operation not permitted
+   233→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/form.tsx': Operation not permitted
+   234→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/command.tsx': Operation not permitted
+   235→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/aspect-ratio.tsx': Operation not permitted
+   236→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/separator.tsx': Operation not permitted
+   237→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/textarea.tsx': Operation not permitted
+   238→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/tabs.tsx': Operation not permitted
+   239→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/tooltip.tsx': Operation not permitted
+   240→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/input.tsx': Operation not permitted
+   241→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/resizable.tsx': Operation not permitted
+   242→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/sonner.tsx': Operation not permitted
+   243→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/card.tsx': Operation not permitted
+   244→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/slider.tsx': Operation not permitted
+   245→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/progress.tsx': Operation not permitted
+   246→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/sheet.tsx': Operation not permitted
+   247→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/input-otp.tsx': Operation not permitted
+   248→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/hover-card.tsx': Operation not permitted
+   249→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/radio-group.tsx': Operation not permitted
+   250→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui/switch.tsx': Operation not permitted
+   251→chown: changing ownership of '/opt/lawu-dashboard/src/components/ui': Operation not permitted
+   252→chown: changing ownership of '/opt/lawu-dashboard/src/components/lawu/search-view.tsx': Operation not permitted
+   253→chown: changing ownership of '/opt/lawu-dashboard/src/components/lawu/settings-view.tsx': Operation not permitted
+   254→chown: changing ownership of '/opt/lawu-dashboard/src/components/lawu/code-block.tsx': Operation not permitted
+   255→chown: changing ownership of '/opt/lawu-dashboard/src/components/lawu/monitor-view.tsx': Operation not permitted
+   256→chown: changing ownership of '/opt/lawu-dashboard/src/components/lawu/guide-view.tsx': Operation not permitted
+   257→chown: changing ownership of '/opt/lawu-dashboard/src/components/lawu/chat-view.tsx': Operation not permitted
+   258→chown: changing ownership of '/opt/lawu-dashboard/src/components/lawu': Operation not permitted
+   259→chown: changing ownership of '/opt/lawu-dashboard/src/components/theme-provider.tsx': Operation not permitted
+   260→chown: changing ownership of '/opt/lawu-dashboard/src/components': Operation not permitted
+   261→chown: changing ownership of '/opt/lawu-dashboard/src/lib/lawu.ts': Operation not permitted
+   262→chown: changing ownership of '/opt/lawu-dashboard/src/lib/db.ts': Operation not permitted
+   263→chown: changing ownership of '/opt/lawu-dashboard/src/lib/lawu-backend.ts': Operation not permitted
+   264→chown: changing ownership of '/opt/lawu-dashboard/src/lib/utils.ts': Operation not permitted
+   265→chown: changing ownership of '/opt/lawu-dashboard/src/lib': Operation not permitted
+   266→chown: changing ownership of '/opt/lawu-dashboard/src/hooks/use-toast.ts': Operation not permitted
+   267→chown: changing ownership of '/opt/lawu-dashboard/src/hooks/use-mobile.ts': Operation not permitted
+   268→chown: changing ownership of '/opt/lawu-dashboard/src/hooks': Operation not permitted
+   269→chown: changing ownership of '/opt/lawu-dashboard/src/app/page.tsx': Operation not permitted
+   270→chown: changing ownership of '/opt/lawu-dashboard/src/app/globals.css': Operation not permitted
+   271→chown: changing ownership of '/opt/lawu-dashboard/src/app/layout.tsx': Operation not permitted
+   272→chown: changing ownership of '/opt/lawu-dashboard/src/app/api/alerts/route.ts': Operation not permitted
+   273→chown: changing ownership of '/opt/lawu-dashboard/src/app/api/alerts': Operation not permitted
+   274→chown: changing ownership of '/opt/lawu-dashboard/src/app/api/stats/route.ts': Operation not permitted
+   275→chown: changing ownership of '/opt/lawu-dashboard/src/app/api/stats': Operation not permitted
+   276→chown: changing ownership of '/opt/lawu-dashboard/src/app/api/chat/route.ts': Operation not permitted
+   277→chown: changing ownership of '/opt/lawu-dashboard/src/app/api/chat': Operation not permitted
+   278→chown: changing ownership of '/opt/lawu-dashboard/src/app/api/settings/route.ts': Operation not permitted
+   279→chown: changing ownership of '/opt/lawu-dashboard/src/app/api/settings': Operation not permitted
+   280→chown: changing ownership of '/opt/lawu-dashboard/src/app/api/conversations/[id]/route.ts': Operation not permitted
+   281→chown: changing ownership of '/opt/lawu-dashboard/src/app/api/conversations/[id]': Operation not permitted
+   282→chown: changing ownership of '/opt/lawu-dashboard/src/app/api/conversations/route.ts': Operation not permitted
+   283→chown: changing ownership of '/opt/lawu-dashboard/src/app/api/conversations': Operation not permitted
+   284→chown: changing ownership of '/opt/lawu-dashboard/src/app/api/route.ts': Operation not permitted
+   285→chown: changing ownership of '/opt/lawu-dashboard/src/app/api/search/route.ts': Operation not permitted
+   286→chown: changing ownership of '/opt/lawu-dashboard/src/app/api/search': Operation not permitted
+   287→chown: changing ownership of '/opt/lawu-dashboard/src/app/api': Operation not permitted
+   288→chown: changing ownership of '/opt/lawu-dashboard/src/app': Operation not permitted
+   289→chown: changing ownership of '/opt/lawu-dashboard/src': Operation not permitted
+   290→chown: changing ownership of '/opt/lawu-dashboard': Operation not permitted
+   291→sed: couldn't open temporary file /opt/lawu-dashboard/sedxhDkOA: Permission denied
+   292→Password: 
+   293→nur@srv-fine:~$ su
+   294→Password: 
+   295→root@srv-fine:/home/nur# # Sebagai root
+   296→useradd -D   # lihat default config
+   297→useradd --create-home --shell /bin/bash lawu-web 2>&1
+   298→echo "Exit code: $?"
+   299→
+   300→# Kalau ada error seperti "useradd: user 'lawu-web' already exists"
+   301→# Tapi user tidak terlihat di `id lawu-web`, kemungkinan ada di /etc/shadow tapi tidak di /etc/passwd
+   302→grep lawu-web /etc/passwd /etc/shadow /etc/group 2>&1
+   303→
+   304→# Kalau ada entry korup, hapus manual
+   305→userdel lawu-web 2>/dev/null
+   306→groupdel lawu-web 2>/dev/null
+   307→rm -rf /home/lawu-web /var/spool/mail/lawu-web
+   308→
+   309→# Lalu buat ulang
+   310→useradd -m -s /bin/bash lawu-web
+   311→echo "lawu-web:lawu123" | chpasswd
+   312→id lawu-web
+   313→bash: useradd: command not found
+   314→bash: useradd: command not found
+   315→Exit code: 127
+   316→bash: useradd: command not found
+   317→bash: chpasswd: command not found
+   318→id: ‘lawu-web’: no such user
+   319→

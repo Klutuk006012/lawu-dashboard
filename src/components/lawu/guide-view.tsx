@@ -1814,6 +1814,10 @@ export function GuideView() {
             <strong className="text-amber-700 dark:text-amber-300">
               JANGAN jalankan perintah <code className="rounded bg-amber-100 px-1 py-0.5 text-[10px] dark:bg-amber-900/50">sudo</code> sebagai user lawu — akan error "lawu is not in the sudoers file".
             </strong>
+            <br />
+            <strong className="text-amber-700 dark:text-amber-300">
+              ⚠ JANGAN paste block yang mengandung perintah <code className="rounded bg-amber-100 px-1 py-0.5 text-[10px] dark:bg-amber-900/50">exit</code> — itu akan menutup SSH session sebelum perintah berikutnya jalan. Hanya jalankan <code className="rounded bg-amber-100 px-1 py-0.5 text-[10px] dark:bg-amber-900/50">exit</code> secara manual saat Anda memang ingin keluar.
+            </strong>
           </div>
         </div>
       </div>

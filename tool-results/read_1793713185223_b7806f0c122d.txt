@@ -1,0 +1,756 @@
+     1→#!/usr/bin/env python3
+     2→"""
+     3→Generator HTML untuk PDF Panduan Setup Server Lawu-2.5-Fine.
+     4→Membaca code constants dari guide-view.tsx, generate HTML bersih,
+     5→lalu convert ke PDF via html2pdf-next.js (Paged.js).
+     6→"""
+     7→import re
+     8→import sys
+     9→from pathlib import Path
+    10→
+    11→GUIDE_VIEW = Path("/home/z/my-project/src/components/lawu/guide-view.tsx")
+    12→OUTPUT_HTML = Path("/home/z/my-project/upload/lawu-setup-guide.html")
+    13→
+    14→# ======================================================================
+    15→# 1. EXTRACT CODE CONSTANTS DARI guide-view.tsx
+    16→# ======================================================================
+    17→
+    18→def extract_constants(source: str) -> dict:
+    19→    """Extract semua `const NAME = `...`` dari source TypeScript."""
+    20→    constants = {}
+    21→    pattern = re.compile(r'^const (\w+) = `', re.MULTILINE)
+    22→    matches = list(pattern.finditer(source))
+    23→    for m in matches:
+    24→        name = m.group(1)
+    25→        start = m.end()
+    26→        # Cari closing backtick yang TIDAK didahului \\
+    27→        idx = start
+    28→        while idx < len(source):
+    29→            bt_pos = source.find('`', idx)
+    30→            if bt_pos == -1:
+    31→                break
+    32→            # Cek apakah backtick didahului \\
+    33→            bs_count = 0
+    34→            j = bt_pos - 1
+    35→            while j >= 0 and source[j] == '\\':
+    36→                bs_count += 1
+    37→                j -= 1
+    38→            # Jika jumlah backslash genap, backtick tidak di-escape
+    39→            if bs_count % 2 == 0:
+    40→                raw = source[start:bt_pos]
+    41→                content = raw.replace('\\`', '`').replace('\\\\', '\\').replace('\\$', '$')
+    42→                constants[name] = content
+    43→                break
+    44→            idx = bt_pos + 1
+    45→    return constants
+    46→
+    47→source = GUIDE_VIEW.read_text(encoding='utf-8')
+    48→consts = extract_constants(source)
+    49→print(f"Extracted {len(consts)} constants:", file=sys.stderr)
+    50→for k in consts:
+    51→    print(f"  - {k} ({len(consts[k])} chars)", file=sys.stderr)
+    52→
+    53→# ======================================================================
+    54→# 2. STRUKTUR PANDUAN (urutan & metadata)
+    55→# ======================================================================
+    56→
+    57→SECTIONS = [
+    58→    {
+    59→        "id": "cleanup", "step": "0", "title": "Bersihkan Server Sebelum Instalasi",
+    60→        "desc": "Jika server pernah dipakai project Lawu versi lama, jalankan langkah ini DULU. Skip jika server masih fresh.",
+    61→        "alert": {
+    62→            "variant": "destructive",
+    63→            "title": "Peringatan Data-Loss — Baca sebelum eksekusi!",
+    64→            "body": "Langkah <strong>0.D</strong> &amp; <strong>0.E</strong> menghapus permanen direktori, binary, model GGUF, dan user <code>lawu</code>. Pastikan Anda menjalankan <strong>0.C (backup)</strong> terlebih dahulu jika ada data yang ingin disimpan."
+    65→        },
+    66→        "blocks": [
+    67→            ("0.A-audit-server.sh", "CLEANUP_AUDIT"),
+    68→            ("0.B-stop-services.sh", "CLEANUP_STOP"),
+    69→            ("0.C-backup-old.sh", "CLEANUP_BACKUP"),
+    70→            ("0.D-remove-files.sh", "CLEANUP_REMOVE"),
+    71→            ("0.E-remove-user.sh", "CLEANUP_USER"),
+    72→            ("0.F-clean-configs.sh", "CLEANUP_CONFIG"),
+    73→            ("0.G-verify-clean.sh", "CLEANUP_VERIFY"),
+    74→        ]
+    75→    },
+    76→    {
+    77→        "id": "prereq", "step": "1", "title": "Prerequisites & Update Sistem",
+    78→        "desc": "Update Debian 13 ke versi terbaru, install build dependencies (gcc, cmake, nginx, ufw, fail2ban, python venv untuk MarkltDown). Semua paket open source dari Debian main repo.",
+    79→        "blocks": [
+    80→            ("1.A-apt-update.sh", "PREREQ_UPDATE"),
+    81→            ("1.B-apt-install-deps.sh", "PREREQ_INSTALL"),
+    82→            ("1.C-python-venv-markitdown.sh", "PREREQ_PYTHON"),
+    83→        ]
+    84→    },
+    85→    {
+    86→        "id": "user-setup", "step": "2", "title": "Setup User lawu & Struktur Direktori",
+    87→        "desc": "Buat system user 'lawu' (isolasi privilege), struktur direktori aplikasi di SSD (/opt/lawu) & data di HDD (/mnt/data).",
+    88→        "blocks": [
+    89→            ("2.A-create-user-lawu.sh", "USER_SETUP"),
+    90→            ("2.B-create-directories.sh", "USER_DIRS"),
+    91→        ]
+    92→    },
+    93→    {
+    94→        "id": "disk", "step": "3", "title": "Mount & Format HDD/SSD",
+    95→        "desc": "Identifikasi SSD (OS) vs HDD (DATA), format HDD 500GB sebagai ext4, mount otomatis via fstab, tuning SSD (TRIM, I/O scheduler).",
+    96→        "alert": {
+    97→            "variant": "warning",
+    98→            "title": "Hati-hati memilih disk!",
+    99→            "body": "Pastikan <code>/dev/sdb</code> di Langkah 3.B BENAR-BENAR HDD data kosong, bukan disk OS. Salah format = kehilangan sistem. Selalu verifikasi dengan <strong>3.A</strong> dulu sebelum 3.B."
+   100→        },
+   101→        "blocks": [
+   102→            ("3.A-identify-disks.sh", "DISK_IDENTIFY"),
+   103→            ("3.B-format-hdd-ext4.sh", "DISK_FORMAT"),
+   104→            ("3.C-fstab-mount.sh", "DISK_FSTAB"),
+   105→            ("3.D-ssd-tuning.sh", "DISK_SSD_TUNING"),
+   106→        ]
+   107→    },
+   108→    {
+   109→        "id": "arsitektur", "step": "4", "title": "Ringkasan Arsitektur",
+   110→        "desc": "Alur data end-to-end dari HDD koleksi ebook hingga dashboard web, termasuk firewall & binding localhost-only.",
+   111→        "blocks": [
+   112→            ("arsitektur.txt", "ARCH"),
+   113→        ]
+   114→    },
+   115→    {
+   116→        "id": "sysctl", "step": "5", "title": "Spesifikasi Infrastruktur & Kernel Tuning (sysctl)",
+   117→        "desc": "Parameter kernel di /etc/sysctl.d/99-lawu-fine.conf + limits.conf untuk file descriptor besar (Axum + Tantivy).",
+   118→        "blocks": [
+   119→            ("6.A-apply-sysctl.sh", "SYSCTL"),
+   120→            ("6.B-apply-limits.sh", "LIMITS_CONF"),
+   121→        ]
+   122→    },
+   123→    {
+   124→        "id": "rust", "step": "6", "title": "Install Rust Toolchain",
+   125→        "desc": "Install Rust via rustup (stable + rustfmt + clippy), set RUSTFLAGS target-cpu=native untuk optimasi AVX2 di i5-10400. Verifikasi murni CPU — tidak ada dependency GPU.",
+   126→        "blocks": [
+   127→            ("7.A-install-rustup.sh", "RUST_INSTALL"),
+   128→            ("7.B-verify-rust-cpu.sh", "RUST_VERIFY"),
+   129→        ]
+   130→    },
+   131→    {
+   132→        "id": "cargo", "step": "7", "title": "Proyek Cargo — lawu-server",
+   133→        "desc": "Inisialisasi project Cargo, paste Cargo.toml + main.rs + schema.rs, build release dengan optimasi native CPU, install binary ke ~/.cargo/bin/.",
+   134→        "blocks": [
+   135→            ("7.A-cargo-init.sh", "CARGO_NEW"),
+   136→            ("~/lawu-server/Cargo.toml", "CARGO_TOML"),
+   137→            ("7.B-build-release.sh", "CARGO_BUILD"),
+   138→        ]
+   139→    },
+   140→    {
+   141→        "id": "tantivy", "step": "8", "title": "Skema Full-Text Tantivy",
+   142→        "desc": "Skema multi-field (title, body, path, file_type, category, pages, size_bytes, indexed_at) dengan BM25 scoring, FAST field untuk sort numerik.",
+   143→        "blocks": [
+   144→            ("~/lawu-server/src/schema.rs", "TANTIVY"),
+   145→        ]
+   146→    },
+   147→    {
+   148→        "id": "api", "step": "9", "title": "Endpoint API Backend (Axum)",
+   149→        "desc": "GET /api/stats · POST /api/search (QueryParser + TopDocs) · POST /api/telegram/test. Bind 127.0.0.1:8081 (akses via Nginx reverse proxy).",
+   150→        "blocks": [
+   151→            ("~/lawu-server/src/main.rs", "AXUM_API"),
+   152→        ]
+   153→    },
+   154→    {
+   155→        "id": "llama-build", "step": "10", "title": "Build llama.cpp (Pure CPU)",
+   156→        "desc": "Clone repo llama.cpp (MIT license), build dengan GGML_NATIVE=ON + AVX2 + FMA + F16C untuk i5-10400. Verifikasi binary TIDAK ada dependency CUDA/GPU.",
+   157→        "blocks": [
+   158→            ("10.A-clone-llamacpp.sh", "LLAMA_CLONE"),
+   159→            ("10.B-build-cmake.sh", "LLAMA_BUILD"),
+   160→        ]
+   161→    },
+   162→    {
+   163→        "id": "gguf", "step": "11", "title": "Konversi & Kuantisasi Model GGUF",
+   164→        "desc": "Konversi HuggingFace → GGUF F16, lalu kuantisasi ke Q4_K_M (4.4 GB untuk model 7B). Verifikasi metadata GGUF.",
+   165→        "blocks": [
+   166→            ("12.A-convert-hf-to-gguf.sh", "GGUF_CONVERT"),
+   167→            ("12.B-quantize-q4_k_m.sh", "GGUF_QUANTIZE"),
+   168→        ]
+   169→    },
+   170→    {
+   171→        "id": "llama-serve", "step": "12", "title": "Serve llama.cpp (OpenAI-compatible)",
+   172→        "desc": "Jalankan llama-server dengan -t 6, --mmap, -c 4096, bind 127.0.0.1:8080. Test endpoint /v1/models & /v1/chat/completions. Estimasi 9-14 tok/s di i5-10400.",
+   173→        "blocks": [
+   174→            ("12.A-serve-llama.sh", "LLAMA_SERVE"),
+   175→        ]
+   176→    },
+   177→    {
+   178→        "id": "systemd", "step": "13", "title": "Unit systemd (Auto-restart & Boot)",
+   179→        "desc": "Dua service: llama-lawu (inference) & lawu-2.5-fine (API Axum). Hardening systemd (NoNewPrivileges, ProtectSystem, PrivateTmp). Auto-restart on crash.",
+   180→        "blocks": [
+   181→            ("14.A-write-llama-service.sh", "SYSTEMD_LLAMA"),
+   182→            ("14.B-write-axum-service.sh", "SYSTEMD_AXUM"),
+   183→            ("14.C-enable-services.sh", "SYSTEMD_ENABLE"),
+   184→        ]
+   185→    },
+   186→    {
+   187→        "id": "otomasi", "step": "14", "title": "Otomasi Pemantauan & Operasional",
+   188→        "desc": "File watcher inotifywait, backup harian (retensi 7 hari), laporan error harian via Telegram. Cron jobs & environment file /etc/lawu/env.",
+   189→        "blocks": [
+   190→            ("/opt/lawu/scripts/watch_ebooks.sh", "WATCH_SCRIPT"),
+   191→            ("/opt/lawu/scripts/backup_lawu.sh", "BACKUP_SCRIPT"),
+   192→            ("/opt/lawu/scripts/send_error_report.sh", "ERROR_REPORT"),
+   193→            ("/etc/lawu/env", "ENV_FILE"),
+   194→            ("crontab -e (user lawu)", "CRONTAB"),
+   195→        ]
+   196→    },
+   197→    {
+   198→        "id": "k6", "step": "15", "title": "Pengujian Beban (Load Testing k6)",
+   199→        "desc": "Install k6 (AGPL-3.0, open source). Target: p95 latency /api/search < 300ms dengan 20 VUs selama 2 menit. Error rate < 1%.",
+   200→        "blocks": [
+   201→            ("15.A-install-k6.sh", "K6_INSTALL"),
+   202→            ("~/src/load_test.js", "K6"),
+   203→        ]
+   204→    },
+   205→    {
+   206→        "id": "nginx", "step": "16", "title": "Reverse Proxy Nginx",
+   207→        "desc": "Satu port 80: dashboard/API Rust di root, inference llama.cpp di /v1/. Security headers, client_max_body_size 100MB untuk upload ebook, buffering off untuk streaming chat.",
+   208→        "blocks": [
+   209→            ("16-apply-nginx-config.sh", "NGINX"),
+   210→        ]
+   211→    },
+   212→    {
+   213→        "id": "integrasi", "step": "17", "title": "Integrasi dengan Dashboard",
+   214→        "desc": "Hubungkan dashboard ini ke server nyata: setting endpoint LLM di tab Pengaturan, arahkan fetch ke Nginx :80, setup Telegram bot token.",
+   215→        "blocks": [
+   216→            ("integrasi-dashboard.txt", "INTEGRATE"),
+   217→        ]
+   218→    },
+   219→    {
+   220→        "id": "hardening", "step": "18", "title": "⚡ Hardening Server (TERAKHIR — setelah semua service jalan)",
+   221→        "desc": "⭐ POSISI TERAKHIR — get it running FIRST, lock it down LAST. Default deny incoming (allow 22/80/443), SSH key-only, fail2ban. HANYA jalankan setelah semua service aktif + test sukses.",
+   222→        "alert": {
+   223→            "variant": "warning",
+   224→            "title": "Jangan terkunci dari server!",
+   225→            "body": "Sebelum enable UFW &amp; disable SSH password, PASTIKAN Anda sudah setup SSH key (Langkah 18.C) DAN test login dengan key di terminal terpisah. Jika gagal, kembalikan config backup: sudo cp /etc/ssh/sshd_config.bak.* /etc/ssh/sshd_config && sudo systemctl restart sshd."
+   226→        },
+   227→        "blocks": [
+   228→            ("18.A-ufw-firewall.sh", "FIREWALL_UFW"),
+   229→            ("18.B-sshd-hardening.sh", "SSH_HARDENING"),
+   230→            ("18.C-ssh-key-setup.sh", "SSH_KEY"),
+   231→            ("18.D-fail2ban-sshd.sh", "FAIL2BAN"),
+   232→        ]
+   233→    },
+   234→    {
+   235→        "id": "checklist", "step": "19", "title": "Final Go-Live Checklist",
+   236→        "desc": "Audit terakhir SEBELUM buka server ke publik. Cek sistem, disk, firewall, services, ports, API health, cron, backup, memory. Semua harus sehat.",
+   237→        "alert": {
+   238→            "variant": "info",
+   239→            "title": "Jalankan checklist ini sebagai verifikasi akhir",
+   240→            "body": "Skrip ini akan cetak status real-time dari semua komponen. Periksa setiap baris — jika ada <code>✗</code> atau service <code>inactive</code>, FIX dulu sebelum buka port 80 ke publik."
+   241→        },
+   242→        "blocks": [
+   243→            ("19-go-live-checklist.sh", "CHECKLIST_SCRIPT"),
+   244→        ]
+   245→    },
+   246→]
+   247→
+   248→# ======================================================================
+   249→# 3. GENERATE HTML
+   250→# ======================================================================
+   251→
+   252→def esc(s: str) -> str:
+   253→    """HTML escape."""
+   254→    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+   255→
+   256→# Build TOC entries
+   257→toc_items = "\n".join(
+   258→    f'<li class="toc-item"><span class="toc-step">{s["step"]}</span>'
+   259→    f'<a href="#{s["id"]}" class="toc-link">{esc(s["title"])}</a></li>'
+   260→    for s in SECTIONS
+   261→)
+   262→
+   263→# Build sections HTML
+   264→sections_html = []
+   265→for sec in SECTIONS:
+   266→    alert_html = ""
+   267→    if sec.get("alert"):
+   268→        a = sec["alert"]
+   269→        variant_class = f"alert-{a['variant']}"
+   270→        icon_char = '⚠' if a['variant']=='destructive' else '!' if a['variant']=='warning' else 'ℹ'
+   271→        alert_html = f"""
+   272→        <div class="alert {variant_class}">
+   273→          <div class="alert-icon">{icon_char}</div>
+   274→          <div class="alert-content">
+   275→            <div class="alert-title">{a['title']}</div>
+   276→            <div class="alert-body">{a['body']}</div>
+   277→          </div>
+   278→        </div>"""
+   279→
+   280→    blocks_html = ""
+   281→    for filename, const_name in sec["blocks"]:
+   282→        code = consts.get(const_name, f"# ERROR: constant {const_name} not found")
+   283→        lang = filename.rsplit('.', 1)[-1] if '.' in filename else 'sh'
+   284→        blocks_html += f"""
+   285→        <div class="code-block">
+   286→          <div class="code-header">
+   287→            <span class="code-filename">{esc(filename)}</span>
+   288→            <span class="code-lang">{esc(lang)}</span>
+   289→          </div>
+   290→          <pre class="code-content"><code>{esc(code)}</code></pre>
+   291→        </div>"""
+   292→
+   293→    sections_html.append(f"""
+   294→    <section id="{sec['id']}" class="guide-section">
+   295→      <div class="section-header">
+   296→        <span class="step-badge">{sec['step']}</span>
+   297→        <div>
+   298→          <h2 class="section-title">{esc(sec['title'])}</h2>
+   299→          <p class="section-desc">{esc(sec['desc'])}</p>
+   300→        </div>
+   301→      </div>
+   302→      {alert_html}
+   303→      <div class="section-blocks">
+   304→        {blocks_html}
+   305→      </div>
+   306→    </section>""")
+   307→
+   308→sections_html_str = "\n".join(sections_html)
+   309→
+   310→html = f"""<!DOCTYPE html>
+   311→<html lang="id">
+   312→<head>
+   313→<meta charset="UTF-8">
+   314→<title>Panduan Setup Server Lawu-2.5-Fine</title>
+   315→<style>
+   316→  /* ====== PAGE SETUP ====== */
+   317→  @page {{
+   318→    size: A4;
+   319→    margin: 0;
+   320→  }}
+   321→
+   322→  /* Page numbering via Paged.js */
+   323→  @page {{
+   324→    @bottom-center {{
+   325→      content: counter(page);
+   326→      font-family: 'Liberation Sans', sans-serif;
+   327→      font-size: 9pt;
+   328→      color: #666;
+   329→    }}
+   330→  }}
+   331→  @page cover {{
+   332→    @bottom-center {{ content: none; }}
+   333→  }}
+   334→
+   335→  /* ====== RESET ====== */
+   336→  * {{
+   337→    margin: 0;
+   338→    padding: 0;
+   339→    box-sizing: border-box;
+   340→  }}
+   341→  html, body {{
+   342→    margin: 0;
+   343→    padding: 0;
+   344→    background: #ffffff;
+   345→    font-family: 'Liberation Sans', 'DejaVu Sans', sans-serif;
+   346→    font-size: 10.5pt;
+   347→    line-height: 1.55;
+   348→    color: #1a1a1a;
+   349→    -webkit-print-color-adjust: exact;
+   350→    print-color-adjust: exact;
+   351→  }}
+   352→
+   353→  /* ====== COVER PAGE ====== */
+   354→  .cover {{
+   355→    page: cover;
+   356→    width: 210mm;
+   357→    height: 297mm;
+   358→    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+   359→    color: #ffffff;
+   360→    padding: 25mm 20mm;
+   361→    display: flex;
+   362→    flex-direction: column;
+   363→    justify-content: space-between;
+   364→    position: relative;
+   365→    overflow: hidden;
+   366→    break-after: page;
+   367→  }}
+   368→  .cover::before {{
+   369→    content: "";
+   370→    position: absolute;
+   371→    top: -50mm; right: -50mm;
+   372→    width: 120mm; height: 120mm;
+   373→    background: radial-gradient(circle, rgba(52,168,83,0.15) 0%, transparent 70%);
+   374→    border-radius: 50%;
+   375→  }}
+   376→  .cover::after {{
+   377→    content: "";
+   378→    position: absolute;
+   379→    bottom: -40mm; left: -40mm;
+   380→    width: 100mm; height: 100mm;
+   381→    background: radial-gradient(circle, rgba(234,67,53,0.12) 0%, transparent 70%);
+   382→    border-radius: 50%;
+   383→  }}
+   384→  .cover-top {{
+   385→    position: relative;
+   386→    z-index: 2;
+   387→  }}
+   388→  .cover-badge {{
+   389→    display: inline-block;
+   390→    padding: 4px 12px;
+   391→    background: rgba(52,168,83,0.2);
+   392→    border: 1px solid rgba(52,168,83,0.5);
+   393→    border-radius: 4px;
+   394→    font-size: 9pt;
+   395→    font-weight: 600;
+   396→    color: #81c995;
+   397→    letter-spacing: 0.5px;
+   398→    margin-bottom: 16mm;
+   399→  }}
+   400→  .cover-title {{
+   401→    font-size: 36pt;
+   402→    font-weight: 800;
+   403→    line-height: 1.1;
+   404→    letter-spacing: -0.5px;
+   405→    margin-bottom: 6mm;
+   406→  }}
+   407→  .cover-subtitle {{
+   408→    font-size: 14pt;
+   409→    font-weight: 400;
+   410→    color: #cbd5e1;
+   411→    margin-bottom: 12mm;
+   412→    line-height: 1.4;
+   413→  }}
+   414→  .cover-tags {{
+   415→    display: flex;
+   416→    flex-wrap: wrap;
+   417→    gap: 6px;
+   418→    margin-bottom: 8mm;
+   419→  }}
+   420→  .cover-tag {{
+   421→    padding: 3px 10px;
+   422→    background: rgba(255,255,255,0.08);
+   423→    border: 1px solid rgba(255,255,255,0.15);
+   424→    border-radius: 3px;
+   425→    font-size: 8.5pt;
+   426→    color: #e2e8f0;
+   427→  }}
+   428→  .cover-middle {{
+   429→    position: relative;
+   430→    z-index: 2;
+   431→    background: rgba(255,255,255,0.04);
+   432→    border: 1px solid rgba(255,255,255,0.1);
+   433→    border-radius: 8px;
+   434→    padding: 8mm 10mm;
+   435→    margin: 8mm 0;
+   436→  }}
+   437→  .cover-middle h3 {{
+   438→    font-size: 11pt;
+   439→    color: #34a853;
+   440→    margin-bottom: 4mm;
+   441→    font-weight: 600;
+   442→  }}
+   443→  .cover-middle p {{
+   444→    font-size: 10pt;
+   445→    color: #cbd5e1;
+   446→    line-height: 1.5;
+   447→  }}
+   448→  .cover-bottom {{
+   449→    position: relative;
+   450→    z-index: 2;
+   451→    border-top: 1px solid rgba(255,255,255,0.1);
+   452→    padding-top: 6mm;
+   453→    display: flex;
+   454→    justify-content: space-between;
+   455→    align-items: flex-end;
+   456→    font-size: 9pt;
+   457→    color: #94a3b8;
+   458→  }}
+   459→  .cover-bottom-left strong {{
+   460→    color: #e2e8f0;
+   461→    font-size: 10pt;
+   462→    display: block;
+   463→    margin-bottom: 2mm;
+   464→  }}
+   465→  .cover-version {{
+   466→    text-align: right;
+   467→  }}
+   468→  .cover-version strong {{
+   469→    color: #34a853;
+   470→    font-size: 11pt;
+   471→  }}
+   472→
+   473→  /* ====== TOC PAGE ====== */
+   474→  .toc {{
+   475→    padding: 18mm 20mm;
+   476→    break-after: page;
+   477→    break-before: page;
+   478→  }}
+   479→  .toc h1 {{
+   480→    font-size: 22pt;
+   481→    font-weight: 700;
+   482→    color: #0f172a;
+   483→    margin-bottom: 4mm;
+   484→    padding-bottom: 4mm;
+   485→    border-bottom: 2px solid #34a853;
+   486→  }}
+   487→  .toc-subtitle {{
+   488→    font-size: 10pt;
+   489→    color: #64748b;
+   490→    margin-bottom: 8mm;
+   491→  }}
+   492→  .toc-list {{
+   493→    list-style: none;
+   494→  }}
+   495→  .toc-item {{
+   496→    display: flex;
+   497→    align-items: baseline;
+   498→    gap: 8px;
+   499→    padding: 3mm 0;
+   500→    border-bottom: 1px dotted #e2e8f0;
+   501→    font-size: 10.5pt;
+   502→  }}
+   503→  .toc-step {{
+   504→    display: inline-block;
+   505→    min-width: 24px;
+   506→    height: 24px;
+   507→    line-height: 24px;
+   508→    text-align: center;
+   509→    background: #0f172a;
+   510→    color: #ffffff;
+   511→    border-radius: 50%;
+   512→    font-size: 9pt;
+   513→    font-weight: 700;
+   514→    flex-shrink: 0;
+   515→  }}
+   516→  .toc-link {{
+   517→    color: #1e293b;
+   518→    text-decoration: none;
+   519→    font-weight: 500;
+   520→  }}
+   521→
+   522→  /* ====== CONTENT PAGES ====== */
+   523→  .content {{
+   524→    padding: 16mm 18mm 20mm 18mm;
+   525→  }}
+   526→
+   527→  .guide-section {{
+   528→    break-inside: avoid-page;
+   529→    margin-bottom: 8mm;
+   530→  }}
+   531→  .guide-section > .section-header {{
+   532→    break-after: avoid;
+   533→  }}
+   534→
+   535→  .section-header {{
+   536→    display: flex;
+   537→    gap: 10px;
+   538→    align-items: flex-start;
+   539→    margin-bottom: 5mm;
+   540→    padding-bottom: 3mm;
+   541→    border-bottom: 1px solid #e2e8f0;
+   542→  }}
+   543→  .step-badge {{
+   544→    display: inline-block;
+   545→    min-width: 28px;
+   546→    height: 28px;
+   547→    line-height: 28px;
+   548→    text-align: center;
+   549→    background: #0f172a;
+   550→    color: #ffffff;
+   551→    border-radius: 50%;
+   552→    font-size: 10pt;
+   553→    font-weight: 700;
+   554→    flex-shrink: 0;
+   555→  }}
+   556→  .section-title {{
+   557→    font-size: 14pt;
+   558→    font-weight: 700;
+   559→    color: #0f172a;
+   560→    line-height: 1.2;
+   561→    margin-bottom: 2mm;
+   562→  }}
+   563→  .section-desc {{
+   564→    font-size: 9.5pt;
+   565→    color: #64748b;
+   566→    line-height: 1.45;
+   567→  }}
+   568→
+   569→  /* ====== ALERTS ====== */
+   570→  .alert {{
+   571→    display: flex;
+   572→    gap: 10px;
+   573→    padding: 4mm 5mm;
+   574→    border-radius: 6px;
+   575→    border-left: 4px solid;
+   576→    margin: 4mm 0;
+   577→    break-inside: avoid;
+   578→  }}
+   579→  .alert-destructive {{
+   580→    background: #fef2f2;
+   581→    border-color: #dc2626;
+   582→  }}
+   583→  .alert-warning {{
+   584→    background: #fffbeb;
+   585→    border-color: #d97706;
+   586→  }}
+   587→  .alert-info {{
+   588→    background: #eff6ff;
+   589→    border-color: #2563eb;
+   590→  }}
+   591→  .alert-icon {{
+   592→    font-size: 14pt;
+   593→    font-weight: 700;
+   594→    flex-shrink: 0;
+   595→    width: 20px;
+   596→    text-align: center;
+   597→  }}
+   598→  .alert-destructive .alert-icon {{ color: #dc2626; }}
+   599→  .alert-warning .alert-icon {{ color: #d97706; }}
+   600→  .alert-info .alert-icon {{ color: #2563eb; }}
+   601→  .alert-content {{
+   602→    flex: 1;
+   603→  }}
+   604→  .alert-title {{
+   605→    font-size: 10.5pt;
+   606→    font-weight: 700;
+   607→    margin-bottom: 2mm;
+   608→    color: #0f172a;
+   609→  }}
+   610→  .alert-body {{
+   611→    font-size: 9.5pt;
+   612→    color: #475569;
+   613→    line-height: 1.5;
+   614→  }}
+   615→  .alert-body code {{
+   616→    background: rgba(0,0,0,0.06);
+   617→    padding: 1px 4px;
+   618→    border-radius: 3px;
+   619→    font-family: 'Liberation Mono', 'DejaVu Sans Mono', monospace;
+   620→    font-size: 8.5pt;
+   621→  }}
+   622→
+   623→  /* ====== CODE BLOCKS ====== */
+   624→  .code-block {{
+   625→    margin: 3mm 0;
+   626→    border: 1px solid #e2e8f0;
+   627→    border-radius: 6px;
+   628→    overflow: hidden;
+   629→    break-inside: avoid;
+   630→    background: #fafafa;
+   631→  }}
+   632→  .code-header {{
+   633→    display: flex;
+   634→    justify-content: space-between;
+   635→    align-items: center;
+   636→    padding: 2mm 4mm;
+   637→    background: #1e293b;
+   638→    color: #e2e8f0;
+   639→  }}
+   640→  .code-filename {{
+   641→    font-family: 'Liberation Mono', 'DejaVu Sans Mono', monospace;
+   642→    font-size: 8.5pt;
+   643→    font-weight: 500;
+   644→  }}
+   645→  .code-lang {{
+   646→    font-family: 'Liberation Mono', monospace;
+   647→    font-size: 7.5pt;
+   648→    padding: 1px 6px;
+   649→    background: rgba(255,255,255,0.1);
+   650→    border-radius: 3px;
+   651→    text-transform: uppercase;
+   652→    letter-spacing: 0.5px;
+   653→  }}
+   654→  .code-content {{
+   655→    padding: 4mm 5mm;
+   656→    margin: 0;
+   657→    background: #f8fafc;
+   658→    overflow-x: auto;
+   659→    font-family: 'Liberation Mono', 'DejaVu Sans Mono', 'Courier New', monospace;
+   660→    font-size: 8pt;
+   661→    line-height: 1.45;
+   662→    color: #1e293b;
+   663→    white-space: pre;
+   664→    word-wrap: normal;
+   665→  }}
+   666→  .code-content code {{
+   667→    font-family: inherit;
+   668→    background: none;
+   669→    padding: 0;
+   670→  }}
+   671→
+   672→  /* ====== FOOTER CARD ====== */
+   673→  .footer-card {{
+   674→    margin-top: 10mm;
+   675→    padding: 6mm 8mm;
+   676→    background: #f0fdf4;
+   677→    border: 1px solid #bbf7d0;
+   678→    border-radius: 8px;
+   679→    break-inside: avoid;
+   680→  }}
+   681→  .footer-card h3 {{
+   682→    font-size: 11pt;
+   683→    color: #137333;
+   684→    margin-bottom: 3mm;
+   685→  }}
+   686→  .footer-card p {{
+   687→    font-size: 9.5pt;
+   688→    color: #475569;
+   689→    line-height: 1.55;
+   690→  }}
+   691→</style>
+   692→</head>
+   693→<body>
+   694→
+   695→<!-- ====== COVER PAGE ====== -->
+   696→<div class="cover">
+   697→  <div class="cover-top">
+   698→    <div class="cover-badge">PANDUAN IMPLEMENTASI · v1.0</div>
+   699→    <h1 class="cover-title">Panduan Setup Server<br>Lawu-2.5-Fine</h1>
+   700→    <p class="cover-subtitle">Panduan komprehensif 20 langkah dari server kosong sampai production-ready untuk Debian 13 dengan Rust + Axum + Tantivy + llama.cpp (Pure CPU).</p>
+   701→    <div class="cover-tags">
+   702→      <span class="cover-tag">Debian 13 · Linux 6.x</span>
+   703→      <span class="cover-tag">Rust · Axum · Tantivy · Rayon</span>
+   704→      <span class="cover-tag">llama.cpp GGUF (Q4_K_M)</span>
+   705→      <span class="cover-tag">Pure CPU · No GPU</span>
+   706→      <span class="cover-tag">Open Source (MIT/Apache)</span>
+   707→    </div>
+   708→  </div>
+   709→
+   710→  <div class="cover-middle">
+   711→    <h3>Target Hardware</h3>
+   712→    <p><strong>Intel Core i5-10400</strong> (6 Core / 12 Thread · AVX2 · 2.9–4.3 GHz) · <strong>16 GB DDR4</strong> · <strong>SSD 128 GB</strong> (OS — Debian 13) · <strong>HDD 500 GB</strong> (DATA — koleksi ebook &amp; index Tantivy).</p>
+   713→  </div>
+   714→
+   715→  <div class="cover-bottom">
+   716→    <div class="cover-bottom-left">
+   717→      <strong>Lawu-2.5-Fine</strong>
+   718→      AI Model Cerdas, Irit Budget · Muslim Ahlussunnah wal Jama&apos;ah
+   719→    </div>
+   720→    <div class="cover-version">
+   721→      Versi Dokumen<br><strong>1.0 · 2025</strong>
+   722→    </div>
+   723→  </div>
+   724→</div>
+   725→
+   726→<!-- ====== TABLE OF CONTENTS ====== -->
+   727→<div class="toc">
+   728→  <h1>Daftar Isi</h1>
+   729→  <p class="toc-subtitle">20 langkah komprehensif — dari pembersihan server hingga go-live checklist.</p>
+   730→  <ul class="toc-list">
+   731→    {toc_items}
+   732→  </ul>
+   733→
+   734→  <div class="footer-card" style="margin-top: 12mm;">
+   735→    <h3>Urutan Eksekusi yang Disarankan</h3>
+   736→    <p>Langkah 0 (bersihkan) → 1 (prerequisites) → 2 (user &amp; dir) → 3 (disk) → 4 (firewall) → 5-6 (arsitektur &amp; sysctl) → 7 (Rust) → 8-10 (Axum API) → 11-13 (llama.cpp) → 14 (systemd) → 15 (otomasi) → 16 (load test) → 17 (Nginx) → 18 (integrasi) → 19 (go-live checklist).</p>
+   737→  </div>
+   738→</div>
+   739→
+   740→<!-- ====== CONTENT ====== -->
+   741→<div class="content">
+   742→  {sections_html_str}
+   743→
+   744→  <div class="footer-card">
+   745→    <h3>✓ Setelah Langkah 19 Selesai</h3>
+   746→    <p>Server Lawu-2.5-Fine Anda siap menerima traffic publik via port 80 (Nginx). Inference &amp; API tetap bind localhost-only (Paten keamanan). Backup harian aktif, fail2ban menjaga SSH, UFW membatasi port terbuka. <strong>Paten 1-7 terpenuhi semua:</strong> Rust backend, murni CPU, Linux only, open source, parallel Rayon, Islam Ahlussunnah wal Jama&apos;ah.</p>
+   747→  </div>
+   748→</div>
+   749→
+   750→</body>
+   751→</html>
+   752→"""
+   753→
+   754→OUTPUT_HTML.write_text(html, encoding='utf-8')
+   755→print(f"\n✓ HTML written: {OUTPUT_HTML} ({OUTPUT_HTML.stat().st_size} bytes)", file=sys.stderr)
+   756→

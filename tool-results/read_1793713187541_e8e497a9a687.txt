@@ -1,0 +1,802 @@
+     1→     1→'use client'
+     2→     2→
+     3→     3→import * as React from 'react'
+     4→     4→import {
+     5→     5→  CheckCircle2,
+     6→     6→  ListChecks,
+     7→     7→  ShieldAlert,
+     8→     8→  Terminal,
+     9→     9→} from 'lucide-react'
+    10→    10→import { CodeBlock } from '@/components/lawu/code-block'
+    11→    11→import { Badge } from '@/components/ui/badge'
+    12→    12→import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+    13→    13→import { LAWU_HARDWARE } from '@/lib/lawu'
+    14→    14→
+    15→    15→function Section({
+    16→    16→  id,
+    17→    17→  step,
+    18→    18→  title,
+    19→    19→  desc,
+    20→    20→  children,
+    21→    21→}: {
+    22→    22→  id: string
+    23→    23→  step: string
+    24→    24→  title: string
+    25→    25→  desc?: string
+    26→    26→  children?: React.ReactNode
+    27→    27→}) {
+    28→    28→  return (
+    29→    29→    <section id={id} className="scroll-mt-24">
+    30→    30→      <div className="flex items-start gap-3">
+    31→    31→        <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+    32→    32→          {step}
+    33→    33→        </span>
+    34→    34→        <div className="min-w-0 flex-1">
+    35→    35→          <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+    36→    36→          {desc && <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{desc}</p>}
+    37→    37→          <div className="mt-3 space-y-3">{children}</div>
+    38→    38→        </div>
+    39→    39→      </div>
+    40→    40→    </section>
+    41→    41→  )
+    42→    42→}
+    43→    43→
+    44→    44→// ======================================================================
+    45→    45→// LANGKAH 0 — BERSIHKAN SERVER SEBELUM INSTALASI
+    46→    46→// ======================================================================
+    47→    47→
+    48→    48→const CLEANUP_AUDIT = `# 0.A — Audit server kotor (JALANKAN DULU, lihat apa yang ada sebelum bersihkan)
+    49→    49→# Paten 3: murni CPU, tanpa GPU — audit hanya mencari sisa project Lawu lama
+    50→    50→
+    51→    51→echo "=== AUDIT SERVER LAWU LAMA ==="
+    52→    52→
+    53→    53→echo "1. Proses yang dengarkan port Lawu (80/8080/8081):"
+    54→    54→sudo ss -tlnp | grep -E ':(80|8080|8081)\\b' || echo "   (kosong)"
+    55→    55→
+    56→    56→echo "2. Service systemd Lawu/llama lama:"
+    57→    57→systemctl list-units --type=service --all | grep -iE 'lawu|llama|tantivy' || echo "   (kosong)"
+    58→    58→systemctl list-unit-files | grep -iE 'lawu|llama|tantivy' || echo "   (tidak ada unit file)"
+    59→    59→
+    60→    60→echo "3. Cron jobs Lawu lama:"
+    61→    61→crontab -l 2>/dev/null | grep -iE 'lawu|llama' || echo "   (user crontab kosong)"
+    62→    62→sudo crontab -l -u lawu 2>/dev/null || echo "   (crontab user lawu tidak ada)"
+    63→    63→ls /etc/cron.d/ 2>/dev/null | grep -i lawu || echo "   (/etc/cron.d bersih)"
+    64→    64→
+    65→    65→echo "4. User lawu lama:"
+    66→    66→id lawu 2>/dev/null || echo "   (user lawu tidak ada)"
+    67→    67→grep -E '^lawu:' /etc/passwd || echo "   (tidak ada di /etc/passwd)"
+    68→    68→
+    69→    69→echo "5. Direktori & binary Lawu lama:"
+    70→    70→ls -la /opt/lawu 2>/dev/null || echo "   /opt/lawu tidak ada"
+    71→    71→ls -la /mnt/data/ebooks 2>/dev/null || echo "   /mnt/data/ebooks tidak ada"
+    72→    72→ls -la /mnt/data/tantivy_index 2>/dev/null || echo "   /mnt/data/tantivy_index tidak ada"
+    73→    73→ls -la ~/llama.cpp 2>/dev/null || echo "   ~/llama.cpp tidak ada"
+    74→    74→ls -la ~/.cargo/bin/lawu-server 2>/dev/null || echo "   ~/.cargo/bin/lawu-server tidak ada"
+    75→    75→ls -la ~/models/lawu-2.5-fine-*.gguf 2>/dev/null || echo "   ~/models tidak ada model GGUF Lawu"
+    76→    76→
+    77→    77→echo "6. sysctl & Nginx config Lawu lama:"
+    78→    78→ls /etc/sysctl.d/ 2>/dev/null | grep -i lawu || echo "   (sysctl bersih)"
+    79→    79→ls /etc/nginx/sites-enabled/ 2>/dev/null | grep -i lawu || echo "   (nginx bersih)"
+    80→    80→
+    81→    81→echo "7. Log Lawu lama:"
+    82→    82→ls /var/log/lawu 2>/dev/null || echo "   /var/log/lawu tidak ada"`
+    83→    83→
+    84→    84→const CLEANUP_STOP = `# 0.B — Stop & disable service Lawu/llama lama
+    85→    85→# HATI-HATI: ini menghentikan service Lawu lama yang sedang berjalan
+    86→    86→
+    87→    87→# 1) Stop & disable semua service systemd Lawu/llama lama
+    88→    88→for svc in llama-lawu lawu-2.5-fine lawu tantivy; do
+    89→    89→  sudo systemctl stop "$svc" 2>/dev/null || true
+    90→    90→  sudo systemctl disable "$svc" 2>/dev/null || true
+    91→    91→done
+    92→    92→
+    93→    93→# 2) Hapus unit file systemd lama (daemon-reload setelahnya)
+    94→    94→sudo rm -f /etc/systemd/system/llama-lawu.service
+    95→    95→sudo rm -f /etc/systemd/system/lawu-2.5-fine.service
+    96→    96→sudo rm -f /etc/systemd/system/lawu.service
+    97→    97→sudo rm -f /etc/systemd/system/tantivy.service
+    98→    98→sudo systemctl daemon-reload
+    99→    99→
+   100→   100→# 3) Kill proses yang masih dengarkan port Lawu (8080 inference, 8081 API)
+   101→   101→sudo ss -tlnp | grep -E ':(8080|8081)\\b' \\
+   102→   102→  | grep -oP 'pid=\\K[0-9]+' | sort -u \\
+   103→   103→  | while read -r pid; do sudo kill "$pid" 2>/dev/null || true; done
+   104→   104→
+   105→   105→# 4) Hapus cron jobs Lawu lama (user crontab + /etc/cron.d)
+   106→   106→sudo crontab -r -u lawu 2>/dev/null || true
+   107→   107→crontab -l 2>/dev/null | grep -v -E '/opt/lawu/|lawu-2.5-fine' | crontab - 2>/dev/null || true
+   108→   108→sudo rm -f /etc/cron.d/lawu* 2>/dev/null`
+   109→   109→
+   110→   110→const CLEANUP_BACKUP = `# 0.C — Backup data Lawu lama (OPSIONAL, sebelum hapus permanen)
+   111→   111→# Jalankan ini JIKA Anda ingin jaga-jaga ada data ebook/index/markdown lama
+   112→   112→# yang belum dimigrasi. Jika server benar-benar kosong/scrapped, lewati langkah ini.
+   113→   113→
+   114→   114→STAMP=$(date +%Y%m%d_%H%M)
+   115→   115→BACKUP_DIR="/mnt/data/backup-pre-clean-$STAMP"
+   116→   116→sudo mkdir -p "$BACKUP_DIR"
+   117→   117→
+   118→   118→# Backup koleksi ebook, index Tantivy, dan markdown hasil ekstraksi
+   119→   119→sudo tar -czf "$BACKUP_DIR/lawu-old-data.tar.gz" \\
+   120→   120→  /opt/lawu \\
+   121→   121→  /mnt/data/ebooks \\
+   122→   122→  /mnt/data/tantivy_index \\
+   123→   123→  /mnt/data/processed_markdowns \\
+   124→   124→  2>/dev/null || true
+   125→   125→
+   126→   126→# Backup config systemd & sysctl lama (arsip referensi)
+   127→   127→sudo tar -czf "$BACKUP_DIR/lawu-old-configs.tar.gz" \\
+   128→   128→  /etc/systemd/system/llama-lawu.service \\
+   129→   129→  /etc/systemd/system/lawu-2.5-fine.service \\
+   130→   130→  /etc/sysctl.d/99-lawu-fine.conf \\
+   131→   131→  /etc/nginx/sites-available/lawu \\
+   132→   132→  2>/dev/null || true
+   133→   133→
+   134→   134→sudo du -sh "$BACKUP_DIR"/* 2>/dev/null
+   135→   135→sudo chmod -R lawu:lawu "$BACKUP_DIR" 2>/dev/null || true
+   136→   136→echo "Backup Lawu lama tersimpan di: $BACKUP_DIR"`
+   137→   137→
+   138→   138→const CLEANUP_REMOVE = `# 0.D — Hapus direktori & binary Lawu lama
+   139→   139→# PERINGATAN: langkah ini MENGHAPUS PERMANEN. Pastikan 0.C (backup) sudah dilakukan.
+   140→   140→
+   141→   141→# 1) Hapus direktori aplikasi Lawu (/opt/lawu berisi skrip watch/backup/reindex)
+   142→   142→sudo rm -rf /opt/lawu
+   143→   143→
+   144→   144→# 2) Hapus binary lawu-server lama
+   145→   145→rm -f ~/.cargo/bin/lawu-server
+   146→   146→
+   147→   147→# 3) Hapus source tree llama.cpp lama (akan di-clone ulang di Langkah 10)
+   148→   148→rm -rf ~/llama.cpp
+   149→   149→
+   150→   150→# 4) Hapus model GGUF Lawu lama (HATI-HATI — file besar)
+   151→   151→#    Jika ingin simpan model agar tidak perlu re-download/re-quant, COMMENT baris ini.
+   152→   152→rm -f ~/models/lawu-2.5-fine-*.gguf
+   153→   153→
+   154→   154→# 5) Hapus index Tantivy & markdown hasil ekstraksi lama
+   155→   155→#    (JIKA ingin mulai indexing dari nol. Jika ingin pakai index lama, COMMENT baris ini.)
+   156→   156→sudo rm -rf /mnt/data/tantivy_index
+   157→   157→sudo rm -rf /mnt/data/processed_markdowns
+   158→   158→
+   159→   159→# 6) Kosongkan incoming/ (file ebook yang belum diproses)
+   160→   160→# sudo rm -rf /mnt/data/ebooks/incoming/*`
+   161→   161→
+   162→   162→const CLEANUP_USER = `# 0.E — Hapus user & group 'lawu' lama
+   163→   163→# User ini akan dibuat ulang bersih di Langkah 2.
+   164→   164→# Jika server Anda TIDAK pernah pakai user 'lawu' sebelumnya, lewati langkah ini.
+   165→   165→
+   166→   166→# 1) Pastikan tidak ada proses yang masih berjalan sebagai user lawu
+   167→   167→sudo pkill -u lawu 2>/dev/null || true
+   168→   168→sleep 2
+   169→   169→
+   170→   170→# 2) Hapus user lawu lama BESERTA home directory-nya (-r)
+   171→   171→sudo userdel -r lawu 2>/dev/null || true
+   172→   172→
+   173→   173→# 3) Hapus group 'lawu' jika masih tersisa
+   174→   174→sudo groupdel lawu 2>/dev/null || true
+   175→   175→
+   176→   176→# 4) Verifikasi tidak ada file sisa milik UID lawu lama (orphaned files)
+   177→   177→sudo find / -path /proc -prune -o -path /sys -prune -o -path /dev -prune \\
+   178→   178→  -path /run -prune -o -nouser -print 2>/dev/null | head -20 || true`
+   179→   179→
+   180→   180→const CLEANUP_CONFIG = `# 0.F — Bersihkan sysctl, Nginx config, dan log Lawu lama
+   181→   181→
+   182→   182→# 1) Hapus sysctl custom Lawu lama (akan dibuat ulang bersih di Langkah 5)
+   183→   183→sudo rm -f /etc/sysctl.d/99-lawu-fine.conf
+   184→   184→sudo sysctl --system 2>/dev/null || true
+   185→   185→
+   186→   186→# 2) Hapus Nginx config Lawu lama (akan dibuat ulang bersih di Langkah 16)
+   187→   187→sudo rm -f /etc/nginx/sites-enabled/lawu
+   188→   188→sudo rm -f /etc/nginx/sites-available/lawu
+   189→   189→sudo nginx -t 2>/dev/null && sudo systemctl reload nginx 2>/dev/null || true
+   190→   190→
+   191→   191→# 3) Bersihkan log Lawu lama (file log + entry journald lama)
+   192→   192→sudo rm -rf /var/log/lawu
+   193→   193→sudo journalctl --rotate 2>/dev/null || true
+   194→   194→sudo journalctl --vacuum-time=3d 2>/dev/null || true
+   195→   195→
+   196→   196→# 4) (OPSIONAL) Bersihkan cache build Cargo lama — hemat SSD 128GB
+   197→   197→rm -rf ~/.cargo/registry/cache 2>/dev/null || true
+   198→   198→rm -rf ~/.cargo/registry/src 2>/dev/null || true
+   199→   199→rm -rf target 2>/dev/null || true`
+   200→   200→
+   201→   201→const CLEANUP_VERIFY = `# 0.G — Verifikasi server bersih (FINAL CHECK)
+   202→   202→# Jalankan setelah 0.A–0.F selesai. Semua check harus cetak "✓ Bersih".
+   203→   203→
+   204→   204→echo "=== AUDIT FINAL — SERVER BERSIH? ==="
+   205→   205→
+   206→   206→echo "1. Port Lawu (8080/8081 harus kosong):"
+   207→   207→sudo ss -tlnp | grep -E ':(8080|8081)\\b' && echo "   ✗ MASIH ADA proses!" || echo "   ✓ Bersih"
+   208→   208→
+   209→   209→echo "2. Service systemd Lawu/llama (harus kosong):"
+   210→   210→systemctl list-units --type=service --all | grep -iE 'lawu|llama' && echo "   ✗ MASIH ADA service!" || echo "   ✓ Bersih"
+   211→   211→systemctl list-unit-files | grep -iE 'lawu|llama' && echo "   ✗ MASIH ADA unit file!" || echo "   ✓ Bersih"
+   212→   212→
+   213→   213→echo "3. User lawu (harus tidak ada):"
+   214→   214→id lawu 2>/dev/null && echo "   ✗ MASIH ADA user!" || echo "   ✓ Bersih"
+   215→   215→
+   216→   216→echo "4. Direktori Lawu (harus tidak ada):"
+   217→   217→ls /opt/lawu ~/llama.cpp ~/.cargo/bin/lawu-server 2>/dev/null && echo "   ✗ MASIH ADA file!" || echo "   ✓ Bersih"
+   218→   218→
+   219→   219→echo "5. Cron Lawu (harus kosong):"
+   220→   220→crontab -l 2>/dev/null | grep -iE 'lawu|llama' && echo "   ✗ MASIH ADA cron!" || echo "   ✓ Bersih"
+   221→   221→sudo crontab -l -u lawu 2>/dev/null && echo "   ✗ MASIH ADA cron lawu!" || echo "   ✓ Bersih"
+   222→   222→ls /etc/cron.d/ | grep -i lawu && echo "   ✗ MASIH ADA cron.d!" || echo "   ✓ Bersih"
+   223→   223→
+   224→   224→echo "6. sysctl Lawu (harus tidak ada):"
+   225→   225→ls /etc/sysctl.d/ | grep -i lawu && echo "   ✗ MASIH ADA sysctl!" || echo "   ✓ Bersih"
+   226→   226→
+   227→   227→echo "7. Nginx Lawu (harus tidak ada):"
+   228→   228→ls /etc/nginx/sites-enabled/lawu 2>/dev/null && echo "   ✗ MASIH ADA nginx config!" || echo "   ✓ Bersih"
+   229→   229→
+   230→   230→echo "8. Log Lawu (harus tidak ada):"
+   231→   231→ls /var/log/lawu 2>/dev/null && echo "   ✗ MASIH ADA log!" || echo "   ✓ Bersih"
+   232→   232→
+   233→   233→echo ""
+   234→   234→echo "=========================================="
+   235→   235→echo "✅ SERVER BERSIH — siap instalasi Lawu-2.5-Fine."
+   236→   236→echo "   Lanjut ke Langkah 1: Prerequisites & Update Sistem."
+   237→   237→echo "=========================================="`
+   238→   238→
+   239→   239→// ======================================================================
+   240→   240→// LANGKAH 1 — PREREQUISITES & UPDATE SISTEM
+   241→   241→// ======================================================================
+   242→   242→
+   243→   243→const PREREQ_UPDATE = `# 1.A — Update & upgrade sistem Debian 13 (trixie)
+   244→   244→# Jalankan sebagai user biasa dengan sudo. Pastikan internet stabil.
+   245→   245→
+   246→   246→sudo apt update && sudo apt full-upgrade -y
+   247→   247→sudo apt autoremove -y
+   248→   248→
+   249→   249→# Verifikasi versi Debian
+   250→   250→cat /etc/debian_version
+   251→   251→# Harus cetak: 13.x (trixie)`
+   252→   252→
+   253→   253→const PREREQ_INSTALL = `# 1.B — Install build dependencies & tools
+   254→   254→# Semua paket ini open-source (Debian main repo) — Paten 5: open source terpenuhi.
+   255→   255→
+   256→   256→sudo apt install -y \\
+   257→   257→  build-essential \\
+   258→   258→  cmake \\
+   259→   259→  ninja-build \\
+   260→   260→  pkg-config \\
+   261→   261→  git \\
+   262→   262→  curl \\
+   263→   263→  wget \\
+   264→   264→  unzip \\
+   265→   265→  tar \\
+   266→   266→  ca-certificates \\
+   267→   267→  libssl-dev \\
+   268→   268→  libcurl4-openssl-dev \\
+   269→   269→  libsqlite3-dev \\
+   270→   270→  procps \\
+   271→   271→  nginx \\
+   272→   272→  ufw \\
+   273→   273→  fail2ban \\
+   274→   274→  inotify-tools \\
+   275→   275→  python3 \\
+   276→   276→  python3-pip \\
+   277→   277→  python3-venv \\
+   278→   278→  jq \\
+   279→   279→  htop \\
+   280→   280→  btop \\
+   281→   281→  ncdu \\
+   282→   282→  strace \\
+   283→   283→  lsof \\
+   284→   284→  sqlite3
+   285→   285→
+   286→   286→# Verifikasi paket kunci terpasang
+   287→   287→cmake --version | head -1
+   288→   288→gcc --version | head -1
+   289→   289→nginx -v 2>&1
+   290→   290→ufw version`
+   291→   291→
+   292→   292→const PREREQ_PYTHON = `# 1.C — Python virtualenv untuk MarkltDown (ekstraksi teks ebook)
+   293→   293→# Paten 5: MarkltDown = MIT (Microsoft) — open source, aman dipakai.
+   294→   294→# JANGAN pakai pip global (PEP 668 protected). Gunakan venv.
+   295→   295→
+   296→   296→python3 -m venv ~/venvs/lawu
+   297→   297→source ~/venvs/lawu/bin/activate
+   298→   298→
+   299→   299→# Install MarkltDown di dalam venv (tidak mengganggu system Python)
+   300→   300→pip install --upgrade pip
+   301→   301→pip install markitdown
+   302→   302→
+   303→   303→# Tes MarkltDown — harus cetak teks dari PDF/DOCX dummy
+   304→   304→echo "# test" > /tmp/test.md
+   305→   305→markitdown /tmp/test.md | head -5
+   306→   306→deactivate`
+   307→   307→
+   308→   308→// ======================================================================
+   309→   309→// LANGKAH 2 — SETUP USER lawu & DIREKTORI
+   310→   310→// ======================================================================
+   311→   311→
+   312→   312→const USER_SETUP = `# 2.A — Buat user & group 'lawu' (system user, no sudo)
+   313→   313→# >>> RUN AS: user admin Anda (yang punya sudo) <<<
+   314→   314→# User 'lawu' akan menjalankan semua service Lawu — isolasi privilege (Paten keamanan).
+   315→   315→# User lawu TIDAK diberi sudo (intentional — principle of least privilege).
+   316→   316→
+   317→   317→# 1) Buat group 'lawu' jika belum ada
+   318→   318→sudo groupadd -f lawu
+   319→   319→
+   320→   320→# 2) Buat user system 'lawu' dengan home directory
+   321→   321→sudo useradd -m -d /home/lawu -s /bin/bash -g lawu lawu
+   322→   322→
+   323→   323→# 3) Set password kuat untuk user lawu (untuk 'su - lawu' saat debugging dari user admin)
+   324→   324→sudo passwd lawu
+   325→   325→
+   326→   326→# 4) Verifikasi user dibuat (tanpa sudo di grup)
+   327→   327→id lawu
+   328→   328→ls -ld /home/lawu
+   329→   329→
+   330→   330→# 5) VERIFIKASI lawu TIDAK di sudoers (ini BENAR — by design)
+   331→   331→sudo -u lawu sudo -n whoami 2>&1 | grep -q 'not in the sudoers' \\
+   332→   332→  && echo "✓ lawu TIDAK punya sudo (correct — service user)" \\
+   333→   333→  || echo "✗ lawu punya sudo (HAPUS: sudo deluser lawu sudo)"
+   334→   334→
+   335→   335→# 6) Untuk setup service nanti, gunakan 'sudo -u lawu <cmd>' dari user admin
+   336→   336→#    Contoh: sudo -u lawu git clone ... (build sebagai lawu, tanpa sudo)
+   337→   337→# Atau switch ke lawu: 'sudo su - lawu' lalu exit kembali ke admin
+   338→   338→
+   339→   339→# CATATAN: Semua perintah sudo di Langkah 0-6, 14-17 jalankan sebagai USER ADMIN.
+   340→   340→#          Langkah 6-13 (Rust build, llama.cpp build) jalankan sebagai USER LAWU
+   341→   341→#          (sudo su - lawu, tanpa sudo prefix).`
+   342→   342→
+   343→   343→const USER_DIRS = `# 2.B — Buat struktur direktori Lawu & set ownership
+   344→   344→# >>> RUN AS: user admin (yang punya sudo) <<<
+   345→   345→
+   346→   346→# Direktori APLIKASI di SSD 128GB (OS) — cepat, untuk binary & config
+   347→   347→sudo mkdir -p /opt/lawu
+   348→   348→sudo mkdir -p /opt/lawu/bin
+   349→   349→sudo mkdir -p /opt/lawu/scripts
+   350→   350→sudo mkdir -p /opt/lawu/logs
+   351→   351→
+   352→   352→# Direktori DATA di HDD 500GB — koleksi ebook, index, markdown, backup, MODELS
+   353→   353→sudo mkdir -p /mnt/data/ebooks
+   354→   354→sudo mkdir -p /mnt/data/ebooks/incoming
+   355→   355→sudo mkdir -p /mnt/data/ebooks/processed
+   356→   356→sudo mkdir -p /mnt/data/processed_markdowns
+   357→   357→sudo mkdir -p /mnt/data/tantivy_index
+   358→   358→sudo mkdir -p /mnt/data/backup
+   359→   359→sudo mkdir -p /mnt/data/models      # ← SEMUA model GGUF disimpan di HDD (SSD hanya utk OS)
+   360→   360→
+   361→   361→# Direktori di home user lawu (source tree llama.cpp di SSD — cepat utk build)
+   362→   362→sudo -u lawu mkdir -p /home/lawu/src
+   363→   363→
+   364→   364→# SYMLINK: ~/models → /mnt/data/models
+   365→   365→# Tujuan: model file fisik di HDD (hemat SSD), tapi path ~/models tetap bisa dipakai
+   366→   366→sudo -u lawu rm -rf /home/lawu/models
+   367→   367→sudo -u lawu ln -s /mnt/data/models /home/lawu/models
+   368→   368→sudo -u lawu ls -la /home/lawu/models  # harus cetak: symlink → /mnt/data/models
+   369→   369→
+   370→   370→# Set ownership: semua direktori Lawu milik user lawu
+   371→   371→sudo chown -R lawu:lawu /opt/lawu
+   372→   372→sudo chown -R lawu:lawu /mnt/data
+   373→   373→
+   374→   374→# Set permission: 755 untuk dir, 640 untuk file (principle least privilege)
+   375→   375→sudo find /opt/lawu -type d -exec chmod 755 {} \\;
+   376→   376→sudo find /opt/lawu -type f -exec chmod 640 {} \\;
+   377→   377→sudo find /mnt/data -type d -exec chmod 755 {} \\;
+   378→   378→
+   379→   379→# Verifikasi
+   380→   380→ls -ld /opt/lawu /mnt/data/ebooks /mnt/data/tantivy_index /mnt/data/backup
+   381→   381→ls -ld /home/lawu /home/lawu/src /home/lawu/models`
+   382→   382→
+   383→   383→// ======================================================================
+   384→   384→// LANGKAH 3 — MOUNT & FORMAT HDD/SSD
+   385→   385→// ======================================================================
+   386→   386→
+   387→   387→const DISK_IDENTIFY = `# 3.A — Identifikasi disk SSD (OS) & HDD (DATA)
+   388→   388→# SSD 128GB biasanya sudah jadi disk OS (sda). HDD 500GB untuk DATA.
+   389→   389→
+   390→   390→# 1) List semua block device
+   391→   391→lsblk -o NAME,SIZE,TYPE,MOUNTPOINT,FSTYPE,MODEL
+   392→   392→
+   393→   393→# 2) Cek disk terpasang
+   394→   394→sudo fdisk -l | grep -E '^Disk /dev/(sd|nvme)'
+   395→   395→
+   396→   396→# 3) Identifikasi SSD vs HDD berdasarkan rotasi (0=SSD, 1=HDD)
+   397→   397→for dev in /sys/block/sd* /sys/block/nvme*; do
+   398→   398→  [ -d "$dev" ] || continue
+   399→   399→  name=$(basename "$dev")
+   400→   400→  rotational=$(cat "$dev/queue/rotational" 2>/dev/null)
+   401→   401→  size=$(lsblk -dn -o SIZE "/dev/$name" 2>/dev/null)
+   402→   402→  [ "$rotational" = "0" ] && echo "$name (SSD, $size)" || echo "$name (HDD, $size)"
+   403→   403→done
+   404→   404→
+   405→   405→# CONTOH OUTPUT:
+   406→   406→# sda (SSD, 128G)   ← disk OS, jangan diformat!
+   407→   407→# sdb (HDD, 500G)   ← disk DATA, akan di-mount ke /mnt/data`
+   408→   408→
+   409→   409→const DISK_FORMAT = `# 3.B — Format HDD 500GB sebagai ext4 (JIKA belum diformat)
+   410→   410→# HATI-HATI: pastikan /dev/sdb BENAR-BENAR HDD data kosong, bukan disk OS!
+   411→   411→# Cek ulang dengan: sudo blkid /dev/sdb1 — harus TIDAK ADA output jika kosong.
+   412→   412→
+   413→   413→# 1) Partisi HDD (single partition, GPT)
+   414→   414→sudo parted -s /dev/sdb mklabel gpt
+   415→   415→sudo parted -s /dev/sdb mkpart primary ext4 0% 100%
+   416→   416→
+   417→   417→# 2) Format ext4 (pilihan terbaik untuk Linux file server — journaling, ACL support)
+   418→   418→sudo mkfs.ext4 -L lawu-data -m 1 -T largefile4 /dev/sdb1
+   419→   419→#   -L lawu-data  = label disk (memudah identifikasi)
+   420→   420→#   -m 1          = reserved 1% untuk root (default 5% terlalu boros di 500GB)
+   421→   421→#   -T largefile4 = optimasi untuk file besar (ebook PDF/EPUB, index Tantivy)
+   422→   422→
+   423→   423→# 3) Verifikasi format
+   424→   424→sudo blkid /dev/sdb1
+   425→   425→# Harus cetak: TYPE="ext4" LABEL="lawu-data"`
+   426→   426→
+   427→   427→const DISK_FSTAB = `# 3.C — Mount otomatis via /etc/fstab (persistent across reboot)
+   428→   428→
+   429→   429→# 1) Dapat UUID partisi HDD
+   430→   430→UUID=$(sudo blkid -s UUID -o value /dev/sdb1)
+   431→   431→echo "UUID HDD: $UUID"
+   432→   432→
+   433→   433→# 2) Backup fstab lama
+   434→   434→sudo cp /etc/fstab /etc/fstab.bak.$(date +%Y%m%d)
+   435→   435→
+   436→   436→# 3) Tambah entry mount
+   437→   437→echo "UUID=$UUID  /mnt/data  ext4  defaults,noatime,nodiratime,data=writeback  0  2" \\
+   438→   438→  | sudo tee -a /etc/fstab
+   439→   439→
+   440→   440→#   noatime       = jangan update access time (hemat write SSD/HDD, cepat)
+   441→   441→#   data=writeback = mode journaling paling cepat (risiko minor korupsi jika power loss)
+   442→   442→#                    AMAN karena ada backup harian (Langkah 14)
+   443→   443→#
+   444→   444→#   UNTUK PRODUKSI SENSITIF: ganti data=writeback → data=ordered (default, lebih aman)
+   445→   445→
+   446→   446→# 4) Mount sekarang
+   447→   447→sudo mount -a
+   448→   448→
+   449→   449→# 5) Verifikasi mount
+   450→   450→mount | grep /mnt/data
+   451→   451→df -hT /mnt/data
+   452→   452→# Harus cetak: /dev/sdb1 ext4  492G  ...  /mnt/data`
+   453→   453→
+   454→   454→const DISK_SSD_TUNING = `# 3.D — Tuning SSD 128GB (OS disk) untuk umur panjang
+   455→   455→# TRIM otomatis + scheduler I/O yang sesuai untuk SSD
+   456→   456→
+   457→   457→# 1) Aktifkan TRIM periodik (hemat SSD, hapus blok tidak terpakai)
+   458→   458→sudo systemctl enable --now fstrim.timer
+   459→   459→sudo systemctl status fstrim.timer --no-pager
+   460→   460→
+   461→   461→# 2) Set I/O scheduler ke 'mq-deadline' atau 'none' untuk SSD/NVMe
+   462→   462→#    (cek yang tersedia dulu)
+   463→   463→cat /sys/block/sda/queue/scheduler
+   464→   464→# Set persisten via udev:
+   465→   465→echo 'ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="mq-deadline"' \\
+   466→   466→  | sudo tee /etc/udev/rules.d/60-ssd-scheduler.rules
+   467→   467→sudo udevadm control --reload-rules
+   468→   468→
+   469→   469→# 3) (OPSIONAL) Kurangi swappiness khusus SSD (ditimpa Langkah 5 sysctl)
+   470→   470→# SSD 128GB cepat penuh jika swap aktif — swap harus di HDD atau disabled
+   471→   471→sudo swapoff --all 2>/dev/null || true
+   472→   472→sudo sed -i '/swap/d' /etc/fstab  # hapus entry swap lama`
+   473→   473→
+   474→   474→// ======================================================================
+   475→   475→// LANGKAH 18 — HARDENING SERVER (TERAKHIR SEBELUM GO-LIVE)
+   476→   476→// ======================================================================
+   477→   477→
+   478→   478→const FIREWALL_UFW = `# 18.A — Konfigurasi firewall UFW (default deny, hanya buka port yang perlu)
+   479→   479→# Paten 4: Linux only — ufw = front-end iptables/nftables (Debian default)
+   480→   480→
+   481→   481→# 1) Reset UFW ke kondisi default (bersih)
+   482→   482→sudo ufw --force reset
+   483→   483→
+   484→   484→# 2) Default policy: tolak incoming, izinkan outgoing
+   485→   485→sudo ufw default deny incoming
+   486→   486→sudo ufw default allow outgoing
+   487→   487→
+   488→   488→# 3) Izinkan SSH (port 22) — WAJIB sebelum enable, kalau tidak Anda terkunci!
+   489→   489→sudo ufw allow 22/tcp comment 'SSH admin'
+   490→   490→
+   491→   491→# 4) Izinkan HTTP (port 80) & HTTPS (port 443) untuk Nginx reverse proxy (Langkah 16)
+   492→   492→sudo ufw allow 80/tcp comment 'Nginx HTTP'
+   493→   493→sudo ufw allow 443/tcp comment 'Nginx HTTPS'
+   494→   494→
+   495→   495→# 5) (OPSIONAL) Batasi akses internal-only untuk port inference & API
+   496→   496→#    Hanya izinkan dari localhost (Axum & llama.cpp sudah bind 127.0.0.1, jadi tidak perlu)
+   497→   497→#    JANGAN buka 8080/8081 ke publik — hanya via Nginx reverse proxy
+   498→   498→
+   499→   499→# 6) Enable UFW
+   500→   500→sudo ufw --force enable
+   501→   501→
+   502→   502→# 7) Verifikasi status
+   503→   503→sudo ufw status verbose
+   504→   504→sudo ufw status numbered`
+   505→   505→
+   506→   506→const SSH_HARDENING = `# 18.B — SSH hardening (cegah brute-force & privilege escalation)
+   507→   507→
+   508→   508→# 1) Backup config SSH lama
+   509→   509→sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak.$(date +%Y%m%d)
+   510→   510→
+   511→   511→# 2) Edit /etc/ssh/sshd_config — tambah/baris berikut (di akhir file):
+   512→   512→sudo tee -a /etc/ssh/sshd_config > /dev/null <<'SSHCONF'
+   513→   513→
+   514→   514→# ===== Lawu-2.5-Fine SSH Hardening =====
+   515→   515→PermitRootLogin no              # root tidak boleh SSH langsung
+   516→   516→PasswordAuthentication no       # WAJIB pakai SSH key, bukan password
+   517→   517→PubkeyAuthentication yes
+   518→   518→KbdInteractiveAuthentication no
+   519→   519→ChallengeResponseAuthentication no
+   520→   520→X11Forwarding no               # tidak perlu X11 di server
+   521→   521→AllowTcpForwarding no          # cegah SSH tunneling abuse
+   522→   522→AllowAgentForwarding no
+   523→   523→ClientAliveInterval 300        # disconnect idle setelah 5 menit
+   524→   524→ClientAliveCountMax 2          # 2x ping = 10 menit max idle
+   525→   525→MaxAuthTries 3                 # max 3 percobaan login
+   526→   526→LoginGraceTime 30              # timeout login 30 detik
+   527→   527→SSHCONF
+   528→   528→
+   529→   529→# 3) Restart SSH daemon
+   530→   530→sudo systemctl restart sshd
+   531→   531→sudo systemctl status sshd --no-pager
+   532→   532→
+   533→   533→# 4) SEBELUM tutup sesi ini: BUKA TERMINAL BARU & test login SSH dengan key
+   534→   534→#    Jika gagal login, Anda bisa kembalikan config backup dari sesi yang masih hidup:
+   535→   535→#    sudo cp /etc/ssh/sshd_config.bak.* /etc/ssh/sshd_config && sudo systemctl restart sshd`
+   536→   536→
+   537→   537→const SSH_KEY = `# 18.C — Generate SSH key pair (di mesin admin/laptop Anda, BUKAN di server)
+   538→   538→
+   539→   539→# 1) Di laptop admin Anda — generate ed25519 key (modern, aman, ringan)
+   540→   540→ssh-keygen -t ed25519 -a 100 -C "admin@lawu-server" -f ~/.ssh/lawu_admin
+   541→   541→
+   542→   542→# 2) Copy public key ke server lawu (masukkan password sekali, setelah ini pakai key)
+   543→   543→ssh-copy-id -i ~/.ssh/lawu_admin.pub lawu@<IP-SERVER>
+   544→   544→
+   545→   545→# 3) Test login dengan key (tanpa password)
+   546→   546→ssh -i ~/.ssh/lawu_admin lawu@<IP-SERVER>
+   547→   547→
+   548→   548→# 4) Setelah login dengan key berhasil, password login otomatis disabled (Langkah 18.B)
+   549→   549→#    Verifikasi: SSH dengan password harus DITOLAK
+   550→   550→ssh lawu@<IP-SERVER>   # harus gagal: Permission denied (publickey)`
+   551→   551→
+   552→   552→const FAIL2BAN = `# 18.D — Install & konfigurasi fail2ban (auto-ban IP setelah 3x gagal SSH)
+   553→   553→
+   554→   554→# 1) fail2ban sudah diinstall di Langkah 1.B — konfigurasi sekarang
+   555→   555→sudo tee /etc/fail2ban/jail.d/lawu-sshd.local > /dev/null <<'F2B'
+   556→   556→[sshd]
+   557→   557→enabled  = true
+   558→   558→port     = 22
+   559→   559→filter   = sshd
+   560→   560→backend  = systemd
+   561→   561→maxretry = 3
+   562→   562→findtime = 600
+   563→   563→bantime  = 3600
+   564→   564→ignoreip = 127.0.0.1/8 ::1
+   565→   565→F2B
+   566→   566→
+   567→   567→# 2) Restart fail2ban
+   568→   568→sudo systemctl restart fail2ban
+   569→   569→sudo systemctl enable fail2ban
+   570→   570→
+   571→   571→# 3) Verifikasi jail aktif
+   572→   572→sudo fail2ban-client status sshd
+   573→   573→
+   574→   574→# 4) (Lewat waktu) Cek IP yang di-ban
+   575→   575→sudo fail2ban-client status sshd
+   576→   576→# Untuk unban: sudo fail2ban-client set sshd unbanip <IP>`
+   577→   577→
+   578→   578→// ======================================================================
+   579→   579→// LANGKAH 4 — RINGKASAN ARSITEKTUR
+   580→   580→// ======================================================================
+   581→   581→
+   582→   582→const ARCH = `┌─────────────────────────── SERVER DEBIAN 13 — i5-10400 ───────────────────────────┐
+   583→   583→│                                                                                   │
+   584→   584→│  HDD 500GB (DATA)                       SSD 128GB (OS)                            │
+   585→   585→│  ├─ ebooks/ (PDF·EPUB·DOCX)             ├─ Debian 13 (Linux 6.x)                  │
+   586→   586→│  ├─ incoming/  ◄─── inotifywait         ├─ ~/.cargo/bin/lawu-server (Axum+Tantivy)│
+   587→   587→│  ├─ processed_markdowns/ (MarkltDown)   ├─ llama-server + GGUF lawu-2.5-fine      │
+   588→   588→│  ├─ tantivy_index/                      └─ /var/log + journald                    │
+   589→   589→│  └─ backup/ (retensi 7 hari)                     │                                │
+   590→   590→│          │                                       │                                │
+   591→   591→│          ▼                                       ▼                                │
+   592→   592→│  Tantivy Index (BM25)  ──►  Axum :8081  ──►  Nginx :80  ──►  Dashboard Web        │
+   593→   593→│  llama.cpp :8080 (OpenAI-compatible /v1/chat/completions)  ──►  Konsol Chat       │
+   594→   594→│  Cron 02:00 backup_lawu.sh · Cron 07:00 send_error_report.sh ──► Telegram (sosul) │
+   595→   595→│  UFW: 22/80/443 open · 8080/8081 localhost-only · fail2ban sshd jail              │
+   596→   596→└───────────────────────────────────────────────────────────────────────────────────┘`
+   597→   597→
+   598→   598→// ======================================================================
+   599→   599→// LANGKAH 5 — KERNEL TUNING (sysctl)
+   600→   600→// ======================================================================
+   601→   601→
+   602→   602→const SYSCTL = `# 6.A — Tulis config sysctl Lawu ke file (heredoc — LANGSUNG JALANKAN)
+   603→   603→# >>> RUN AS: user admin Anda (yang punya sudo) <<<
+   604→   604→# JANGAN jalankan sebagai user lawu — akan error "not in sudoers file"
+   605→   605→# Ini CONFIG FILE, bukan script. Heredoc menulis ke /etc/sysctl.d/99-lawu-fine.conf lalu apply.
+   606→   606→sudo tee /etc/sysctl.d/99-lawu-fine.conf > /dev/null <<'SYSCTL'
+   607→   607→# Tuning kernel untuk search engine ebook Lawu-2.5-Fine
+   608→   608→
+   609→   609→# Manfaatkan RAM 8GB untuk caching disk/Tantivy
+   610→   610→# RAM 8GB = mepet untuk 7B Q4_K_M, swappiness 40 (lebih agresif swap ke HDD)
+   611→   611→# RAM 16GB+ = swappiness 10 (jarang swap, cache di RAM)
+   612→   612→vm.swappiness = 40
+   613→   613→
+   614→   614→# Tulis data kotor ke disk bertahap — cegah I/O stall saat indexing
+   615→   615→vm.dirty_background_ratio = 5
+   616→   616→vm.dirty_ratio = 15
+   617→   617→
+   618→   618→# Batas file descriptor besar untuk Axum & Tantivy (buka banyak segmen index)
+   619→   619→fs.file-max = 2097152
+   620→   620→
+   621→   621→# Pemantauan inotifywait hingga ratusan ribu file ebook di HDD
+   622→   622→fs.inotify.max_user_watches = 524288
+   623→   623→fs.inotify.max_user_instances = 512
+   624→   624→
+   625→   625→# Perbesar antrean backlog koneksi masuk untuk HTTP API Axum
+   626→   626→net.core.somaxconn = 65535
+   627→   627→net.ipv4.tcp_max_syn_backlog = 65535
+   628→   628→
+   629→   629→# Tweak TCP untuk API responsiveness
+   630→   630→net.ipv4.tcp_fastopen = 3
+   631→   631→net.core.netdev_max_backlog = 16384
+   632→   632→
+   633→   633→# Cegah SYN flood (DDoS ringan)
+   634→   634→net.ipv4.tcp_syncookies = 1
+   635→   635→SYSCTL
+   636→   636→
+   637→   637→# Apply config ke kernel yang sedang berjalan (full path — anti PATH issue)
+   638→   638→sudo /usr/sbin/sysctl --system
+   639→   639→
+   640→   640→# Verifikasi nilai sudah berubah (pakai sudo — secure_path include /usr/sbin)
+   641→   641→sudo sysctl vm.swappiness fs.file-max fs.inotify.max_user_watches net.core.somaxconn`
+   642→   642→
+   643→   643→const LIMITS_CONF = `# 6.B — Tulis limits.conf untuk user lawu (heredoc — LANGSUNG JALANKAN)
+   644→   644→# Naikkan batas file descriptor untuk Axum + Tantivy
+   645→   645→sudo tee /etc/security/limits.d/99-lawu-fine.conf > /dev/null <<'LIMITS'
+   646→   646→lawu  soft  nofile  1048576
+   647→   647→lawu  hard  nofile  2097152
+   648→   648→lawu  soft  nproc   65535
+   649→   649→lawu  hard  nproc   131072
+   650→   650→root  soft  nofile  1048576
+   651→   651→root  hard  nofile  2097152
+   652→   652→LIMITS
+   653→   653→
+   654→   654→# Aktifkan: logout + login ulang (atau reboot) agar limit baru berlaku
+   655→   655→# Verifikasi setelah relogin: ulimit -n  (harus 1048576)
+   656→   656→sudo systemctl daemon-reload`
+   657→   657→
+   658→   658→// ======================================================================
+   659→   659→// LANGKAH 6 — INSTALL RUST TOOLCHAIN
+   660→   660→// ======================================================================
+   661→   661→
+   662→   662→const RUST_INSTALL = `# 7.A — Install Rust via rustup (official installer, open source Apache-2.0/MIT)
+   663→   663→# Paten 1: Rust = backend tunggal. Paten 5: rustup = open source.
+   664→   664→# >>> RUN AS: user lawu (TANPA sudo — build tidak butuh root) <<<
+   665→   665→# Dari shell user admin Anda (yang punya sudo), switch ke lawu dulu:
+   666→   666→
+   667→   667→# 1) Switch ke user lawu (dari shell user admin Anda)
+   668→   668→sudo su - lawu
+   669→   669→# Sekarang prompt berubah: lawu@hostname:~$
+   670→   670→# Verifikasi Anda sebagai lawu (BUKAN sudo — lawu tidak punya sudo):
+   671→   671→whoami    # harus cetak: lawu
+   672→   672→id        # groups harus TIDAK ada sudo
+   673→   673→
+   674→   674→# 2) Install rustup (rust compiler + cargo + toolchain manager)
+   675→   675→#    Profile 'default' SUDAH include rustfmt + clippy otomatis — tidak perlu --component.
+   676→   676→#    (Syntax --component rustfmt clippy SALAH; pakai -c rustfmt,clippy jika ingin eksplisit)
+   677→   677→curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \\
+   678→   678→  --default-toolchain stable \\
+   679→   679→  --profile default
+   680→   680→
+   681→   681→# 3) Source environment cargo
+   682→   682→source ~/.cargo/env
+   683→   683→
+   684→   684→# 4) Verifikasi instalasi
+   685→   685→rustc --version
+   686→   686→cargo --version
+   687→   687→rustup --version
+   688→   688→
+   689→   689→# 5) Verifikasi rustfmt + clippy (sudah include dari profile default)
+   690→   690→rustup component list --installed | grep -E 'rustfmt|clippy'
+   691→   691→# Harus cetak: clippy-x86_64-unknown-linux-gnu + rustfmt-x86_64-unknown-linux-gnu
+   692→   692→
+   693→   693→# 6) Persist PATH cargo + RUSTFLAGS ke ~/.bashrc
+   694→   694→echo 'source ~/.cargo/env' >> ~/.bashrc
+   695→   695→echo 'export RUSTFLAGS="-C target-cpu=native"' >> ~/.bashrc
+   696→   696→source ~/.bashrc`
+   697→   697→
+   698→   698→const RUST_VERIFY = `# 7.B — Verifikasi Rust toolchain dengan build hello-world
+   699→   699→# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 6.A, TANPA sudo) <<<
+   700→   700→# JANGAN jalankan 'sudo su - lawu' di sini — Anda SUDAH sebagai lawu dari 7.A.
+   701→   701→# Jika Anda sudah exit dari lawu, login ulang: 'sudo su - lawu' dari user admin.
+   702→   702→
+   703→   703→# 1) Verifikasi Anda sebagai lawu
+   704→   704→whoami    # harus cetak: lawu
+   705→   705→
+   706→   706→# 2) Source cargo env (wajib setiap shell baru — atau tambah ke ~/.bashrc)
+   707→   707→source ~/.cargo/env
+   708→   708→
+   709→   709→# Jika 'source ~/.cargo/env' gagal → Langkah 6.A belum dijalankan.
+   710→   710→# KEMBALI ke 7.A: curl https://sh.rustup.rs | sh ...
+   711→   711→# Jika ~/.cargo/env tidak ada setelah 7.A → rustup install gagal,
+   712→   712→# cek log error di 7.A (mungkin butuh build-essential/gcc di Langkah 1.B)
+   713→   713→
+   714→   714→# 3) Buat project dummy
+   715→   715→cd /tmp
+   716→   716→cargo new hello_lawu --bin
+   717→   717→cd hello_lawu
+   718→   718→
+   719→   719→# 4) Build dengan optimasi native CPU (AVX2 di i5-10400)
+   720→   720→RUSTFLAGS="-C target-cpu=native" cargo build --release
+   721→   721→./target/release/hello_lawu
+   722→   722→# Harus cetak: Hello, world!
+   723→   723→
+   724→   724→# 5) Cek binary ter-link dengan benar (Paten 3: murni CPU, tanpa GPU dep)
+   725→   725→ldd ./target/release/hello_lawu
+   726→   726→# Harus HANYA cetak: libc.so.6, libgcc_s.so.1, ld-linux-x86-64.so.2
+   727→   727→# JANGAN ada libcuda, libnvrtc, atau libGPU apa pun
+   728→   728→
+   729→   729→# 6) (Optional) Persist RUSTFLAGS + cargo PATH ke ~/.bashrc
+   730→   730→echo 'source ~/.cargo/env' >> ~/.bashrc
+   731→   731→echo 'export RUSTFLAGS="-C target-cpu=native"' >> ~/.bashrc
+   732→   732→# Sekarang setiap shell baru otomatis pakai cargo + RUSTFLAGS
+   733→   733→
+   734→   734→# 7) Cleanup
+   735→   735→cd / && rm -rf /tmp/hello_lawu`
+   736→   736→
+   737→   737→// ======================================================================
+   738→   738→// LANGKAH 7 — PROYEK CARGO lawu-server
+   739→   739→// ======================================================================
+   740→   740→
+   741→   741→const CARGO_NEW = `# 8.A — Inisialisasi project Cargo lawu-server
+   742→   742→# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 6, TANPA sudo) <<<
+   743→   743→# JANGAN jalankan 'sudo su - lawu' di sini — Anda SUDAH sebagai lawu dari Langkah 6.
+   744→   744→# Jika Anda sudah exit dari lawu, login ulang: 'sudo su - lawu' dari user admin.
+   745→   745→
+   746→   746→# 1) Verifikasi Anda sebagai lawu + cargo di PATH
+   747→   747→whoami                    # harus cetak: lawu
+   748→   748→source ~/.cargo/env       # load cargo env (atau buka shell baru)
+   749→   749→cargo --version           # harus cetak: cargo 1.x.x
+   750→   750→
+   751→   751→# 2) Buat project di home directory
+   752→   752→cd ~
+   753→   753→cargo new --bin lawu-server
+   754→   754→cd lawu-server
+   755→   755→
+   756→   756→# 3) Cek struktur direktori yang dihasilkan (pakai ls — 'tree' jarang terinstall)
+   757→   757→ls -la
+   758→   758→ls -la src/
+   759→   759→# Output yang diharapkan:
+   760→   760→# ./:
+   761→   761→#   drwxr-xr-x  src/
+   762→   762→#   -rw-r--r--  Cargo.toml
+   763→   763→#   -rw-r--r--  .gitignore
+   764→   764→# ./src/:
+   765→   765→#   -rw-r--r--  main.rs
+   766→   766→
+   767→   767→# (OPSIONAL) Jika ingin pakai 'tree' untuk visualisasi hierarki:
+   768→   768→#   sudo apt install tree   (dari user admin, bukan lawu)
+   769→   769→#   tree -L 2
+   770→   770→# Tapi 'ls -la' + 'ls -la src/' di atas sudah cukup.`
+   771→   771→
+   772→   772→const CARGO_TOML = `# ~/lawu-server/Cargo.toml
+   773→   773→# Compatible dengan Rust 1.99 (2026) — gunakan axum 0.8 + tantivy 0.24
+   774→   774→[package]
+   775→   775→name = "lawu-server"
+   776→   776→version = "0.1.0"
+   777→   777→edition = "2021"
+   778→   778→authors = ["Lawu Team <lawu@example.id>"]
+   779→   779→description = "Lawu-2.5-Fine search API — Axum + Tantivy"
+   780→   780→license = "MIT"
+   781→   781→
+   782→   782→[dependencies]
+   783→   783→axum = "0.8"
+   784→   784→tokio = { version = "1", features = ["full"] }
+   785→   785→tantivy = "0.24"
+   786→   786→serde = { version = "1", features = ["derive"] }
+   787→   787→serde_json = "1"
+   788→   788→tracing = "0.1"
+   789→   789→tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+   790→   790→reqwest = { version = "0.12", features = ["json"] }
+   791→   791→walkdir = "2"
+   792→   792→rayon = "1"
+   793→   793→anyhow = "1"
+   794→   794→thiserror = "2"
+   795→   795→tower-http = { version = "0.6", features = ["cors", "trace"] }
+   796→   796→chrono = { version = "0.4", features = ["serde"] }
+   797→   797→
+   798→   798→[profile.release]
+   799→   799→opt-level = 3
+   800→   800→lto = true
+
+[showing lines 1-800 of 2002; use offset=801 with limit to continue reading]

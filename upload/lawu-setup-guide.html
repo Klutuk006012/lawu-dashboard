@@ -1689,7 +1689,7 @@ async fn search_handler(
     let hits: Vec&lt;SearchHit&gt; = top_docs
         .into_iter()
         .map(|(score, doc_addr)| {
-            let doc = searcher.doc(doc_addr).unwrap_or_default();
+            let doc: tantivy::schema::Document = searcher.doc(doc_addr).unwrap_or_default();
             SearchHit {
                 title: doc.get_first(f.title).and_then(|v| v.as_text()).unwrap_or("").to_string(),
                 path: doc.get_first(f.path).and_then(|v| v.as_text()).unwrap_or("").to_string(),

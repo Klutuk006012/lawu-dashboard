@@ -40,6 +40,21 @@ export interface SearchResponse {
   results: Ebook[]
   total: number
   categories: string[]
+  // Hasil pencarian Wikipedia-ID dari Rust backend (null bila backend offline)
+  wiki?: {
+    results: WikiResult[]
+    total: number
+    latencyMs: number
+    backendOnline: boolean
+  }
+}
+
+// Hasil pencarian dari Tantivy index Wikipedia-ID (Rust Axum backend)
+export interface WikiResult {
+  docid: string
+  title: string
+  preview: string
+  score: number
 }
 
 export interface StatsResponse {
@@ -50,6 +65,12 @@ export interface StatsResponse {
     sourceSizeMb: number
     indexSizeMb: number
     lastIndexedAt: string | null
+    // Statistik real dari Rust backend Wikipedia-ID (null bila backend offline)
+    wiki?: {
+      totalDocs: number
+      segments: number
+      backendOnline: boolean
+    }
   }
   chats: { conversations: number; messages: number }
   alerts: { total24h: number }

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { fetchWikiStats } from '@/lib/lawu-backend'
 import type { StatsResponse } from '@/lib/lawu'
 
 export const dynamic = 'force-dynamic'
@@ -14,10 +15,10 @@ function simulateMetrics() {
   return {
     cpuPct: Math.round(jitter(9, 34, 7) * 10) / 10,
     ramUsedGb: Math.round(jitter(5.4, 8.6, 11) * 10) / 10,
-    ramTotalGb: 16,
+    ramTotalGb: 8,
     ssdUsedGb: Math.round(jitter(31, 37, 13) * 10) / 10,
     ssdTotalGb: 128,
-    hddUsedGb: Math.round(jitter(305, 318, 17) * 10) / 10,
+    hddUsedGb: Math.round(jitter(4.4, 5.2, 17) * 10) / 10,
     hddTotalGb: 500,
     llamaTokPerSec: Math.round(jitter(9, 14.5, 23) * 10) / 10,
     loadAvg: Math.round(jitter(0.8, 3.4, 31) * 100) / 100,
@@ -26,7 +27,11 @@ function simulateMetrics() {
 
 export async function GET() {
   try {
-    const [total, byTypeRaw, byCategoryRaw, sizeAgg, lastIndexed, conversations, messages, alerts24h] =
+    // 1. Fetch real stats dari Rust backend Wikipedia-ID (paralel dengan Prisma)
+    const wikiStatsPromise = fetchWikiStats()
+
+    // 2. Query Prisma ebooks (sumber data lokal SQLite)
+    const [total, byTypeRaw, byCategoryRaw, sizeAgg, lastIndexed, conversations, messages, alerts24h, wikiStats] =
       await Promise.all([
         db.ebook.count(),
         db.ebook.groupBy({ by: ['fileType'], _count: { _all: true } }),
@@ -38,6 +43,7 @@ export async function GET() {
         db.alert.count({
           where: { createdAt: { gte: new Date(Date.now() - 24 * 3600_000) } },
         }),
+        wikiStatsPromise,
       ])
 
     const sourceSizeMb = Math.round((sizeAgg._sum.sizeMb ?? 0) * 10) / 10
@@ -52,6 +58,18 @@ export async function GET() {
         // Estimasi index Tantivy ≈ 55% dari ukuran sumber (term dictionary + postings + docvalues)
         indexSizeMb: Math.round(sourceSizeMb * 0.55 * 10) / 10,
         lastIndexedAt: lastIndexed?.indexedAt.toISOString() ?? null,
+        // Statistik real dari Rust backend (null bila offline)
+        wiki: wikiStats
+          ? {
+              totalDocs: wikiStats.total_docs,
+              segments: wikiStats.segments,
+              backendOnline: true,
+            }
+          : {
+              totalDocs: 0,
+              segments: 0,
+              backendOnline: false,
+            },
       },
       chats: { conversations, messages },
       alerts: { total24h: alerts24h },

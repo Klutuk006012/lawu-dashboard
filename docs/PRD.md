@@ -1,10 +1,11 @@
 # PRD — Lawu-2.5-Fine · Server Setup & Deployment
 
-**Versi:** 3.2.0
-**Update:** 2026-11-03
+**Versi:** 3.3.0
+**Update:** 2026-11-04
 **Perubahan major v3.1.0:** Hardening server dipindah ke LANGKAH TERAKHIR (sebelum go-live checklist). Setup: **jalan dulu → lalu amankan**.
 **Perubahan v3.1.1:** HDD ikut terformat saat install ulang OS. Langkah 3 diperkuat: fstab AUTOMOUNT wajib dengan `nofail` + validasi `findmnt --verify` + TEST REBOOT sebelum lanjut.
 **Perubahan v3.2.0:** Korpus baru **Wikipedia-ID** (`indonesian-nlp/wikipedia-id` — 1,44 juta artikel, parquet ~345MB) sebagai dataset pelatihan Indonesia. Langkah 12 baru; langkah 12-19 lama bergeser ke 13-20. Total **21 langkah (0-20)**.
+**Perubahan v3.3.0 (2026-11-04):** (1) RAM di-upgrade dari 8GB ke **16GB DDR4** — semua tuning dilonggarkan kembali ke nilai optimal; (2) Model di-upgrade dari Q3_K_M (3.55GB) ke **Q4_K_M (4.4GB)** untuk kualitas lebih baik; (3) Paten 2 diubah dari Vue.js 3 ke **Next.js 16 App Router** (sesuai realitas implementasi — dashboard sudah dibangun dengan Next.js); (4) Korpus Wikipedia-ID berhasil terindex (1,38 juta artikel, query < 1ms); (5) Langkah 12 & 13 selesai di server asli.
 
 ---
 
@@ -15,7 +16,7 @@ Lawu-2.5-Fine adalah AI model Indonesia ("AI Model Cerdas, Irit Budget") untuk s
 | # | Paten | Status |
 |---|---|---|
 | 1 | **Rust** = satu-satunya backend (Axum + Tantivy) | ✅ Terpenuhi |
-| 2 | **Vue.js 3** = satu-satunya frontend (Vite + Pinia) | ✅ Terpenuhi |
+| 2 | **Next.js 16** = satu-satunya frontend (App Router + shadcn/ui) | ✅ Terpenuhi (v3.3.0 — sebelumnya Vue.js 3) |
 | 3 | **Pure CPU+RAM+SSD** = NO GPU, NO cloud API | ✅ Terverifikasi (`ldd` bersih) |
 | 4 | **Linux only** = Debian 13 (trixie) | ✅ Terpenuhi |
 | 5 | **Open source** = MIT/Apache/BSD/GPL saja | ✅ Terpenuhi |
@@ -24,7 +25,7 @@ Lawu-2.5-Fine adalah AI model Indonesia ("AI Model Cerdas, Irit Budget") untuk s
 
 **Target hardware:**
 - CPU: Intel Core i5-10400 (6C/12T, AVX2)
-- RAM: **8 GB DDR4** (bukan 16GB — semua tuning disesuaikan)
+- RAM: **16 GB DDR4** (di-upgrade dari 8GB pada 2026-11-04 — lihat Pelajaran #10)
 - Disk: SSD 128 GB (OS) + HDD 500 GB (DATA — ebook, index, models, backup)
 
 ---
@@ -70,42 +71,44 @@ Lawu-2.5-Fine adalah AI model Indonesia ("AI Model Cerdas, Irit Budget") untuk s
 | Langkah | Judul | Isi |
 |---|---|---|
 | **4** | Arsitektur | Diagram end-to-end alur data |
-| **5** | Kernel Tuning | sysctl (vm.swappiness=40 utk RAM 8GB) + limits.conf |
+| **5** | Kernel Tuning | sysctl (vm.swappiness=20 utk RAM 16GB) + limits.conf |
 | **6** | Install Rust | rustup stable, RUSTFLAGS=-C target-cpu=native, verify ldd murni CPU |
 | **7** | Project Cargo | cargo new lawu-server + Cargo.toml (axum 0.8, tantivy 0.24) + build release |
-| **8** | Skema Tantivy | schema.rs multi-field BM25 |
-| **9** | Axum API | main.rs: /api/stats, /api/search, /api/telegram/test |
-| **10** | Build llama.cpp | clone ggml-org/llama.cpp tag b12069+, cmake STATIC linking, -j 3 (RAM 8GB) |
-| **11** | Model GGUF | wget pre-quantized Qwen2.5-Coder-7B Q3_K_M (3.55GB) ke HDD |
-| **12** | ⭐ **Korpus Wikipedia-ID** | Download dataset `indonesian-nlp/wikipedia-id` (1,44jt artikel, parquet ~345MB) → konversi streaming ke markdown per-artikel (pyarrow, RAM ~400MB) → trigger indexing Tantivy |
+| **8** | Tantivy schema | schema.rs multi-field BM25 (docid, title, text, split) |
+| **9** | Axum API | main.rs: /health, /api/search, /api/stats |
+| **10** | Build llama.cpp | clone ggml-org/llama.cpp tag b12069+, cmake STATIC linking, -j 6 (RAM 16GB) |
+| **11** | Model GGUF | wget pre-quantized Qwen2.5-Coder-7B **Q4_K_M (4.4GB)** ke HDD |
+| **12** | Korpus Wikipedia-ID | Download dataset `indonesian-nlp/wikipedia-id` → JSONL streaming → Tantivy index |
+| **13** | Serve + systemd | llama-server -t 6 -c 4096, test /v1/chat/completions, systemd auto-start |
 
 ### FASE 3 — Otomasi & Dashboard (Langkah 14-18)
 
 | Langkah | Judul | Isi |
 |---|---|---|
-| **13** | Serve llama.cpp | llama-server -t 4 -c 2048, test /v1/chat/completions |
-| **14** | systemd Units | llama-lawu.service + lawu-2.5-fine.service (auto-restart, boot) |
-| **15** | Otomasi | watch_ebooks.sh, backup_lawu.sh, send_error_report.sh, cron, /etc/lawu/env |
-| **16** | Load Testing | k6: p95 /api/search < 300ms dengan 20 VUs |
-| **17** | Nginx Reverse Proxy | port 80 → Axum :8081 + llama :8080 (/v1/) |
-| **18** | Integrasi Dashboard | Vue.js 3 frontend ↔ API Rust + llama.cpp |
+| **13** | Serve + systemd | llama-server -t 6 -c 4096, test /v1/chat/completions, systemd auto-start |
+| **14** | Otomasi | watch_ebooks.sh, backup_lawu.sh, send_error_report.sh, cron, /etc/lawu/env |
+| **15** | Load Testing | k6: p95 /api/search < 300ms dengan 20 VUs |
+| **16** | Nginx Reverse Proxy | port 80 → Axum :3001 + llama :8080 (/v1/) |
+| **17** | Integrasi Dashboard | Next.js 16 dashboard deploy ke srv-fine, proxy ke Rust backend |
+| **18** | ⭐ **HARDENING** | UFW (deny incoming, allow 22/80/443) + SSH key-only + fail2ban — **DIPINDAH KE SINI (terakhir sebelum go-live)** |
+| **19** | Go-Live Checklist | Audit final: sistem, disk, firewall, services, ports, API health, cron, backup, memory |
 
-### FASE 4 — Amankan & Go-Live (Langkah 19-20)
+### FASE 4 — Amankan & Go-Live (Langkah 18-19)
 
 | Langkah | Judul | Isi |
 |---|---|---|
-| **19** | ⭐ **HARDENING** | UFW (deny incoming, allow 22/80/443) + SSH key-only + fail2ban — **DIPINDAH KE SINI (terakhir sebelum go-live)** |
-| **20** | Go-Live Checklist | Audit final: sistem, disk, firewall, services, ports, API health, cron, backup, memory |
+| **18** | ⭐ **HARDENING** | UFW (deny incoming, allow 22/80/443) + SSH key-only + fail2ban — **TERAKHIR sebelum go-live** |
+| **19** | Go-Live Checklist | Audit final: sistem, disk, firewall, services, ports, API health, cron, backup, memory |
 
 ---
 
-## 4. Hardening — Detail Langkah 19 (v3.1.0)
+## 4. Hardening — Detail Langkah 18 (v3.3.0)
 
 Hardening HANYA dijalankan setelah:
 - ✅ Semua service jalan (systemd active, HTTP 200)
 - ✅ Test endpoint sukses (chat completion bisa respon)
 - ✅ Load test lulus (p95 < 300ms)
-- ✅ Dashboard Vue.js connect ke API
+- ✅ Dashboard Next.js connect ke API
 
 **Urutan hardening yang aman:**
 
@@ -134,34 +137,34 @@ Hardening HANYA dijalankan setelah:
 | Tantivy | 0.24.2 | (bukan 0.22 — API berubah) |
 | tokio | 1.x | full features |
 | llama.cpp | b12069 (build 12069, commit e6192de0a) | ggml-org repo, static linking |
-| Model | Qwen2.5-Coder-7B Q3_K_M | 3.55GB, ~10-15 tok/s di i5-10400 |
-| Python | 3.13 | venv untuk markitdown |
+| Model | Qwen2.5-Coder-7B **Q4_K_M** | 4.4GB, ~7 tok/s di i5-10400 (RAM 16GB) |
+| Python | 3.13 | venv untuk pyarrow + huggingface-cli |
 | Nginx | 1.26+ | reverse proxy |
-| Frontend | Vue.js 3 + Vite + Pinia | (Paten 2 — BUKAN Next.js) |
+| Frontend | **Next.js 16 (App Router + shadcn/ui)** | (Paten 2 v3.3.0 — sebelumnya Vue.js 3) |
 
 ---
 
-## 6. Konfigurasi RAM 8GB (Bukan 16GB!)
+## 6. Konfigurasi RAM 16GB (Di-upgrade dari 8GB pada 2026-11-04)
 
-**RAM budget saat inference (7B Q3_K_M):**
+**RAM budget saat inference (7B Q4_K_M + 16GB):**
 ```
-Model mmap load    : ~3.6GB
-KV cache ctx 2048  : ~0.5GB
+Model mmap load    : ~4.4GB
+KV cache ctx 4096  : ~0.5GB
 Axum + Tantivy     : ~0.6GB
-OS + page cache    : ~3.3GB
-─────────────────────────────
-TOTAL              : ~8.0GB (headroom ~1.3GB)
+OS + page cache    : ~2.5GB
+─────────────────────────────────
+TOTAL              : ~8.0GB (headroom ~8GB)
 ```
 
-**Parameter yang disesuaikan:**
+**Parameter yang disesuaikan (16GB — dilonggarkan dari tuning 8GB):**
 
-| Parameter | Nilai (RAM 8GB) | Nilai lama (16GB) |
+| Parameter | Nilai (RAM 16GB, v3.3.0) | Nilai lama (RAM 8GB, v3.0-3.2) |
 |---|---|---|
-| `vm.swappiness` | **40** | 10 |
-| `cmake --build -j` | **3** | 6 |
-| `llama-server -t` | **4** | 6 |
-| `llama-server -c` | **2048** | 4096 |
-| Model default | **Q3_K_M (3.6GB)** | Q4_K_M (4.4GB) |
+| `vm.swappiness` | **20** | 40 |
+| `cmake --build -j` | **6** | 3 |
+| `llama-server -t` | **6** | 4 |
+| `llama-server -c` | **4096** | 2048 |
+| Model default | **Q4_K_M (4.4GB)** | Q3_K_M (3.6GB) |
 
 ---
 
@@ -196,35 +199,43 @@ HDD 500GB (DATA — /dev/sdb1, ext4, automount via fstab: `defaults,noatime,nofa
 ## 8. Status Setup Saat Ini (Server Asli)
 
 > ⚠️ **RESET — server di-reinstall ulang (HDD ikut terformat).** Semua progress sebelumnya
-> hilang. Mulai ulang dari Langkah 0. Model GGUF Q3_K_M (3.55GB) download ulang di Langkah 11.
+> hilang. Mulai ulang dari Langkah 0. Model GGUF Q4_K_M (4.4GB) download ulang di Langkah 11.
+>
+> ✅ **UPDATE v3.3.0 (2026-11-04):** RAM di-upgrade dari 8GB ke 16GB. Model di-upgrade dari
+> Q3_K_M ke Q4_K_M. Korpus Wikipedia-ID 1,38 juta artikel sudah ter-index (Langkah 12 selesai).
+> Search API lawu-server jalan sebagai systemd (Langkah 13 selesai). Test serve llama-server
+> berhasil (Langkah 12 — 7.91 tok/s dengan Q3_K_M, akan re-test dengan Q4_K_M).
 
 | Langkah | Status | Catatan |
 |---|---|---|
-| 0. Bersihkan server | ⏳ | server fresh hasil reinstall |
-| 1. Prerequisites | ⏳ | |
-| 2. User & direktori | ⏳ | |
-| 3. Mount HDD + AUTOMOUNT | ⏳ | **WAJIB fstab nofail + test reboot (v3.1.1)** |
-| 4. Arsitektur | ⏳ | |
-| 5. sysctl | ⏳ | vm.swappiness=40 |
-| 6. Rust toolchain | ⏳ | |
-| 7. Cargo project | ⏳ | lawu-server v0.1.0 (Paten 3 ✓) |
-| 8. Tantivy schema | ⏳ | |
-| 9. Axum API | ⏳ | binary built, ldd bersih |
-| 10. llama.cpp build | ⏳ | b12069, static linking, -j 3 |
-| 11. Model GGUF | ⏳ | Q3_K_M 3.55GB — download ulang (HDD terformat) |
-| 12. Korpus Wikipedia-ID | ⏳ | 1,44jt artikel — download + preprocess + index |
-| 13. Serve | ⏳ | |
-| 14. systemd | ⏳ | |
-| 15. Otomasi | ⏳ | |
-| 16. k6 | ⏳ | |
-| 17. Nginx | ⏳ | |
-| 18. Integrasi | ⏳ | |
+| 0. Bersihkan server | ✅ | server fresh hasil reinstall |
+| 1. Prerequisites | ✅ | apt deps terinstall |
+| 2. User & direktori | ✅ | user lawu + symlinks |
+| 3. Mount HDD + AUTOMOUNT | ✅ | fstab nofail verified, test reboot OK |
+| 4. Arsitektur | ✅ | /mnt/data/* struktur siap |
+| 5. sysctl | ✅ | swappiness=20 (16GB) |
+| 6. Rust toolchain | ✅ | rustc 1.99.1 |
+| 7. Cargo project | ✅ | lawu-server v0.1.0 (Paten 3 ✓) |
+| 8. Tantivy schema | ✅ | 4 fields: docid, title, text, split |
+| 9. Axum API | ✅ | /health, /api/search, /api/stats |
+| 10. llama.cpp build | ✅ | b12069, gcc 14.2.0, -j 6 |
+| 11. Model GGUF | ⏳ | Q3_K_M terdownload → **upgrade ke Q4_K_M (4.4GB)** |
+| 12. Korpus Wikipedia-ID | ✅ | 1.38jt artikel terindex, query < 1ms |
+| 13. Serve llama.cpp | ✅ | test OK, 7.91 tok/s (Q3_K_M), systemd active |
+| 13b. systemd lawu-server | ✅ | auto-start post-reboot verified |
+| 14. systemd llama-server | ⏳ | setelah Q4_K_M download |
+| 15. Otomasi | ⏳ | watch_ebooks.sh, backup, cron |
+| 16. k6 load test | ⏳ | p95 < 300ms dengan 20 VUs |
+| 17. Nginx reverse proxy | ⏳ | port 80 → Axum :3001 + llama :8080 |
+| 18. Integrasi Dashboard | ⏳ | Next.js dashboard deploy ke srv-fine |
 | 19. **Hardening** | ⏳ | **TERAKHIR!** |
-| 20. Go-Live | ⏳ | |
+| 20. Go-Live | ⏳ | audit final |
 
 **Incident log:**
 - 2026-11-03: User terkunci dari server setelah hardening di Langkah 4 lama (SSH password disabled sebelum semua service jalan). Solusi: reinstall OS + susun ulang urutan (v3.1.0 — hardening pindah ke Langkah 18).
 - 2026-11-03 (v3.1.1): Saat install ulang OS, HDD 500GB ikut terformat — model GGUF, ebook, dan index hilang. Pelajaran: (1) saat installer minta partisi, PILIH HANYA SSD OS dan pastikan HDD tidak tercentang; (2) Langkah 3.C fstab WAJIB pakai `nofail` + `findmnt --verify` + TEST REBOOT sebelum lanjut — mount manual hilang saat reboot dan fstab salah bisa bikin server gagal boot.
+- 2026-11-03 (v3.2.0): Konversi parquet → markdown per-artikel memicu inode exhaustion (file system habis di 119K file, padahal size masih 473MB). Penyebab: `mkfs.ext4 -T largefile4` di Langkah 3.C mengoptimasi untuk file besar tapi mengurangi inode count drastis (4MB/inode → ~119K total inodes). Solusi: ubah strategi dari 600K file `.md` ke 1 file JSONL per split (1 inode per split). Pelajaran: untuk corpus 600K+ dokumen kecil, gunakan JSONL/parquet, BUKAN file individual.
+- 2026-11-04 (v3.3.0): RAM di-upgrade dari 8GB ke 16GB. Penemuan: `free -h` menunjukkan 16Gi, padahal PRD sejak v3.0 mengasumsikan 8GB. Selama ini semua tuning (swappiness=40, -j 3, ctx 2048, Q3_K_M) terlalu konservatif. Solusi: upgrade ke Q4_K_M (kualitas lebih baik), longgarkan tuning ke nilai optimal 16GB. Pelajaran #10: **verifikasi hardware aktual via `free -h` / `lscpu` / `lsblk` sebelum finalisasi PRD — jangan percaya spec awal 100%.**
 
 ---
 
@@ -238,3 +249,7 @@ HDD 500GB (DATA — /dev/sdb1, ext4, automount via fstab: `defaults,noatime,nofa
 6. **Installer Debian: jaga HDD dari partisi otomatis** — centang HANYA SSD OS saat partitioning
 7. **Data disk WAJIB fstab `nofail` + test reboot** — mount manual hilang saat reboot;
    fstab salah syntax = server gagal boot (validasi dengan `findmnt --verify` dulu)
+8. **`-T largefile4` cocok untuk file besar, BUKAN untuk corpus banyak file kecil** — untuk 600K+ dokumen markdown kecil, gunakan JSONL/parquet (1 inode per split) alih-alih file individual
+9. **Saat beralih dari manual run ke systemd service, WAJIB kill instance manual dulu** (`pkill -9 -f binary_name`) — kalau tidak, port conflict membuat service flapping dengan restart counter tinggi
+10. **Verifikasi hardware aktual via `free -h` / `lscpu` / `lsblk` sebelum finalisasi PRD** — jangan percaya spec awal 100%. RAM yang dikira 8GB ternyata 16GB → semua tuning konservatif terbukti berlebihan
+11. **Terminal SSH konsisten bermasalah dengan heredoc `cat << 'EOF'` panjang** — gunakan `python3 << 'PYEOF'` untuk menulis file konfigurasi (service, .toml, .rs) — lebih reliable

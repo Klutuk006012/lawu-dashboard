@@ -1004,10 +1004,10 @@ async fn search_handler(
         .map(|(score, doc_addr)| {
             let doc: tantivy::TantivyDocument = searcher.doc(doc_addr).unwrap_or_default();
             SearchHit {
-                title: doc.get_first(f.title).and_then(|v| v.as_text()).unwrap_or("").to_string(),
-                path: doc.get_first(f.path).and_then(|v| v.as_text()).unwrap_or("").to_string(),
-                file_type: doc.get_first(f.file_type).and_then(|v| v.as_text()).unwrap_or("").to_string(),
-                category: doc.get_first(f.category).and_then(|v| v.as_text()).unwrap_or("").to_string(),
+                title: doc.get_first(f.title).and_then(|v| v.as_str()).unwrap_or("").to_string(),
+                path: doc.get_first(f.path).and_then(|v| v.as_str()).unwrap_or("").to_string(),
+                file_type: doc.get_first(f.file_type).and_then(|v| v.as_str()).unwrap_or("").to_string(),
+                category: doc.get_first(f.category).and_then(|v| v.as_str()).unwrap_or("").to_string(),
                 score,
             }
         })

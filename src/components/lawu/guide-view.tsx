@@ -341,6 +341,7 @@ sudo -u lawu sudo -n whoami 2>&1 | grep -q 'not in the sudoers' \\
 #          (sudo su - lawu, tanpa sudo prefix).`
 
 const USER_DIRS = `# 2.B — Buat struktur direktori Lawu & set ownership
+# >>> RUN AS: user admin (yang punya sudo) <<<
 
 # Direktori APLIKASI di SSD 128GB (OS) — cepat, untuk binary & config
 sudo mkdir -p /opt/lawu
@@ -348,18 +349,23 @@ sudo mkdir -p /opt/lawu/bin
 sudo mkdir -p /opt/lawu/scripts
 sudo mkdir -p /opt/lawu/logs
 
-# Direktori DATA di HDD 500GB — koleksi ebook, index, markdown, backup
+# Direktori DATA di HDD 500GB — koleksi ebook, index, markdown, backup, MODELS
 sudo mkdir -p /mnt/data/ebooks
 sudo mkdir -p /mnt/data/ebooks/incoming
 sudo mkdir -p /mnt/data/ebooks/processed
 sudo mkdir -p /mnt/data/processed_markdowns
 sudo mkdir -p /mnt/data/tantivy_index
 sudo mkdir -p /mnt/data/backup
-sudo mkdir -p /mnt/data/models
+sudo mkdir -p /mnt/data/models      # ← SEMUA model GGUF disimpan di HDD (SSD hanya utk OS)
 
-# Direktori di home user lawu (source tree llama.cpp & cargo)
+# Direktori di home user lawu (source tree llama.cpp di SSD — cepat utk build)
 sudo -u lawu mkdir -p /home/lawu/src
-sudo -u lawu mkdir -p /home/lawu/models
+
+# SYMLINK: ~/models → /mnt/data/models
+# Tujuan: model file fisik di HDD (hemat SSD), tapi path ~/models tetap bisa dipakai
+sudo -u lawu rm -rf /home/lawu/models
+sudo -u lawu ln -s /mnt/data/models /home/lawu/models
+sudo -u lawu ls -la /home/lawu/models  # harus cetak: symlink → /mnt/data/models
 
 # Set ownership: semua direktori Lawu milik user lawu
 sudo chown -R lawu:lawu /opt/lawu
@@ -1135,34 +1141,75 @@ ldd build/bin/llama-server | grep -iE 'cuda|nvrtc|cudnn|libgpu' \\
 // LANGKAH 12 — KONVERSI & KUANTISASI GGUF
 // ======================================================================
 
-const GGUF_CONVERT = `# 12.A — Konversi model HuggingFace → GGUF F16
+const GGUF_CONVERT = `# 12.A — Dapatkan model GGUF (PILIH SALAH SATU OPDI)
+# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 11, TANPA sudo) <<<
+#
+# PENTING: ~/models/ adalah SYMLINK ke /mnt/data/models/ (HDD).
+# Semua file model fisik disimpan di HDD (3.6GB+), bukan SSD 128GB.
+# Verifikasi symlink:
+ls -la ~/models
+# Harus cetak: ~/models -> /mnt/data/models
+df -h /mnt/data   # pastikan HDD ada space 5GB+
 
-# Sebagai user lawu
-sudo su - lawu
-cd ~/src/llama.cpp
+# ════════════════════════════════════════════════════════════
+# OPSI 1 (RECOMMENDED — CEPAT): Download Pre-quantized GGUF Q3_K_M
+# ════════════════════════════════════════════════════════════
+# Langsung download Q3_K_M yang sudah di-quantize komunitas (bartowski).
+# Hemat disk (3.6GB vs 14GB HF + 14GB F16), hemat waktu (skip convert step).
 
-# 1) Dapatkan model fine-tune Lawu-2.5-Fine (basis Qwen2.5-Coder-7B)
-#    Letakkan model HuggingFace di ~/models/lawu-2.5-fine-hf/
-#    (hasil fine-tune dari tim Lawu, atau model base open source)
+cd ~/models   # = /mnt/data/models via symlink
 
-ls ~/models/lawu-2.5-fine-hf/
-# Harus ada: config.json, model.safetensors, tokenizer.json, dll.
+# Download pakai wget (TIDAK butuh venv/pip/huggingface-cli)
+# -c = resume kalau koneksi putus
+# Estimasi: 3.6GB, 5-30 menit tergantung bandwidth
+wget -c https://huggingface.co/bartowski/Qwen2.5-Coder-7B-Instruct-GGUF/resolve/main/Qwen2.5-Coder-7B-Instruct-Q3_K_M.gguf \\
+  -O ~/models/lawu-2.5-fine-q3_k_m.gguf
 
-# 2) Aktifkan venv Python yang ada MarkltDown/llama.cpp deps
+# Verifikasi file di HDD (bukan SSD!)
+ls -lh ~/models/lawu-2.5-fine-q3_k_m.gguf
+ls -lh /mnt/data/models/lawu-2.5-fine-q3_k_m.gguf   # path absolut HDD
+df -h /mnt/data   # HDD usage naik ~3.6GB
+
+# File: GGUF (binary). Test bisa dibaca llama-server:
+~/src/llama.cpp/build/bin/llama-server --version   # pastikan binary OK
+
+# SKIP ke Langkah 13 (serve) — tidak perlu quantize (sudah Q3_K_M dari bartowski)
+
+# ════════════════════════════════════════════════════════════
+# OPSI 2 (LENGKAP): Convert HuggingFace → GGUF F16 → Q3_K_M sendiri
+# ════════════════════════════════════════════════════════════
+# Pilih opsi ini jika Anda punya model fine-tune Lawu sendiri,
+# atau mau proses lengkap untuk dokumentasi.
+
+# 12.A.1 — Download HF model (14GB, butuh waktu lama)
+cd ~/models
+git lfs install   # pastikan git-lfs aktif
+git clone https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct \\
+  ~/models/lawu-2.5-fine-hf
+# Estimasi: 14GB, 10-30 menit tergantung bandwidth
+
+# 12.A.2 — Buat venv Python (jika belum ada dari Langkah 1.C)
+python3 -m venv ~/venvs/lawu
 source ~/venvs/lawu/bin/activate
-pip install -r requirements.txt   # llama.cpp Python deps
 
-# 3) Konversi HF → GGUF F16 (full precision, ukuran besar)
+# 12.A.3 — Install llama.cpp Python deps
+cd ~/src/llama.cpp
+pip install -r requirements.txt
+
+# 12.A.4 — Convert HF → GGUF F16 (full precision, ukuran besar)
 python3 convert_hf_to_gguf.py ~/models/lawu-2.5-fine-hf \\
   --outfile ~/models/lawu-2.5-fine-f16.gguf \\
   --outtype f16
+deactivate
 
-# 4) Verifikasi GGUF F16
+# 12.A.5 — Verifikasi GGUF F16 (di HDD via symlink)
 ls -lh ~/models/lawu-2.5-fine-f16.gguf
 # Estimasi: 7B F16 ≈ 14 GB
 
-# 5) Cek metadata GGUF
-~/src/llama.cpp/build/bin/llama-gguf-dump ~/models/lawu-2.5-fine-f16.gguf | head -20`
+# 12.A.6 — Cek metadata GGUF (opsional, jika binary llama-gguf-dump ada)
+~/src/llama.cpp/build/bin/llama-gguf-dump ~/models/lawu-2.5-fine-f16.gguf | head -20
+
+# Lanjut ke Langkah 12.B (quantize F16 → Q3_K_M)`
 
 const GGUF_QUANTIZE = `# 12.B — Kuantisasi GGUF F16 → Q3_K_M (RAM 8GB tuning untuk 7B model)
 # >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 12.A, TANPA sudo) <<<

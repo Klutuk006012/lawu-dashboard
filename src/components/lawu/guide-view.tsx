@@ -1076,13 +1076,16 @@ git submodule update --init --recursive
 head -3 LICENSE
 # Harus cetak: MIT License + copyright holder`
 
-const LLAMA_BUILD = `# 11.B — Build llama.cpp dengan optimasi CPU native (AVX2 di i5-10400)
+const LLAMA_BUILD = `# 11.B — Build llama.cpp dengan static linking + optimasi CPU native (AVX2 i5-10400)
+# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 11.A, TANPA sudo) <<<
+# Static linking = binary mandiri, tidak butuh .so eksternal → mudah untuk systemd
 
 cd ~/src/llama.cpp
 
-# 1) Konfigurasi build dengan CMake
+# 1) Konfigurasi build dengan CMake (STATIC LINKING)
 #    GGML_NATIVE=ON = deteksi otomatis AVX2/AVX512/FMA di i5-10400
 #    LLAMA_BUILD_SERVER=ON = bangun 'llama-server' (OpenAI-compatible endpoint)
+#    BUILD_SHARED_LIBS=OFF + LLAMA_STATIC=ON = binary mandiri, tidak butuh .so
 cmake -B build \\
   -DGGML_NATIVE=ON \\
   -DGGML_AVX2=ON \\
@@ -1091,20 +1094,34 @@ cmake -B build \\
   -DLLAMA_BUILD_SERVER=ON \\
   -DLLAMA_CURL=ON \\
   -DCMAKE_BUILD_TYPE=Release \\
+  -DBUILD_SHARED_LIBS=OFF \\
+  -DLLAMA_STATIC=ON \\
   -G Ninja
 
-# 2) Build paralel (6 core fisik i5-10400)
+# 2) Build paralel (6 core fisik i5-10400) — estimasi 5-8 menit
 cmake --build build --config Release -j 6
 
-# 3) Verifikasi binary ada
+# 3) Verifikasi binary ada + size besar (static linking → 15-25MB, bukan 18KB)
 ls -lh build/bin/llama-server
 ls -lh build/bin/llama-quantize
 ls -lh build/bin/llama-cli
 
-# 4) Verifikasi murni CPU — TIDAK ada dependency CUDA
-ldd build/bin/llama-server | grep -iE 'cuda|nvrtc|cudnn' && echo "✗ ADA GPU dep!" || echo "✓ Murni CPU (Paten 3 terpenuhi)"
+# 4) Verifikasi STATIC LINKING — hanya dependency sistem (NO .so dari llama.cpp)
+ldd build/bin/llama-server
+# Harus HANYA cetak: libstdc++, libgcc_s, libc, libm, libdl, libpthread, ld-linux
+# TIDAK boleh ada: libllama.so, libggml.so, libllama-server-impl.so (sudah static)
 
-# Estimasi waktu build: 5-8 menit di i5-10400 dengan 6 thread`
+# 5) Verifikasi murni CPU (Paten 3) — TIDAK ada dependency CUDA/GPU
+ldd build/bin/llama-server | grep -iE 'cuda|nvrtc|cudnn|libgpu' \\
+  && echo "✗ ADA GPU dep! Paten 3 gagal" \\
+  || echo "✓ Murni CPU (Paten 3 terpenuhi)"
+
+# 6) Test binary bisa run + cetak version
+~/src/llama.cpp/build/bin/llama-server --version
+# Harus cetak: version: b12069 (atau tag yang Anda checkout)
+
+# Estimasi waktu build: 5-8 menit di i5-10400 dengan 6 thread
+# Jika OOM (jarang di static build), turunkan -j 6 → -j 4 atau -j 3`
 
 // ======================================================================
 // LANGKAH 12 — KONVERSI & KUANTISASI GGUF

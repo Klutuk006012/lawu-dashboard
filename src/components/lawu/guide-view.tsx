@@ -183,7 +183,7 @@ const CLEANUP_CONFIG = `# 0.F — Bersihkan sysctl, Nginx config, dan log Lawu l
 sudo rm -f /etc/sysctl.d/99-lawu-fine.conf
 sudo sysctl --system 2>/dev/null || true
 
-# 2) Hapus Nginx config Lawu lama (akan dibuat ulang bersih di Langkah 16)
+# 2) Hapus Nginx config Lawu lama (akan dibuat ulang bersih di Langkah 17)
 sudo rm -f /etc/nginx/sites-enabled/lawu
 sudo rm -f /etc/nginx/sites-available/lawu
 sudo nginx -t 2>/dev/null && sudo systemctl reload nginx 2>/dev/null || true
@@ -502,10 +502,10 @@ sudo sed -i '/[[:space:]]swap[[:space:]]/d' /etc/fstab
 sudo findmnt --verify`
 
 // ======================================================================
-// LANGKAH 18 — HARDENING SERVER (TERAKHIR SEBELUM GO-LIVE)
+// LANGKAH 19 — HARDENING SERVER (TERAKHIR SEBELUM GO-LIVE)
 // ======================================================================
 
-const FIREWALL_UFW = `# 18.A — Konfigurasi firewall UFW (default deny, hanya buka port yang perlu)
+const FIREWALL_UFW = `# 19.A — Konfigurasi firewall UFW (default deny, hanya buka port yang perlu)
 # Paten 4: Linux only — ufw = front-end iptables/nftables (Debian default)
 
 # 1) Reset UFW ke kondisi default (bersih)
@@ -518,7 +518,7 @@ sudo ufw default allow outgoing
 # 3) Izinkan SSH (port 22) — WAJIB sebelum enable, kalau tidak Anda terkunci!
 sudo ufw allow 22/tcp comment 'SSH admin'
 
-# 4) Izinkan HTTP (port 80) & HTTPS (port 443) untuk Nginx reverse proxy (Langkah 16)
+# 4) Izinkan HTTP (port 80) & HTTPS (port 443) untuk Nginx reverse proxy (Langkah 17)
 sudo ufw allow 80/tcp comment 'Nginx HTTP'
 sudo ufw allow 443/tcp comment 'Nginx HTTPS'
 
@@ -533,7 +533,7 @@ sudo ufw --force enable
 sudo ufw status verbose
 sudo ufw status numbered`
 
-const SSH_HARDENING = `# 18.B — SSH hardening (cegah brute-force & privilege escalation)
+const SSH_HARDENING = `# 19.B — SSH hardening (cegah brute-force & privilege escalation)
 
 # 1) Backup config SSH lama
 sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak.$(date +%Y%m%d)
@@ -564,7 +564,7 @@ sudo systemctl status sshd --no-pager
 #    Jika gagal login, Anda bisa kembalikan config backup dari sesi yang masih hidup:
 #    sudo cp /etc/ssh/sshd_config.bak.* /etc/ssh/sshd_config && sudo systemctl restart sshd`
 
-const SSH_KEY = `# 18.C — Generate SSH key pair (di mesin admin/laptop Anda, BUKAN di server)
+const SSH_KEY = `# 19.C — Generate SSH key pair (di mesin admin/laptop Anda, BUKAN di server)
 
 # 1) Di laptop admin Anda — generate ed25519 key (modern, aman, ringan)
 ssh-keygen -t ed25519 -a 100 -C "admin@lawu-server" -f ~/.ssh/lawu_admin
@@ -575,11 +575,11 @@ ssh-copy-id -i ~/.ssh/lawu_admin.pub lawu@<IP-SERVER>
 # 3) Test login dengan key (tanpa password)
 ssh -i ~/.ssh/lawu_admin lawu@<IP-SERVER>
 
-# 4) Setelah login dengan key berhasil, password login otomatis disabled (Langkah 18.B)
+# 4) Setelah login dengan key berhasil, password login otomatis disabled (Langkah 19.B)
 #    Verifikasi: SSH dengan password harus DITOLAK
 ssh lawu@<IP-SERVER>   # harus gagal: Permission denied (publickey)`
 
-const FAIL2BAN = `# 18.D — Install & konfigurasi fail2ban (auto-ban IP setelah 3x gagal SSH)
+const FAIL2BAN = `# 19.D — Install & konfigurasi fail2ban (auto-ban IP setelah 3x gagal SSH)
 
 # 1) fail2ban sudah diinstall di Langkah 1.B — konfigurasi sekarang
 sudo tee /etc/fail2ban/jail.d/lawu-sshd.local > /dev/null <<'F2B'
@@ -832,7 +832,7 @@ codegen-units = 1
 strip = true        # strip symbol → binary lebih kecil
 panic = "abort"     # hemat binary size, tanpa unwind tables`
 
-const CARGO_BUILD = `# 8.B — Build lawu-server (release mode, optimasi native CPU)
+const CARGO_BUILD = `# 7.B — Build lawu-server (release mode, optimasi native CPU)
 
 # Sebagai user lawu, di ~/lawu-server/
 source ~/.cargo/env
@@ -1084,7 +1084,7 @@ async fn telegram_test_handler() -> Json<serde_json::Value> {
 // LANGKAH 10 — BUILD llama.cpp
 // ======================================================================
 
-const LLAMA_CLONE = `# 11.A — Clone & build llama.cpp (open source MIT)
+const LLAMA_CLONE = `# 10.A — Clone & build llama.cpp (open source MIT)
 # Paten 3: murni CPU. Paten 5: llama.cpp = MIT license.
 # llama.cpp TIDAK butuh GPU — pure CPU dengan optimasi AVX2 otomatis di i5-10400.
 # >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 9, TANPA sudo) <<<
@@ -1114,7 +1114,7 @@ git submodule update --init --recursive
 head -3 LICENSE
 # Harus cetak: MIT License + copyright holder`
 
-const LLAMA_BUILD = `# 11.B — Build llama.cpp dengan static linking + optimasi CPU native (AVX2 i5-10400)
+const LLAMA_BUILD = `# 10.B — Build llama.cpp dengan static linking + optimasi CPU native (AVX2 i5-10400)
 # >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 10.A, TANPA sudo) <<<
 # Static linking = binary mandiri, tidak butuh .so eksternal → mudah untuk systemd
 
@@ -1171,7 +1171,7 @@ ldd build/bin/llama-server | grep -iE 'cuda|nvrtc|cudnn|libgpu' \\
 // LANGKAH 11 — KONVERSI & KUANTISASI GGUF
 // ======================================================================
 
-const GGUF_CONVERT = `# 12.A — Dapatkan model GGUF (PILIH SALAH SATU OPDI)
+const GGUF_CONVERT = `# 11.A — Dapatkan model GGUF (PILIH SALAH SATU OPDI)
 # >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 10, TANPA sudo) <<<
 #
 # PENTING: ~/models/ adalah SYMLINK ke /mnt/data/models/ (HDD).
@@ -1203,7 +1203,7 @@ df -h /mnt/data   # HDD usage naik ~3.6GB
 # File: GGUF (binary). Test bisa dibaca llama-server:
 ~/src/llama.cpp/build/bin/llama-server --version   # pastikan binary OK
 
-# SKIP ke Langkah 12 (serve) — tidak perlu quantize (sudah Q3_K_M dari bartowski)
+# SKIP ke Langkah 13 (serve) — tidak perlu quantize (sudah Q3_K_M dari bartowski)
 
 # ════════════════════════════════════════════════════════════
 # OPSI 2 (LENGKAP): Convert HuggingFace → GGUF F16 → Q3_K_M sendiri
@@ -1241,7 +1241,7 @@ ls -lh ~/models/lawu-2.5-fine-f16.gguf
 
 # Lanjut ke Langkah 11.B (quantize F16 → Q3_K_M)`
 
-const GGUF_QUANTIZE = `# 12.B — Kuantisasi GGUF F16 → Q3_K_M (RAM 8GB tuning untuk 7B model)
+const GGUF_QUANTIZE = `# 11.B — Kuantisasi GGUF F16 → Q3_K_M (RAM 8GB tuning untuk 7B model)
 # >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 11.A, TANPA sudo) <<<
 # RAM 8GB: pakai Q3_K_M (3.6GB) — Q4_K_M (4.4GB) terlalu mepet
 
@@ -1265,7 +1265,7 @@ ls -lh ~/models/lawu-2.5-fine-q3_k_m.gguf
 #      ~/models/lawu-2.5-fine-q4_k_m.gguf Q4_K_M
 #    Q4_K_M ≈ 4.4 GB — throughput ~7-11 tok/s, BISA OOM kalau prompt panjang
 
-# 4) Update nama file model di Langkah 12 (LLAMA_SERVE) & Langkah 13 (SYSTEMD_LLAMA)
+# 4) Update nama file model di Langkah 13 (LLAMA_SERVE) & Langkah 14 (SYSTEMD_LLAMA)
 #    Ganti 'lawu-2.5-fine-q4_k_m.gguf' → 'lawu-2.5-fine-q3_k_m.gguf'
 #    (Panduan web sudah otomatis pakai q3_k_m, tapi systemd service file perlu update manual)
 
@@ -1279,7 +1279,143 @@ rm -f ~/models/lawu-2.5-fine-f16.gguf
 #              tokenizer.ggml.model = qwen2, dll.`
 
 // ======================================================================
-// LANGKAH 12 — SERVE llama.cpp
+// LANGKAH 12 — KORPUS WIKIPEDIA-ID (DATASET PELATIHAN INDONESIA)
+// ======================================================================
+
+const WIKI_DOWNLOAD = `# 12.A — Download dataset Wikipedia-ID dari HuggingFace
+# Dataset: huggingface.co/datasets/indonesian-nlp/wikipedia-id (parquet)
+# Isi     : 1.44 juta artikel Wikipedia Indonesia (1.3jt train + 145rb test)
+# Schema  : docid · title · text — PAS PERSIS dengan field Tantivy Lawu!
+# Ukuran  : ~345 MB compressed → ~537 MB teks — aman di HDD 500GB
+# Lisensi : konten Wikipedia (CC BY-SA) — Paten 5 open source ✓
+
+# 1) [USER ADMIN] Buat folder dataset di HDD + kasih ke user lawu
+sudo mkdir -p /mnt/data/datasets/wikipedia-id
+sudo chown -R lawu:lawu /mnt/data/datasets
+
+# 2) [USER LAWU] Download parquet (wget -c = resumable, aman koneksi putus)
+cd /mnt/data/datasets/wikipedia-id
+wget -c https://huggingface.co/datasets/indonesian-nlp/wikipedia-id/resolve/main/data/train-00000-of-00001.parquet
+wget -c https://huggingface.co/datasets/indonesian-nlp/wikipedia-id/resolve/main/data/test-00000-of-00001.parquet
+
+# 3) Verifikasi — total ~345 MB
+ls -lh *.parquet
+# train-00000-of-00001.parquet  ~310M
+# test-00000-of-00001.parquet    ~35M
+
+# KEUNTUNGAN korpus ini:
+# - Korpus ebook pribadi biasanya terbatas — Wikipedia-ID menambah pengetahuan umum
+#   (sejarah, sains, biografi, geografi Indonesia) untuk jawaban RAG yang lebih kaya
+# - Format parquet = 1 file besar, JAUH lebih cepat di-index daripada 1.4jt PDF kecil`
+
+const WIKI_PREPROCESS = `# 12.B — Konversi parquet → markdown per-artikel (streaming, RAM-aman)
+# >>> RUN AS: user lawu (venv lawu dibuat di Langkah 11 opsi 2) <<<
+source ~/venvs/lawu/bin/activate
+pip install pyarrow        # satu-satunya dependency tambahan (~30MB)
+
+# 1) Tulis script konverter — streaming per-batch 500 baris → RAM tetap ~400MB
+mkdir -p ~/src
+cat > ~/src/wiki_to_markdown.py <<'PYEOF'
+#!/usr/bin/env python3
+# wiki_to_markdown.py — Parquet Wikipedia-ID → markdown per-artikel
+import argparse, re, sys
+from pathlib import Path
+import pyarrow.parquet as pq
+
+DEFAULT_OUT = "/mnt/data/processed_markdowns/wikipedia-id"
+MAX_TEXT = 20000                      # truncate teks per artikel (hindari dokumen raksasa)
+SAFE = re.compile(r'[^\\w.-]+')
+
+def sanitize(s):
+    return SAFE.sub('_', s.strip())[:120].strip('_') or 'untitled'
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('parquet', nargs='+')
+    ap.add_argument('--split', default='train', help='subfolder split (train/test)')
+    ap.add_argument('--out', default=DEFAULT_OUT, help='folder output markdown')
+    ap.add_argument('--limit', type=int, default=0, help='batasi jumlah artikel (0=all)')
+    args = ap.parse_args()
+
+    out_dir = Path(args.out) / args.split
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    n, skipped = 0, 0
+    for pqfile in args.parquet:
+        pf = pq.ParquetFile(pqfile)
+        for batch in pf.iter_batches(batch_size=500, columns=['docid', 'title', 'text']):
+            for row in batch.to_pylist():
+                if args.limit and n >= args.limit:
+                    print(f"STOP di limit {args.limit}")
+                    sys.exit(0)
+                title = (row['title'] or '').strip()
+                text = (row['text'] or '').strip()
+                if len(text) < 40:            # skip stub/redirect terlalu pendek
+                    skipped += 1
+                    continue
+                text = text[:MAX_TEXT]
+                docid = (row['docid'] or sanitize(title)).strip()
+                letter = sanitize(title)[:1].lower() if title else '_'
+                sub = out_dir / (letter if letter.isalpha() else '_')
+                sub.mkdir(exist_ok=True)
+                fname = sub / f"{sanitize(title) or docid}__{sanitize(docid)}.md"
+                fname.write_text(f"# {title}\\n\\n{text}\\n", encoding='utf-8')
+                n += 1
+                if n % 10000 == 0:
+                    print(f"  {n} artikel...", flush=True)
+    print(f"SELESAI: {n} artikel ditulis, {skipped} dilewati → {out_dir}")
+
+if __name__ == '__main__':
+    main()
+PYEOF
+
+# 2) UJI COBA DULU — 20 ribu artikel pertama (~2 menit, validasi pipeline)
+python ~/src/wiki_to_markdown.py /mnt/data/datasets/wikipedia-id/train-*.parquet --split train --limit 20000
+ls /mnt/data/processed_markdowns/wikipedia-id/train/ | head
+cat /mnt/data/processed_markdowns/wikipedia-id/train/k/Kaisar_Kangxi__*.md | head -5
+
+# 3) KALAU UJI SUKSES — jalankan PENUH (train 1.3jt + test 145rb artikel)
+#    Estimasi: 30-60 menit di i5-10400 + HDD (1.4 juta file kecil, I/O bound)
+python ~/src/wiki_to_markdown.py /mnt/data/datasets/wikipedia-id/train-*.parquet --split train
+python ~/src/wiki_to_markdown.py /mnt/data/datasets/wikipedia-id/test-*.parquet --split test
+
+# 4) Verifikasi hasil
+find /mnt/data/processed_markdowns/wikipedia-id -name '*.md' | wc -l
+# Harus ~1.3-1.4 juta (artikel <40 karakter dilewati otomatis)
+du -sh /mnt/data/processed_markdowns/wikipedia-id
+# ~600-800 MB markdown — HDD 500GB santai
+
+# KINERJA: streaming iter_batches → RAM max ~400MB — AMAN di 8GB, server tetap responsif
+# Struktur: wikipedia-id/{train,test}/{a..z,_}/<Judul>__<docid>.md — mudah di-navigasi`
+
+const WIKI_INDEX = `# 12.C — Verifikasi korpus & trigger indexing Tantivy
+
+# 1) [USER LAWU] Cek sampel isi korpus
+sample=$(find /mnt/data/processed_markdowns/wikipedia-id/train -name '*.md' | head -1)
+head -3 "$sample"
+# Format: baris 1 = "# Judul Artikel", baris 3+ = isi artikel bahasa Indonesia
+
+# 2) Hitung total file markdown (ebook + wikipedia)
+find /mnt/data/processed_markdowns -name '*.md' | wc -l
+
+# 3) [ADMIN] Trigger full reindex — jalankan SETELAH service lawu-2.5-fine aktif (Langkah 14)
+#    Endpoint reindex sama seperti yang dipakai file-watcher (Langkah 15):
+curl -s -X POST http://127.0.0.1:8081/api/reindex-all
+
+# 4) Cek jumlah dokumen ter-index naik (docs.total = ebook + jutaan artikel Wikipedia)
+curl -s http://127.0.0.1:8081/api/stats
+
+# 5) Tes search korpus Wikipedia langsung
+curl -s -X POST http://127.0.0.1:8081/api/search \\
+  -H 'Content-Type: application/json' \\
+  -d '{"query":"Kaisar Kangxi","limit":5}'
+# Result harus menyertakan artikel Wikipedia (path mengandung wikipedia-id)
+
+# ESTIMASI INDEX SIZE : teks 537MB → index Tantivy ~400-900MB — HDD aman
+# ESTIMASI WAKTU INDEX: 1.4jt dokumen ≈ 20-40 menit di i5-10400 (commit per batch)`
+
+// ======================================================================
+// LANGKAH 13 — SERVE llama.cpp
 // ======================================================================
 
 const LLAMA_SERVE = `# 13.A — Jalankan llama-server (OpenAI-compatible endpoint)
@@ -1289,7 +1425,7 @@ const LLAMA_SERVE = `# 13.A — Jalankan llama-server (OpenAI-compatible endpoin
 
 cd ~/src/llama.cpp
 
-# 1) Tes serve manual dulu (sebelum systemd di Langkah 13)
+# 1) Tes serve manual dulu (sebelum systemd di Langkah 14)
 #    NOTE: --mmap sudah TIDAK ada di llama.cpp b12069+ (mmap default ON, tidak perlu flag)
 ./build/bin/llama-server \\
   -m ~/models/lawu-2.5-fine-q3_k_m.gguf \\
@@ -1337,10 +1473,10 @@ curl http://127.0.0.1:8080/v1/chat/completions \\
 #    c) Aktifkan swap ke HDD (BUKAN SSD): sudo mkswap /dev/sdb2 + swapon
 #    d) Kurangi thread: -t 4 → -t 3
 
-# 5) Stop manual serve (Ctrl+C), lanjut setup systemd di Langkah 13`
+# 5) Stop manual serve (Ctrl+C), lanjut setup systemd di Langkah 14`
 
 // ======================================================================
-// LANGKAH 13 — SYSTEMD UNITS
+// LANGKAH 14 — SYSTEMD UNITS
 // ======================================================================
 
 const SYSTEMD_USER = `# 14.A — Pastikan user lawu bisa jalankan service systemd
@@ -1354,7 +1490,7 @@ sudo loginctl enable-linger lawu
 loginctl show-user lawu | grep Linger
 # harus cetak: Linger=yes`
 
-const SYSTEMD_LLAMA = `# 14.A — Tulis unit file systemd untuk llama.cpp (heredoc — LANGSUNG JALANKAN)
+const SYSTEMD_LLAMA = `# 14.B — Tulis unit file systemd untuk llama.cpp (heredoc — LANGSUNG JALANKAN)
 # Service inference llama.cpp (CPU only — Paten 3)
 sudo tee /etc/systemd/system/llama-lawu.service > /dev/null <<'UNIT'
 [Unit]
@@ -1385,7 +1521,7 @@ UNIT
 # Verify file created
 cat /etc/systemd/system/llama-lawu.service | head -10`
 
-const SYSTEMD_AXUM = `# 14.B — Tulis unit file systemd untuk Axum API (heredoc — LANGSUNG JALANKAN)
+const SYSTEMD_AXUM = `# 14.C — Tulis unit file systemd untuk Axum API (heredoc — LANGSUNG JALANKAN)
 # Service API search Axum + Tantivy
 sudo tee /etc/systemd/system/lawu-2.5-fine.service > /dev/null <<'UNIT'
 [Unit]
@@ -1420,7 +1556,7 @@ UNIT
 # Verify file created
 cat /etc/systemd/system/lawu-2.5-fine.service | head -10`
 
-const SYSTEMD_ENABLE = `# 14.B — Aktifkan & enable kedua service systemd
+const SYSTEMD_ENABLE = `# 14.D — Aktifkan & enable kedua service systemd
 
 # 1) Buat direktori log (jika belum)
 sudo mkdir -p /var/log/lawu
@@ -1453,7 +1589,7 @@ curl -X POST http://127.0.0.1:8081/api/search \\
   -d '{"query":"test","limit":5}' | jq`
 
 // ======================================================================
-// LANGKAH 14 — OTOMASI PEMANTAUAN
+// LANGKAH 15 — OTOMASI PEMANTAUAN
 // ======================================================================
 
 const WATCH_SCRIPT = `# /opt/lawu/scripts/watch_ebooks.sh — File Watcher & Notifikasi Real-time
@@ -1573,7 +1709,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart lawu-2.5-fine`
 
 // ======================================================================
-// LANGKAH 15 — LOAD TESTING k6
+// LANGKAH 16 — LOAD TESTING k6
 // ======================================================================
 
 const K6_INSTALL = `# 16.A — Install k6 (open source AGPL-3.0, aman)
@@ -1619,7 +1755,7 @@ export default function () {
 // Lihat report HTML: k6 run --out json=results.json ~/src/load_test.js && k6 report --format json results.json`
 
 // ======================================================================
-// LANGKAH 16 — NGINX REVERSE PROXY
+// LANGKAH 17 — NGINX REVERSE PROXY
 // ======================================================================
 
 const NGINX = `# 17 — Tulis config Nginx (heredoc — LANGSUNG JALANKAN)
@@ -1684,7 +1820,7 @@ sudo systemctl reload nginx
 sudo systemctl status nginx --no-pager`
 
 // ======================================================================
-// LANGKAH 17 — INTEGRASI DASHBOARD
+// LANGKAH 18 — INTEGRASI DASHBOARD
 // ======================================================================
 
 const INTEGRATE = `1. Buka tab "Pengaturan" di dashboard Lawu-2.5-Fine ini.
@@ -1696,7 +1832,7 @@ const INTEGRATE = `1. Buka tab "Pengaturan" di dashboard Lawu-2.5-Fine ini.
 4. Untuk data pencarian nyata: arahkan fetch ke server Rust Axum Anda
    (kontrak identik: POST /api/search, GET /api/stats, GET /api/conversations).
 5. Telegram Bot: daftar bot via @BotFather, dapatkan token, isi di
-   /etc/lawu/env (Langkah 15) lalu restart service lawu-2.5-fine.
+   /etc/lawu/env (Langkah 16) lalu restart service lawu-2.5-fine.
 
 # Test end-to-end dari laptop admin:
 curl http://<IP-SERVER>/api/stats | jq
@@ -1709,10 +1845,10 @@ curl http://<IP-SERVER>/v1/chat/completions \\
   -d '{"model":"lawu-2.5-fine","messages":[{"role":"user","content":"Halo Lawu"}],"max_tokens":50}' | jq`
 
 // ======================================================================
-// LANGKAH 19 — FINAL GO-LIVE CHECKLIST
+// LANGKAH 20 — FINAL GO-LIVE CHECKLIST
 // ======================================================================
 
-const CHECKLIST_SCRIPT = `# 19 — Final Go-Live Checklist (jalankan SEBELUM buka ke publik)
+const CHECKLIST_SCRIPT = `# 20 — Final Go-Live Checklist (jalankan SEBELUM buka ke publik)
 # Setiap item harus ✓. Jika ada ✗, FIX dulu sebelum go-live.
 
 echo "=== LAWU-2.5-FINE GO-LIVE CHECKLIST ==="
@@ -1806,7 +1942,7 @@ export function GuideView() {
           <Badge variant="secondary">Debian 13 · Linux 6.x</Badge>
           <Badge variant="secondary">Rust · Axum · Tantivy · Rayon</Badge>
           <Badge variant="secondary">llama.cpp GGUF (Q3_K_M)</Badge>
-          <Badge variant="secondary">20 Langkah · 0→19</Badge>
+          <Badge variant="secondary">21 Langkah · 0→20</Badge>
         </div>
         <h1 className="mt-3 text-xl font-semibold tracking-tight">
           Panduan Server Rust — Lawu-2.5-Fine
@@ -1822,9 +1958,10 @@ export function GuideView() {
           <div>
             <strong className="text-foreground">Urutan eksekusi yang disarankan:</strong>{' '}
             Langkah 0 (bersihkan) → 1 (prerequisites) → 2 (user &amp; dir) → 3 (disk) → 4-9
-            (arsitektur, sysctl, Rust, Axum API) → 10-12 (llama.cpp build, model, serve) →
-            13 (systemd) → 14 (otomasi) → 15 (load test) → 16 (Nginx) → 17 (integrasi) →
-            <strong>18 (HARDENING — terakhir!)</strong> → 19 (go-live checklist).
+            (arsitektur, sysctl, Rust, Axum API) → 10-11 (llama.cpp build, model GGUF) →
+            12 (korpus Wikipedia-ID) → 13 (serve) → 14 (systemd) → 15 (otomasi) →
+            16 (load test) → 17 (Nginx) → 18 (integrasi) →
+            <strong>19 (HARDENING — terakhir!)</strong> → 20 (go-live checklist).
           </div>
         </div>
         <div className="mt-2 flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-50 p-3 text-xs text-muted-foreground dark:bg-amber-950/30">
@@ -1833,10 +1970,11 @@ export function GuideView() {
             <strong className="text-foreground">⚠ User Context — siapa menjalankan apa?</strong>{' '}
             User <code className="rounded bg-muted px-1 py-0.5 text-[10px]">lawu</code> sengaja
             dibuat TANPA sudo (principle of least privilege). Semua perintah <code className="rounded bg-muted px-1 py-0.5 text-[10px]">sudo ...</code>{' '}
-            di Langkah <strong>0-3 &amp; 13-17</strong> wajib dijalankan sebagai{' '}
+            di Langkah <strong>0-5, 12.A &amp; 14-18</strong> wajib dijalankan sebagai{' '}
             <strong>user admin Anda</strong> (user yang dibuat saat install Debian, punya sudo).
             <br />
-            Baru di Langkah <strong>6-12</strong> (Rust, Cargo, llama.cpp build) Anda{' '}
+            Baru di Langkah <strong>6-11, 12.B &amp; 13</strong> (Rust, Cargo, Tantivy, API,
+            llama.cpp, korpus, serve) Anda{' '}
             <code className="rounded bg-muted px-1 py-0.5 text-[10px]">sudo su - lawu</code> dan
             menjalankan sebagai user <code className="rounded bg-muted px-1 py-0.5 text-[10px]">lawu</code>{' '}
             (tanpa sudo — build tidak butuh root).
@@ -2028,33 +2166,58 @@ export function GuideView() {
           <CodeBlock code={GGUF_QUANTIZE} filename="11.B-quantize-q3_k_m.sh" />
         </Section>
 
-        {/* ─── LANGKAH 12: SERVE LLAMA ─── */}
+        {/* ─── LANGKAH 12: KORPUS WIKIPEDIA-ID ─── */}
+        <Section
+          id="korpus"
+          step="12"
+          title="Korpus Wikipedia-ID (Dataset Pelatihan Indonesia)"
+          desc="Download dataset indonesian-nlp/wikipedia-id dari HuggingFace (1.44 juta artikel Wikipedia Indonesia, parquet ~345MB), konversi streaming ke markdown per-artikel (RAM-aman ~400MB), lalu trigger indexing Tantivy. Schema docid·title·text pas persis dengan field Tantivy."
+        >
+          <Alert>
+            <ShieldAlert />
+            <AlertTitle>Kenapa korpus Wikipedia-ID penting?</AlertTitle>
+            <AlertDescription>
+              <p>
+                Korpus ebook pribadi biasanya terbatas topiknya. Wikipedia-ID menambah pengetahuan
+                umum Indonesia (sejarah, sains, biografi, geografi) sehingga jawaban RAG jauh lebih
+                kaya. Schema dataset ({' '}<code className="rounded bg-muted px-1 py-0.5 text-xs">docid·title·text</code>{' '})
+                pas persis dengan field Tantivy — tidak perlu transformasi rumit. Lisensi CC BY-SA
+                (open source — Paten 5 aman).
+              </p>
+            </AlertDescription>
+          </Alert>
+          <CodeBlock code={WIKI_DOWNLOAD} filename="12.A-download-wikipedia-id.sh" />
+          <CodeBlock code={WIKI_PREPROCESS} filename="12.B-preprocess-wiki-to-markdown.sh" />
+          <CodeBlock code={WIKI_INDEX} filename="12.C-verify-and-index.sh" />
+        </Section>
+
+        {/* ─── LANGKAH 13: SERVE LLAMA ─── */}
         <Section
           id="llama-serve"
-          step="12"
+          step="13"
           title="Serve llama.cpp (OpenAI-compatible)"
           desc="Jalankan llama-server dengan -t 4, -c 2048 (RAM 8GB tuning, mmap default ON), bind 127.0.0.1:8080. Test endpoint /v1/models & /v1/chat/completions. Estimasi 10-15 tok/s (7B Q3_K_M) di i5-10400."
         >
-          <CodeBlock code={LLAMA_SERVE} filename="12.A-serve-llama.sh" />
+          <CodeBlock code={LLAMA_SERVE} filename="13.A-serve-llama.sh" />
         </Section>
 
-        {/* ─── LANGKAH 13: SYSTEMD ─── */}
+        {/* ─── LANGKAH 14: SYSTEMD ─── */}
         <Section
           id="systemd"
-          step="13"
+          step="14"
           title="Unit systemd (Auto-restart & Boot)"
           desc="Dua service: llama-lawu (inference) & lawu-2.5-fine (API Axum). Hardening systemd (NoNewPrivileges, ProtectSystem, PrivateTmp). Auto-restart on crash."
         >
-          <CodeBlock code={SYSTEMD_USER} filename="13.A-verify-user.sh" />
+          <CodeBlock code={SYSTEMD_USER} filename="14.A-verify-user.sh" />
           <CodeBlock code={SYSTEMD_LLAMA} filename="/etc/systemd/system/llama-lawu.service" />
           <CodeBlock code={SYSTEMD_AXUM} filename="/etc/systemd/system/lawu-2.5-fine.service" />
-          <CodeBlock code={SYSTEMD_ENABLE} filename="13.B-enable-services.sh" />
+          <CodeBlock code={SYSTEMD_ENABLE} filename="14.D-enable-services.sh" />
         </Section>
 
-        {/* ─── LANGKAH 14: OTOMASI ─── */}
+        {/* ─── LANGKAH 15: OTOMASI ─── */}
         <Section
           id="otomasi"
-          step="14"
+          step="15"
           title="Otomasi Pemantauan & Operasional"
           desc="File watcher inotifywait, backup harian (retensi 7 hari), laporan error harian via Telegram. Cron jobs & environment file /etc/lawu/env."
         >
@@ -2065,41 +2228,41 @@ export function GuideView() {
           <CodeBlock code={CRONTAB} filename="crontab -e (user lawu)" />
         </Section>
 
-        {/* ─── LANGKAH 15: K6 LOAD TEST ─── */}
+        {/* ─── LANGKAH 16: K6 LOAD TEST ─── */}
         <Section
           id="k6"
-          step="15"
+          step="16"
           title="Pengujian Beban (Load Testing k6)"
           desc="Install k6 (AGPL-3.0, open source). Target: p95 latency /api/search < 300ms dengan 20 VUs selama 2 menit. Error rate < 1%."
         >
-          <CodeBlock code={K6_INSTALL} filename="15.A-install-k6.sh" />
+          <CodeBlock code={K6_INSTALL} filename="16.A-install-k6.sh" />
           <CodeBlock code={K6} filename="~/src/load_test.js" />
         </Section>
 
-        {/* ─── LANGKAH 16: NGINX ─── */}
+        {/* ─── LANGKAH 17: NGINX ─── */}
         <Section
           id="nginx"
-          step="16"
+          step="17"
           title="Reverse Proxy Nginx"
           desc="Satu port 80: dashboard/API Rust di root, inference llama.cpp di /v1/. Security headers, client_max_body_size 100MB untuk upload ebook, buffering off untuk streaming chat."
         >
-          <CodeBlock code={NGINX} filename="16-apply-nginx-config.sh" />
+          <CodeBlock code={NGINX} filename="17-apply-nginx-config.sh" />
         </Section>
 
-        {/* ─── LANGKAH 17: INTEGRASI ─── */}
+        {/* ─── LANGKAH 18: INTEGRASI ─── */}
         <Section
           id="integrasi"
-          step="17"
+          step="18"
           title="Integrasi dengan Dashboard"
           desc="Hubungkan dashboard ini ke server nyata: setting endpoint LLM di tab Pengaturan, arahkan fetch ke Nginx :80, setup Telegram bot token."
         >
           <CodeBlock code={INTEGRATE} filename="integrasi-dashboard.txt" />
         </Section>
 
-        {/* ─── LANGKAH 18: HARDENING (SETELAH SEMUA SERVICE JALAN!) ─── */}
+        {/* ─── LANGKAH 19: HARDENING (SETELAH SEMUA SERVICE JALAN!) ─── */}
         <Section
           id="hardening"
-          step="18"
+          step="19"
           title="⚡ Hardening Server (Jalankan SETELAH semua service jalan!)"
           desc="⭐ POSISI TERAKHIR — get it running FIRST, lock it down LAST. UFW default deny (allow 22/80/443), SSH key-only, fail2ban. HANYA jalankan setelah: systemd active, HTTP 200, chat completion sukses, k6 lulus."
         >
@@ -2125,22 +2288,22 @@ export function GuideView() {
             <AlertTitle>Jangan terkunci dari server!</AlertTitle>
             <AlertDescription>
               <p>
-                Sebelum disable SSH password, PASTIKAN Anda sudah setup SSH key (Langkah 18.C) DAN
+                Sebelum disable SSH password, PASTIKAN Anda sudah setup SSH key (Langkah 19.C) DAN
                 test login dengan key di terminal terpisah. Jika gagal, kembalikan config dari sesi
                 yang masih hidup: <code className="rounded bg-muted px-1 py-0.5 text-xs">sudo cp /etc/ssh/sshd_config.bak.* /etc/ssh/sshd_config &amp;&amp; sudo systemctl restart sshd</code>
               </p>
             </AlertDescription>
           </Alert>
-          <CodeBlock code={FIREWALL_UFW} filename="18.A-ufw-firewall.sh" />
-          <CodeBlock code={SSH_HARDENING} filename="18.B-sshd-hardening.sh" />
-          <CodeBlock code={SSH_KEY} filename="18.C-ssh-key-setup.sh" />
-          <CodeBlock code={FAIL2BAN} filename="18.D-fail2ban-sshd.sh" />
+          <CodeBlock code={FIREWALL_UFW} filename="19.A-ufw-firewall.sh" />
+          <CodeBlock code={SSH_HARDENING} filename="19.B-sshd-hardening.sh" />
+          <CodeBlock code={SSH_KEY} filename="19.C-ssh-key-setup.sh" />
+          <CodeBlock code={FAIL2BAN} filename="19.D-fail2ban-sshd.sh" />
         </Section>
 
-        {/* ─── LANGKAH 19: GO-LIVE CHECKLIST ─── */}
+        {/* ─── LANGKAH 20: GO-LIVE CHECKLIST ─── */}
         <Section
           id="checklist"
-          step="19"
+          step="20"
           title="Final Go-Live Checklist"
           desc="Audit terakhir SEBELUM buka server ke publik. Cek sistem, disk, firewall, services, ports, API health, cron, backup, memory. Semua harus sehat."
         >
@@ -2156,7 +2319,7 @@ export function GuideView() {
               </p>
             </AlertDescription>
           </Alert>
-          <CodeBlock code={CHECKLIST_SCRIPT} filename="19-go-live-checklist.sh" />
+          <CodeBlock code={CHECKLIST_SCRIPT} filename="20-go-live-checklist.sh" />
         </Section>
 
         {/* ─── FOOTER RINGKASAN ─── */}
@@ -2165,7 +2328,7 @@ export function GuideView() {
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#34a853]" />
             <div>
               <h3 className="text-sm font-semibold tracking-tight">
-                Setelah Langkah 19 selesai
+                Setelah Langkah 20 selesai
               </h3>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 Server Lawu-2.5-Fine Anda siap menerima traffic publik via port 80 (Nginx). Inference

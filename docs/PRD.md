@@ -1,9 +1,10 @@
 # PRD — Lawu-2.5-Fine · Server Setup & Deployment
 
-**Versi:** 3.1.1
+**Versi:** 3.2.0
 **Update:** 2026-11-03
 **Perubahan major v3.1.0:** Hardening server dipindah ke LANGKAH TERAKHIR (sebelum go-live checklist). Setup: **jalan dulu → lalu amankan**.
 **Perubahan v3.1.1:** HDD ikut terformat saat install ulang OS. Langkah 3 diperkuat: fstab AUTOMOUNT wajib dengan `nofail` + validasi `findmnt --verify` + TEST REBOOT sebelum lanjut.
+**Perubahan v3.2.0:** Korpus baru **Wikipedia-ID** (`indonesian-nlp/wikipedia-id` — 1,44 juta artikel, parquet ~345MB) sebagai dataset pelatihan Indonesia. Langkah 12 baru; langkah 12-19 lama bergeser ke 13-20. Total **21 langkah (0-20)**.
 
 ---
 
@@ -64,7 +65,7 @@ Lawu-2.5-Fine adalah AI model Indonesia ("AI Model Cerdas, Irit Budget") untuk s
 | **2** | User lawu & Direktori | useradd lawu (no sudo), /opt/lawu (SSD), /mnt/data (HDD), symlink ~/models → /mnt/data/models |
 | **3** | Mount & Format HDD | parted GPT → mkfs.ext4 → **fstab automount (nofail + device-timeout)** → findmnt --verify → **TEST REBOOT** → TRIM → SSD tuning |
 
-### FASE 2 — Build & Deploy Services (Langkah 4-12)
+### FASE 2 — Build & Deploy Services (Langkah 4-13)
 
 | Langkah | Judul | Isi |
 |---|---|---|
@@ -76,28 +77,29 @@ Lawu-2.5-Fine adalah AI model Indonesia ("AI Model Cerdas, Irit Budget") untuk s
 | **9** | Axum API | main.rs: /api/stats, /api/search, /api/telegram/test |
 | **10** | Build llama.cpp | clone ggml-org/llama.cpp tag b12069+, cmake STATIC linking, -j 3 (RAM 8GB) |
 | **11** | Model GGUF | wget pre-quantized Qwen2.5-Coder-7B Q3_K_M (3.55GB) ke HDD |
-| **12** | Serve llama.cpp | llama-server -t 4 -c 2048, test /v1/chat/completions |
+| **12** | ⭐ **Korpus Wikipedia-ID** | Download dataset `indonesian-nlp/wikipedia-id` (1,44jt artikel, parquet ~345MB) → konversi streaming ke markdown per-artikel (pyarrow, RAM ~400MB) → trigger indexing Tantivy |
 
-### FASE 3 — Otomasi & Dashboard (Langkah 13-17)
-
-| Langkah | Judul | Isi |
-|---|---|---|
-| **13** | systemd Units | llama-lawu.service + lawu-2.5-fine.service (auto-restart, boot) |
-| **14** | Otomasi | watch_ebooks.sh, backup_lawu.sh, send_error_report.sh, cron, /etc/lawu/env |
-| **15** | Load Testing | k6: p95 /api/search < 300ms dengan 20 VUs |
-| **16** | Nginx Reverse Proxy | port 80 → Axum :8081 + llama :8080 (/v1/) |
-| **17** | Integrasi Dashboard | Vue.js 3 frontend ↔ API Rust + llama.cpp |
-
-### FASE 4 — Amankan & Go-Live (Langkah 18-19)
+### FASE 3 — Otomasi & Dashboard (Langkah 14-18)
 
 | Langkah | Judul | Isi |
 |---|---|---|
-| **18** | ⭐ **HARDENING** | UFW (deny incoming, allow 22/80/443) + SSH key-only + fail2ban — **DIPINDAH KE SINI (terakhir sebelum go-live)** |
-| **19** | Go-Live Checklist | Audit final: sistem, disk, firewall, services, ports, API health, cron, backup, memory |
+| **13** | Serve llama.cpp | llama-server -t 4 -c 2048, test /v1/chat/completions |
+| **14** | systemd Units | llama-lawu.service + lawu-2.5-fine.service (auto-restart, boot) |
+| **15** | Otomasi | watch_ebooks.sh, backup_lawu.sh, send_error_report.sh, cron, /etc/lawu/env |
+| **16** | Load Testing | k6: p95 /api/search < 300ms dengan 20 VUs |
+| **17** | Nginx Reverse Proxy | port 80 → Axum :8081 + llama :8080 (/v1/) |
+| **18** | Integrasi Dashboard | Vue.js 3 frontend ↔ API Rust + llama.cpp |
+
+### FASE 4 — Amankan & Go-Live (Langkah 19-20)
+
+| Langkah | Judul | Isi |
+|---|---|---|
+| **19** | ⭐ **HARDENING** | UFW (deny incoming, allow 22/80/443) + SSH key-only + fail2ban — **DIPINDAH KE SINI (terakhir sebelum go-live)** |
+| **20** | Go-Live Checklist | Audit final: sistem, disk, firewall, services, ports, API health, cron, backup, memory |
 
 ---
 
-## 4. Hardening — Detail Langkah 18 (v3.1.0)
+## 4. Hardening — Detail Langkah 19 (v3.1.0)
 
 Hardening HANYA dijalankan setelah:
 - ✅ Semua service jalan (systemd active, HTTP 200)
@@ -177,10 +179,13 @@ HDD 500GB (DATA — /dev/sdb1, ext4, automount via fstab: `defaults,noatime,nofa
 # nofail = WAJIB — server tetap boot walau HDD gagal/cabut
 # WAJIB test reboot setelah konfigurasi: mount manual HILANG saat reboot!
 ├── /mnt/data/
+│   ├── datasets/           # dataset mentah (parquet)
+│   │   └── wikipedia-id/   # train/test parquet (~345MB, indonesian-nlp)
 │   ├── ebooks/             # PDF·EPUB·DOCX koleksi
 │   │   ├── incoming/       # file watcher (inotifywait)
 │   │   └── processed/
-│   ├── processed_markdowns/  # hasil ekstraksi MarkltDown
+│   ├── processed_markdowns/  # hasil ekstraksi MarkltDown + korpus Wikipedia-ID
+│   │   └── wikipedia-id/{train,test}/{a..z,_}/*.md  # 1,44jt artikel (Langkah 12)
 │   ├── tantivy_index/      # BM25 index
 │   ├── backup/             # retensi 7 hari
 │   └── models/             # GGUF (fisik di sini!)
@@ -207,14 +212,15 @@ HDD 500GB (DATA — /dev/sdb1, ext4, automount via fstab: `defaults,noatime,nofa
 | 9. Axum API | ⏳ | binary built, ldd bersih |
 | 10. llama.cpp build | ⏳ | b12069, static linking, -j 3 |
 | 11. Model GGUF | ⏳ | Q3_K_M 3.55GB — download ulang (HDD terformat) |
-| 12. Serve | ⏳ | |
-| 13. systemd | ⏳ | |
-| 14. Otomasi | ⏳ | |
-| 15. k6 | ⏳ | |
-| 16. Nginx | ⏳ | |
-| 17. Integrasi | ⏳ | |
-| 18. **Hardening** | ⏳ | **TERAKHIR!** |
-| 19. Go-Live | ⏳ | |
+| 12. Korpus Wikipedia-ID | ⏳ | 1,44jt artikel — download + preprocess + index |
+| 13. Serve | ⏳ | |
+| 14. systemd | ⏳ | |
+| 15. Otomasi | ⏳ | |
+| 16. k6 | ⏳ | |
+| 17. Nginx | ⏳ | |
+| 18. Integrasi | ⏳ | |
+| 19. **Hardening** | ⏳ | **TERAKHIR!** |
+| 20. Go-Live | ⏳ | |
 
 **Incident log:**
 - 2026-11-03: User terkunci dari server setelah hardening di Langkah 4 lama (SSH password disabled sebelum semua service jalan). Solusi: reinstall OS + susun ulang urutan (v3.1.0 — hardening pindah ke Langkah 18).

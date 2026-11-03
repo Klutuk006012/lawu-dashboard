@@ -168,23 +168,37 @@ SECTIONS = [
         ]
     },
     {
-        "id": "llama-serve", "step": "12", "title": "Serve llama.cpp (OpenAI-compatible)",
+        "id": "korpus", "step": "12", "title": "Korpus Wikipedia-ID (Dataset Pelatihan Indonesia)",
+        "desc": "Download dataset indonesian-nlp/wikipedia-id dari HuggingFace (1,44 juta artikel Wikipedia Indonesia, parquet ~345MB), konversi streaming ke markdown per-artikel (pyarrow, RAM ~400MB), lalu trigger indexing Tantivy. Schema docid·title·text pas persis dengan field Tantivy.",
+        "alert": {
+            "variant": "info",
+            "title": "Kenapa korpus Wikipedia-ID penting?",
+            "body": "Korpus ebook pribadi biasanya terbatas topiknya. Wikipedia-ID menambah pengetahuan umum Indonesia (sejarah, sains, biografi, geografi) sehingga jawaban RAG jauh lebih kaya. Schema dataset <code>docid·title·text</code> pas persis dengan field Tantivy — tanpa transformasi rumit. Lisensi CC BY-SA (open source — Paten 5 aman)."
+        },
+        "blocks": [
+            ("12.A-download-wikipedia-id.sh", "WIKI_DOWNLOAD"),
+            ("12.B-preprocess-wiki-to-markdown.sh", "WIKI_PREPROCESS"),
+            ("12.C-verify-and-index.sh", "WIKI_INDEX"),
+        ]
+    },
+    {
+        "id": "llama-serve", "step": "13", "title": "Serve llama.cpp (OpenAI-compatible)",
         "desc": "Jalankan llama-server dengan -t 4, -c 2048 (RAM 8GB tuning, mmap default ON — flag --mmap sudah deprecated di b12069+), bind 127.0.0.1:8080. Test endpoint /v1/models & /v1/chat/completions. Estimasi 10-15 tok/s (7B Q3_K_M) di i5-10400.",
         "blocks": [
-            ("12.A-serve-llama.sh", "LLAMA_SERVE"),
+            ("13.A-serve-llama.sh", "LLAMA_SERVE"),
         ]
     },
     {
-        "id": "systemd", "step": "13", "title": "Unit systemd (Auto-restart & Boot)",
+        "id": "systemd", "step": "14", "title": "Unit systemd (Auto-restart & Boot)",
         "desc": "Dua service: llama-lawu (inference) & lawu-2.5-fine (API Axum). Hardening systemd (NoNewPrivileges, ProtectSystem, PrivateTmp). Auto-restart on crash.",
         "blocks": [
-            ("13.A-write-llama-service.sh", "SYSTEMD_LLAMA"),
-            ("13.B-write-axum-service.sh", "SYSTEMD_AXUM"),
-            ("13.C-enable-services.sh", "SYSTEMD_ENABLE"),
+            ("14.B-write-llama-service.sh", "SYSTEMD_LLAMA"),
+            ("14.C-write-axum-service.sh", "SYSTEMD_AXUM"),
+            ("14.D-enable-services.sh", "SYSTEMD_ENABLE"),
         ]
     },
     {
-        "id": "otomasi", "step": "14", "title": "Otomasi Pemantauan & Operasional",
+        "id": "otomasi", "step": "15", "title": "Otomasi Pemantauan & Operasional",
         "desc": "File watcher inotifywait, backup harian (retensi 7 hari), laporan error harian via Telegram. Cron jobs & environment file /etc/lawu/env.",
         "blocks": [
             ("/opt/lawu/scripts/watch_ebooks.sh", "WATCH_SCRIPT"),
@@ -195,44 +209,44 @@ SECTIONS = [
         ]
     },
     {
-        "id": "k6", "step": "15", "title": "Pengujian Beban (Load Testing k6)",
+        "id": "k6", "step": "16", "title": "Pengujian Beban (Load Testing k6)",
         "desc": "Install k6 (AGPL-3.0, open source). Target: p95 latency /api/search < 300ms dengan 20 VUs selama 2 menit. Error rate < 1%.",
         "blocks": [
-            ("15.A-install-k6.sh", "K6_INSTALL"),
+            ("16.A-install-k6.sh", "K6_INSTALL"),
             ("~/src/load_test.js", "K6"),
         ]
     },
     {
-        "id": "nginx", "step": "16", "title": "Reverse Proxy Nginx",
+        "id": "nginx", "step": "17", "title": "Reverse Proxy Nginx",
         "desc": "Satu port 80: dashboard/API Rust di root, inference llama.cpp di /v1/. Security headers, client_max_body_size 100MB untuk upload ebook, buffering off untuk streaming chat.",
         "blocks": [
-            ("16-apply-nginx-config.sh", "NGINX"),
+            ("17-apply-nginx-config.sh", "NGINX"),
         ]
     },
     {
-        "id": "integrasi", "step": "17", "title": "Integrasi dengan Dashboard",
+        "id": "integrasi", "step": "18", "title": "Integrasi dengan Dashboard",
         "desc": "Hubungkan dashboard ini ke server nyata: setting endpoint LLM di tab Pengaturan, arahkan fetch ke Nginx :80, setup Telegram bot token.",
         "blocks": [
             ("integrasi-dashboard.txt", "INTEGRATE"),
         ]
     },
     {
-        "id": "hardening", "step": "18", "title": "⚡ Hardening Server (TERAKHIR — setelah semua service jalan)",
+        "id": "hardening", "step": "19", "title": "⚡ Hardening Server (TERAKHIR — setelah semua service jalan)",
         "desc": "⭐ POSISI TERAKHIR — get it running FIRST, lock it down LAST. Default deny incoming (allow 22/80/443), SSH key-only, fail2ban. HANYA jalankan setelah semua service aktif + test sukses.",
         "alert": {
             "variant": "warning",
             "title": "Jangan terkunci dari server!",
-            "body": "Sebelum enable UFW &amp; disable SSH password, PASTIKAN Anda sudah setup SSH key (Langkah 18.C) DAN test login dengan key di terminal terpisah. Jika gagal, kembalikan config backup: sudo cp /etc/ssh/sshd_config.bak.* /etc/ssh/sshd_config && sudo systemctl restart sshd."
+            "body": "Sebelum enable UFW &amp; disable SSH password, PASTIKAN Anda sudah setup SSH key (Langkah 19.C) DAN test login dengan key di terminal terpisah. Jika gagal, kembalikan config backup: sudo cp /etc/ssh/sshd_config.bak.* /etc/ssh/sshd_config && sudo systemctl restart sshd."
         },
         "blocks": [
-            ("18.A-ufw-firewall.sh", "FIREWALL_UFW"),
-            ("18.B-sshd-hardening.sh", "SSH_HARDENING"),
-            ("18.C-ssh-key-setup.sh", "SSH_KEY"),
-            ("18.D-fail2ban-sshd.sh", "FAIL2BAN"),
+            ("19.A-ufw-firewall.sh", "FIREWALL_UFW"),
+            ("19.B-sshd-hardening.sh", "SSH_HARDENING"),
+            ("19.C-ssh-key-setup.sh", "SSH_KEY"),
+            ("19.D-fail2ban-sshd.sh", "FAIL2BAN"),
         ]
     },
     {
-        "id": "checklist", "step": "19", "title": "Final Go-Live Checklist",
+        "id": "checklist", "step": "20", "title": "Final Go-Live Checklist",
         "desc": "Audit terakhir SEBELUM buka server ke publik. Cek sistem, disk, firewall, services, ports, API health, cron, backup, memory. Semua harus sehat.",
         "alert": {
             "variant": "info",
@@ -240,7 +254,7 @@ SECTIONS = [
             "body": "Skrip ini akan cetak status real-time dari semua komponen. Periksa setiap baris — jika ada <code>✗</code> atau service <code>inactive</code>, FIX dulu sebelum buka port 80 ke publik."
         },
         "blocks": [
-            ("19-go-live-checklist.sh", "CHECKLIST_SCRIPT"),
+            ("20-go-live-checklist.sh", "CHECKLIST_SCRIPT"),
         ]
     },
 ]
@@ -695,9 +709,9 @@ html = f"""<!DOCTYPE html>
 <!-- ====== COVER PAGE ====== -->
 <div class="cover">
   <div class="cover-top">
-    <div class="cover-badge">PANDUAN IMPLEMENTASI · v3.1.1</div>
+    <div class="cover-badge">PANDUAN IMPLEMENTASI · v3.2.0</div>
     <h1 class="cover-title">Panduan Setup Server<br>Lawu-2.5-Fine</h1>
-    <p class="cover-subtitle">Panduan komprehensif 20 langkah dari server kosong sampai production-ready untuk Debian 13 dengan Rust + Axum + Tantivy + llama.cpp (Pure CPU).</p>
+    <p class="cover-subtitle">Panduan komprehensif 21 langkah dari server kosong sampai production-ready untuk Debian 13 dengan Rust + Axum + Tantivy + llama.cpp (Pure CPU) + Korpus Wikipedia-ID.</p>
     <div class="cover-tags">
       <span class="cover-tag">Debian 13 · Linux 6.x</span>
       <span class="cover-tag">Rust · Axum · Tantivy · Rayon</span>
@@ -718,7 +732,7 @@ html = f"""<!DOCTYPE html>
       AI Model Cerdas, Irit Budget · Muslim Ahlussunnah wal Jama&apos;ah
     </div>
     <div class="cover-version">
-      Versi Dokumen<br><strong>3.1.1 · 2025</strong>
+      Versi Dokumen<br><strong>3.2.0 · 2025</strong>
     </div>
   </div>
 </div>
@@ -726,14 +740,14 @@ html = f"""<!DOCTYPE html>
 <!-- ====== TABLE OF CONTENTS ====== -->
 <div class="toc">
   <h1>Daftar Isi</h1>
-  <p class="toc-subtitle">20 langkah komprehensif — dari pembersihan server hingga go-live checklist.</p>
+  <p class="toc-subtitle">21 langkah komprehensif — dari pembersihan server hingga go-live checklist.</p>
   <ul class="toc-list">
     {toc_items}
   </ul>
 
   <div class="footer-card" style="margin-top: 12mm;">
     <h3>Urutan Eksekusi yang Disarankan</h3>
-    <p>Langkah 0 (bersihkan) → 1 (prerequisites) → 2 (user &amp; dir) → 3 (disk + AUTOMOUNT fstab, WAJIB test reboot) → 4 (arsitektur) → 5 (sysctl) → 6 (Rust) → 7 (Cargo) → 8-9 (Tantivy &amp; Axum API) → 10-12 (llama.cpp build, GGUF Q3_K_M, serve) → 13 (systemd) → 14 (otomasi) → 15 (load test) → 16 (Nginx) → 17 (integrasi) → <strong>18 (hardening — TERAKHIR!)</strong> → 19 (go-live checklist).</p>
+    <p>Langkah 0 (bersihkan) → 1 (prerequisites) → 2 (user &amp; dir) → 3 (disk + AUTOMOUNT fstab, WAJIB test reboot) → 4 (arsitektur) → 5 (sysctl) → 6 (Rust) → 7 (Cargo) → 8-9 (Tantivy &amp; Axum API) → 10-11 (llama.cpp build, GGUF Q3_K_M) → <strong>12 (korpus Wikipedia-ID — dataset pelatihan Indonesia)</strong> → 13 (serve) → 14 (systemd) → 15 (otomasi) → 16 (load test) → 17 (Nginx) → 18 (integrasi) → <strong>19 (hardening — TERAKHIR!)</strong> → 20 (go-live checklist).</p>
   </div>
 </div>
 
@@ -742,8 +756,8 @@ html = f"""<!DOCTYPE html>
   {sections_html_str}
 
   <div class="footer-card">
-    <h3>✓ Setelah Langkah 19 Selesai</h3>
-    <p>Server Lawu-2.5-Fine Anda siap menerima traffic publik via port 80 (Nginx). Inference &amp; API tetap bind localhost-only (Paten keamanan). HDD /mnt/data ter-automount via fstab nofail (aman saat reboot). Backup harian aktif, fail2ban menjaga SSH, UFW membatasi port terbuka. <strong>Paten 1-7 terpenuhi semua:</strong> Rust backend, murni CPU, Linux only, open source, parallel Rayon, Islam Ahlussunnah wal Jama&apos;ah.</p>
+    <h3>✓ Setelah Langkah 20 Selesai</h3>
+    <p>Server Lawu-2.5-Fine Anda siap menerima traffic publik via port 80 (Nginx). Inference &amp; API tetap bind localhost-only (Paten keamanan). HDD /mnt/data ter-automount via fstab nofail (aman saat reboot). Korpus = ebook pribadi + 1,44 juta artikel Wikipedia-ID. Backup harian aktif, fail2ban menjaga SSH, UFW membatasi port terbuka. <strong>Paten 1-7 terpenuhi semua:</strong> Rust backend, murni CPU, Linux only, open source, parallel Rayon, Islam Ahlussunnah wal Jama&apos;ah.</p>
   </div>
 </div>
 

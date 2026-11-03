@@ -685,27 +685,42 @@ echo 'export RUSTFLAGS="-C target-cpu=native"' >> ~/.bashrc
 source ~/.bashrc`
 
 const RUST_VERIFY = `# 7.B — Verifikasi Rust toolchain dengan build hello-world
+# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 7.A, TANPA sudo) <<<
+# JANGAN jalankan 'sudo su - lawu' di sini — Anda SUDAH sebagai lawu dari 7.A.
+# Jika Anda sudah exit dari lawu, login ulang: 'sudo su - lawu' dari user admin.
 
-# Sebagai user lawu
-sudo su - lawu
+# 1) Verifikasi Anda sebagai lawu
+whoami    # harus cetak: lawu
+
+# 2) Source cargo env (wajib setiap shell baru — atau tambah ke ~/.bashrc)
 source ~/.cargo/env
 
-# 1) Buat project dummy
+# Jika 'source ~/.cargo/env' gagal → Langkah 7.A belum dijalankan.
+# KEMBALI ke 7.A: curl https://sh.rustup.rs | sh ...
+# Jika ~/.cargo/env tidak ada setelah 7.A → rustup install gagal,
+# cek log error di 7.A (mungkin butuh build-essential/gcc di Langkah 1.B)
+
+# 3) Buat project dummy
 cd /tmp
 cargo new hello_lawu --bin
 cd hello_lawu
 
-# 2) Build dengan optimasi native CPU
+# 4) Build dengan optimasi native CPU (AVX2 di i5-10400)
 RUSTFLAGS="-C target-cpu=native" cargo build --release
 ./target/release/hello_lawu
 # Harus cetak: Hello, world!
 
-# 3) Cek binary ter-link dengan benar (Paten 3: murni CPU, tanpa GPU dep)
+# 5) Cek binary ter-link dengan benar (Paten 3: murni CPU, tanpa GPU dep)
 ldd ./target/release/hello_lawu
 # Harus HANYA cetak: libc.so.6, libgcc_s.so.1, ld-linux-x86-64.so.2
 # JANGAN ada libcuda, libnvrtc, atau libGPU apa pun
 
-# 4) Cleanup
+# 6) (Optional) Persist RUSTFLAGS + cargo PATH ke ~/.bashrc
+echo 'source ~/.cargo/env' >> ~/.bashrc
+echo 'export RUSTFLAGS="-C target-cpu=native"' >> ~/.bashrc
+# Sekarang setiap shell baru otomatis pakai cargo + RUSTFLAGS
+
+# 7) Cleanup
 cd / && rm -rf /tmp/hello_lawu`
 
 // ======================================================================

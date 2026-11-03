@@ -1,8 +1,9 @@
 # PRD — Lawu-2.5-Fine · Server Setup & Deployment
 
-**Versi:** 3.1.0
+**Versi:** 3.1.1
 **Update:** 2026-11-03
 **Perubahan major v3.1.0:** Hardening server dipindah ke LANGKAH TERAKHIR (sebelum go-live checklist). Setup: **jalan dulu → lalu amankan**.
+**Perubahan v3.1.1:** HDD ikut terformat saat install ulang OS. Langkah 3 diperkuat: fstab AUTOMOUNT wajib dengan `nofail` + validasi `findmnt --verify` + TEST REBOOT sebelum lanjut.
 
 ---
 
@@ -61,7 +62,7 @@ Lawu-2.5-Fine adalah AI model Indonesia ("AI Model Cerdas, Irit Budget") untuk s
 | **0** | Bersihkan Server | Audit → stop service lama → backup → hapus → verify |
 | **1** | Prerequisites | apt update + install build deps, nginx, python venv |
 | **2** | User lawu & Direktori | useradd lawu (no sudo), /opt/lawu (SSD), /mnt/data (HDD), symlink ~/models → /mnt/data/models |
-| **3** | Mount & Format HDD | fdisk → mkfs.ext4 → fstab → TRIM → SSD tuning |
+| **3** | Mount & Format HDD | parted GPT → mkfs.ext4 → **fstab automount (nofail + device-timeout)** → findmnt --verify → **TEST REBOOT** → TRIM → SSD tuning |
 
 ### FASE 2 — Build & Deploy Services (Langkah 4-12)
 
@@ -172,7 +173,9 @@ SSD 128GB (OS):
 │   ├── .cargo/bin/lawu-server  # binary Axum API
 │   └── models -> /mnt/data/models  # SYMLINK ke HDD
 
-HDD 500GB (DATA — /dev/sdb1, ext4, noatime):
+HDD 500GB (DATA — /dev/sdb1, ext4, automount via fstab: `defaults,noatime,nofail,x-systemd.device-timeout=10s`):
+# nofail = WAJIB — server tetap boot walau HDD gagal/cabut
+# WAJIB test reboot setelah konfigurasi: mount manual HILANG saat reboot!
 ├── /mnt/data/
 │   ├── ebooks/             # PDF·EPUB·DOCX koleksi
 │   │   ├── incoming/       # file watcher (inotifywait)
@@ -187,21 +190,24 @@ HDD 500GB (DATA — /dev/sdb1, ext4, noatime):
 
 ## 8. Status Setup Saat Ini (Server Asli)
 
+> ⚠️ **RESET — server di-reinstall ulang (HDD ikut terformat).** Semua progress sebelumnya
+> hilang. Mulai ulang dari Langkah 0. Model GGUF Q3_K_M (3.55GB) download ulang di Langkah 11.
+
 | Langkah | Status | Catatan |
 |---|---|---|
-| 0. Bersihkan server | ✅ | |
-| 1. Prerequisites | ✅ | cmake 3.31.6, gcc 14.2.0 |
-| 2. User & direktori | ✅ | lawu + symlink models |
-| 3. Mount HDD | ✅ | 458GB ext4 di /mnt/data |
-| 4. Arsitektur | ✅ | |
-| 5. sysctl | ✅ | vm.swappiness=40 |
-| 6. Rust toolchain | ✅ | rustc 1.99.1, cargo 1.99.1 |
-| 7. Cargo project | ✅ | lawu-server v0.1.0 built (Paten 3 ✓) |
-| 8. Tantivy schema | ✅ | |
-| 9. Axum API | ✅ | binary built, ldd bersih |
-| 10. llama.cpp build | ✅ | b12069, static linking |
-| 11. Model GGUF | ✅ | Q3_K_M 3.55GB di HDD |
-| 12. Serve | 🔄 **IN PROGRESS** | test endpoint |
+| 0. Bersihkan server | ⏳ | server fresh hasil reinstall |
+| 1. Prerequisites | ⏳ | |
+| 2. User & direktori | ⏳ | |
+| 3. Mount HDD + AUTOMOUNT | ⏳ | **WAJIB fstab nofail + test reboot (v3.1.1)** |
+| 4. Arsitektur | ⏳ | |
+| 5. sysctl | ⏳ | vm.swappiness=40 |
+| 6. Rust toolchain | ⏳ | |
+| 7. Cargo project | ⏳ | lawu-server v0.1.0 (Paten 3 ✓) |
+| 8. Tantivy schema | ⏳ | |
+| 9. Axum API | ⏳ | binary built, ldd bersih |
+| 10. llama.cpp build | ⏳ | b12069, static linking, -j 3 |
+| 11. Model GGUF | ⏳ | Q3_K_M 3.55GB — download ulang (HDD terformat) |
+| 12. Serve | ⏳ | |
 | 13. systemd | ⏳ | |
 | 14. Otomasi | ⏳ | |
 | 15. k6 | ⏳ | |
@@ -212,6 +218,7 @@ HDD 500GB (DATA — /dev/sdb1, ext4, noatime):
 
 **Incident log:**
 - 2026-11-03: User terkunci dari server setelah hardening di Langkah 4 lama (SSH password disabled sebelum semua service jalan). Solusi: reinstall OS + susun ulang urutan (v3.1.0 — hardening pindah ke Langkah 18).
+- 2026-11-03 (v3.1.1): Saat install ulang OS, HDD 500GB ikut terformat — model GGUF, ebook, dan index hilang. Pelajaran: (1) saat installer minta partisi, PILIH HANYA SSD OS dan pastikan HDD tidak tercentang; (2) Langkah 3.C fstab WAJIB pakai `nofail` + `findmnt --verify` + TEST REBOOT sebelum lanjut — mount manual hilang saat reboot dan fstab salah bisa bikin server gagal boot.
 
 ---
 
@@ -222,3 +229,6 @@ HDD 500GB (DATA — /dev/sdb1, ext4, noatime):
 3. **Sediakan jalur rollback** sebelum hardening (backup sshd_config, dst.)
 4. **Test SSH key SEBELUM disable password** — selalu
 5. **Dokumentasikan user admin** — siapa yang punya sudo, password-nya apa
+6. **Installer Debian: jaga HDD dari partisi otomatis** — centang HANYA SSD OS saat partitioning
+7. **Data disk WAJIB fstab `nofail` + test reboot** — mount manual hilang saat reboot;
+   fstab salah syntax = server gagal boot (validasi dengan `findmnt --verify` dulu)

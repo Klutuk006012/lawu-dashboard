@@ -91,17 +91,17 @@ SECTIONS = [
         ]
     },
     {
-        "id": "disk", "step": "3", "title": "Mount & Format HDD/SSD",
-        "desc": "Identifikasi SSD (OS) vs HDD (DATA), format HDD 500GB sebagai ext4, mount otomatis via fstab, tuning SSD (TRIM, I/O scheduler).",
+        "id": "disk", "step": "3", "title": "Mount & Format HDD/SSD + Automount Reboot",
+        "desc": "Identifikasi SSD (OS) vs HDD (DATA), format ulang HDD 500GB ext4 (WAJIB jika HDD ikut terformat saat install ulang OS), AUTOMOUNT via /etc/fstab dengan nofail (server tetap boot walau HDD error) + test reboot, tuning SSD (TRIM, I/O scheduler).",
         "alert": {
             "variant": "warning",
-            "title": "Hati-hati memilih disk!",
-            "body": "Pastikan <code>/dev/sdb</code> di Langkah 3.B BENAR-BENAR HDD data kosong, bukan disk OS. Salah format = kehilangan sistem. Selalu verifikasi dengan <strong>3.A</strong> dulu sebelum 3.B."
+            "title": "Hati-hati memilih disk! · HDD ikut terformat saat install ulang?",
+            "body": "Pastikan <code>/dev/sdb</code> BENAR-BENAR HDD data, bukan disk OS — nama device BISA berubah setelah install ulang, selalu verifikasi dengan <strong>3.A</strong>. Jika HDD ikut terformat installer: data lama hilang, lanjut format ulang di 3.B lalu automount di 3.C, download ulang model GGUF di Langkah 11. WAJIB test reboot (3.C langkah 7-8) — tanpa fstab benar, /mnt/data kosong tiap reboot dan semua service gagal start."
         },
         "blocks": [
             ("3.A-identify-disks.sh", "DISK_IDENTIFY"),
             ("3.B-format-hdd-ext4.sh", "DISK_FORMAT"),
-            ("3.C-fstab-mount.sh", "DISK_FSTAB"),
+            ("3.C-fstab-automount.sh", "DISK_FSTAB"),
             ("3.D-ssd-tuning.sh", "DISK_SSD_TUNING"),
         ]
     },
@@ -116,16 +116,16 @@ SECTIONS = [
         "id": "sysctl", "step": "5", "title": "Spesifikasi Infrastruktur & Kernel Tuning (sysctl)",
         "desc": "Parameter kernel di /etc/sysctl.d/99-lawu-fine.conf + limits.conf untuk file descriptor besar (Axum + Tantivy).",
         "blocks": [
-            ("6.A-apply-sysctl.sh", "SYSCTL"),
-            ("6.B-apply-limits.sh", "LIMITS_CONF"),
+            ("5.A-apply-sysctl.sh", "SYSCTL"),
+            ("5.B-apply-limits.sh", "LIMITS_CONF"),
         ]
     },
     {
         "id": "rust", "step": "6", "title": "Install Rust Toolchain",
         "desc": "Install Rust via rustup (stable + rustfmt + clippy), set RUSTFLAGS target-cpu=native untuk optimasi AVX2 di i5-10400. Verifikasi murni CPU — tidak ada dependency GPU.",
         "blocks": [
-            ("7.A-install-rustup.sh", "RUST_INSTALL"),
-            ("7.B-verify-rust-cpu.sh", "RUST_VERIFY"),
+            ("6.A-install-rustup.sh", "RUST_INSTALL"),
+            ("6.B-verify-rust-cpu.sh", "RUST_VERIFY"),
         ]
     },
     {
@@ -153,7 +153,7 @@ SECTIONS = [
     },
     {
         "id": "llama-build", "step": "10", "title": "Build llama.cpp (Pure CPU)",
-        "desc": "Clone repo llama.cpp (MIT license), build dengan GGML_NATIVE=ON + AVX2 + FMA + F16C untuk i5-10400. Verifikasi binary TIDAK ada dependency CUDA/GPU.",
+        "desc": "Clone repo llama.cpp (MIT license), build dengan GGML_NATIVE=ON + AVX2 + FMA + F16C untuk i5-10400. STATIC linking (binary mandiri), -j 3 (RAM 8GB). Verifikasi binary TIDAK ada dependency CUDA/GPU.",
         "blocks": [
             ("10.A-clone-llamacpp.sh", "LLAMA_CLONE"),
             ("10.B-build-cmake.sh", "LLAMA_BUILD"),
@@ -161,15 +161,15 @@ SECTIONS = [
     },
     {
         "id": "gguf", "step": "11", "title": "Konversi & Kuantisasi Model GGUF",
-        "desc": "Konversi HuggingFace → GGUF F16, lalu kuantisasi ke Q4_K_M (4.4 GB untuk model 7B). Verifikasi metadata GGUF.",
+        "desc": "Opsi 1 (recommended): wget pre-quantized Qwen2.5-Coder-7B Q3_K_M (3.55GB) langsung ke HDD. Opsi 2: convert HF → F16 → quantize sendiri. Q3_K_M optimal untuk RAM 8GB (Q4_K_M 4.4GB terlalu mepet).",
         "blocks": [
-            ("12.A-convert-hf-to-gguf.sh", "GGUF_CONVERT"),
-            ("12.B-quantize-q4_k_m.sh", "GGUF_QUANTIZE"),
+            ("11.A-get-model-gguf.sh", "GGUF_CONVERT"),
+            ("11.B-quantize-q3_k_m.sh", "GGUF_QUANTIZE"),
         ]
     },
     {
         "id": "llama-serve", "step": "12", "title": "Serve llama.cpp (OpenAI-compatible)",
-        "desc": "Jalankan llama-server dengan -t 6, --mmap, -c 4096, bind 127.0.0.1:8080. Test endpoint /v1/models & /v1/chat/completions. Estimasi 9-14 tok/s di i5-10400.",
+        "desc": "Jalankan llama-server dengan -t 4, -c 2048 (RAM 8GB tuning, mmap default ON — flag --mmap sudah deprecated di b12069+), bind 127.0.0.1:8080. Test endpoint /v1/models & /v1/chat/completions. Estimasi 10-15 tok/s (7B Q3_K_M) di i5-10400.",
         "blocks": [
             ("12.A-serve-llama.sh", "LLAMA_SERVE"),
         ]
@@ -178,9 +178,9 @@ SECTIONS = [
         "id": "systemd", "step": "13", "title": "Unit systemd (Auto-restart & Boot)",
         "desc": "Dua service: llama-lawu (inference) & lawu-2.5-fine (API Axum). Hardening systemd (NoNewPrivileges, ProtectSystem, PrivateTmp). Auto-restart on crash.",
         "blocks": [
-            ("14.A-write-llama-service.sh", "SYSTEMD_LLAMA"),
-            ("14.B-write-axum-service.sh", "SYSTEMD_AXUM"),
-            ("14.C-enable-services.sh", "SYSTEMD_ENABLE"),
+            ("13.A-write-llama-service.sh", "SYSTEMD_LLAMA"),
+            ("13.B-write-axum-service.sh", "SYSTEMD_AXUM"),
+            ("13.C-enable-services.sh", "SYSTEMD_ENABLE"),
         ]
     },
     {
@@ -695,13 +695,13 @@ html = f"""<!DOCTYPE html>
 <!-- ====== COVER PAGE ====== -->
 <div class="cover">
   <div class="cover-top">
-    <div class="cover-badge">PANDUAN IMPLEMENTASI · v1.0</div>
+    <div class="cover-badge">PANDUAN IMPLEMENTASI · v3.1.1</div>
     <h1 class="cover-title">Panduan Setup Server<br>Lawu-2.5-Fine</h1>
     <p class="cover-subtitle">Panduan komprehensif 20 langkah dari server kosong sampai production-ready untuk Debian 13 dengan Rust + Axum + Tantivy + llama.cpp (Pure CPU).</p>
     <div class="cover-tags">
       <span class="cover-tag">Debian 13 · Linux 6.x</span>
       <span class="cover-tag">Rust · Axum · Tantivy · Rayon</span>
-      <span class="cover-tag">llama.cpp GGUF (Q4_K_M)</span>
+      <span class="cover-tag">llama.cpp GGUF (Q3_K_M)</span>
       <span class="cover-tag">Pure CPU · No GPU</span>
       <span class="cover-tag">Open Source (MIT/Apache)</span>
     </div>
@@ -709,7 +709,7 @@ html = f"""<!DOCTYPE html>
 
   <div class="cover-middle">
     <h3>Target Hardware</h3>
-    <p><strong>Intel Core i5-10400</strong> (6 Core / 12 Thread · AVX2 · 2.9–4.3 GHz) · <strong>16 GB DDR4</strong> · <strong>SSD 128 GB</strong> (OS — Debian 13) · <strong>HDD 500 GB</strong> (DATA — koleksi ebook &amp; index Tantivy).</p>
+    <p><strong>Intel Core i5-10400</strong> (6 Core / 12 Thread · AVX2 · 2.9–4.3 GHz) · <strong>8 GB DDR4</strong> · <strong>SSD 128 GB</strong> (OS — Debian 13) · <strong>HDD 500 GB</strong> (DATA — automount fstab nofail · koleksi ebook &amp; index Tantivy).</p>
   </div>
 
   <div class="cover-bottom">
@@ -718,7 +718,7 @@ html = f"""<!DOCTYPE html>
       AI Model Cerdas, Irit Budget · Muslim Ahlussunnah wal Jama&apos;ah
     </div>
     <div class="cover-version">
-      Versi Dokumen<br><strong>1.0 · 2025</strong>
+      Versi Dokumen<br><strong>3.1.1 · 2025</strong>
     </div>
   </div>
 </div>
@@ -733,7 +733,7 @@ html = f"""<!DOCTYPE html>
 
   <div class="footer-card" style="margin-top: 12mm;">
     <h3>Urutan Eksekusi yang Disarankan</h3>
-    <p>Langkah 0 (bersihkan) → 1 (prerequisites) → 2 (user &amp; dir) → 3 (disk) → 4 (firewall) → 5-6 (arsitektur &amp; sysctl) → 7 (Rust) → 8-10 (Axum API) → 11-13 (llama.cpp) → 14 (systemd) → 15 (otomasi) → 16 (load test) → 17 (Nginx) → 18 (integrasi) → 19 (go-live checklist).</p>
+    <p>Langkah 0 (bersihkan) → 1 (prerequisites) → 2 (user &amp; dir) → 3 (disk + AUTOMOUNT fstab, WAJIB test reboot) → 4 (arsitektur) → 5 (sysctl) → 6 (Rust) → 7 (Cargo) → 8-9 (Tantivy &amp; Axum API) → 10-12 (llama.cpp build, GGUF Q3_K_M, serve) → 13 (systemd) → 14 (otomasi) → 15 (load test) → 16 (Nginx) → 17 (integrasi) → <strong>18 (hardening — TERAKHIR!)</strong> → 19 (go-live checklist).</p>
   </div>
 </div>
 
@@ -743,7 +743,7 @@ html = f"""<!DOCTYPE html>
 
   <div class="footer-card">
     <h3>✓ Setelah Langkah 19 Selesai</h3>
-    <p>Server Lawu-2.5-Fine Anda siap menerima traffic publik via port 80 (Nginx). Inference &amp; API tetap bind localhost-only (Paten keamanan). Backup harian aktif, fail2ban menjaga SSH, UFW membatasi port terbuka. <strong>Paten 1-7 terpenuhi semua:</strong> Rust backend, murni CPU, Linux only, open source, parallel Rayon, Islam Ahlussunnah wal Jama&apos;ah.</p>
+    <p>Server Lawu-2.5-Fine Anda siap menerima traffic publik via port 80 (Nginx). Inference &amp; API tetap bind localhost-only (Paten keamanan). HDD /mnt/data ter-automount via fstab nofail (aman saat reboot). Backup harian aktif, fail2ban menjaga SSH, UFW membatasi port terbuka. <strong>Paten 1-7 terpenuhi semua:</strong> Rust backend, murni CPU, Linux only, open source, parallel Rayon, Islam Ahlussunnah wal Jama&apos;ah.</p>
   </div>
 </div>
 

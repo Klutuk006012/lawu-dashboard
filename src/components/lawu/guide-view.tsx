@@ -386,6 +386,9 @@ ls -ld /home/lawu /home/lawu/src /home/lawu/models`
 
 const DISK_IDENTIFY = `# 3.A — Identifikasi disk SSD (OS) & HDD (DATA)
 # SSD 128GB biasanya sudah jadi disk OS (sda). HDD 500GB untuk DATA.
+# CATATAN (kasus install ulang OS + HDD ikut terformat): HDD akan muncul
+# TANPA MOUNTPOINT dan mungkin TANPA FSTYPE — itulah HDD data kita.
+# Data lama (model GGUF, ebook) sudah HILANG — mulai dari nol.
 
 # 1) List semua block device
 lsblk -o NAME,SIZE,TYPE,MOUNTPOINT,FSTYPE,MODEL
@@ -402,15 +405,21 @@ for dev in /sys/block/sd* /sys/block/nvme*; do
   [ "$rotational" = "0" ] && echo "$name (SSD, $size)" || echo "$name (HDD, $size)"
 done
 
-# CONTOH OUTPUT:
-# sda (SSD, 128G)   ← disk OS, jangan diformat!
-# sdb (HDD, 500G)   ← disk DATA, akan di-mount ke /mnt/data`
+# CONTOH OUTPUT (setelah install ulang OS — HDD ikut terformat):
+# sda (SSD, 128G)   ← disk OS Debian 13 baru, JANGAN DIFORMAT ULANG!
+# sdb (HDD, 500G)   ← disk DATA, kosong (terformat installer), siap dipersiapkan ulang
+#
+# PENTING: nama device BISA BERUBAH setelah install ulang!
+# HDD yang dulu sdb bisa sekarang terbaca sda. Selalu identifikasi ulang —
+# JANGAN asal copy-paste nama device dari catatan lama.`
 
-const DISK_FORMAT = `# 3.B — Format HDD 500GB sebagai ext4 (JIKA belum diformat)
-# HATI-HATI: pastikan /dev/sdb BENAR-BENAR HDD data kosong, bukan disk OS!
-# Cek ulang dengan: sudo blkid /dev/sdb1 — harus TIDAK ADA output jika kosong.
+const DISK_FORMAT = `# 3.B — Format ulang HDD 500GB sebagai ext4
+# Kasus: HDD ikut terformat saat install ulang OS → data lama hilang,
+# format ulang di sini 100% AMAN (tidak ada yang bisa hilang lagi).
+# HATI-HATI TETAP: pastikan /dev/sdb BENAR-BENAR HDD data, bukan disk OS!
+# Cek dulu: sudo blkid /dev/sdb* — boleh kosong (blank) atau sisa installer.
 
-# 1) Partisi HDD (single partition, GPT)
+# 1) Partisi HDD (single partition, GPT — timpa partisi sisa installer)
 sudo parted -s /dev/sdb mklabel gpt
 sudo parted -s /dev/sdb mkpart primary ext4 0% 100%
 
@@ -422,34 +431,54 @@ sudo mkfs.ext4 -L lawu-data -m 1 -T largefile4 /dev/sdb1
 
 # 3) Verifikasi format
 sudo blkid /dev/sdb1
-# Harus cetak: TYPE="ext4" LABEL="lawu-data"`
+# Harus cetak: TYPE="ext4" LABEL="lawu-data"
+#
+# INFO: model GGUF Qwen2.5-Coder-7B Q3_K_M (3.55GB) yang lama HILANG —
+# download ulang di Langkah 11 (opsi 1: wget dari bartowski, paling cepat).`
 
-const DISK_FSTAB = `# 3.C — Mount otomatis via /etc/fstab (persistent across reboot)
+const DISK_FSTAB = `# 3.C — AUTOMOUNT saat reboot via /etc/fstab (WAJIB — mount manual HILANG saat reboot!)
+# Tanpa fstab: tiap reboot server, /mnt/data kosong → llama-server & Axum GAGAL start.
 
-# 1) Dapat UUID partisi HDD
+# 1) Dapat UUID partisi HDD (UUID permanen — tidak berubah saat reboot,
+#    tidak seperti /dev/sdb yang bisa pindah jadi sda)
 UUID=$(sudo blkid -s UUID -o value /dev/sdb1)
 echo "UUID HDD: $UUID"
 
 # 2) Backup fstab lama
 sudo cp /etc/fstab /etc/fstab.bak.$(date +%Y%m%d)
 
-# 3) Tambah entry mount
-echo "UUID=$UUID  /mnt/data  ext4  defaults,noatime,nodiratime,data=writeback  0  2" \\
+# 3) Tambah entry automount
+echo "UUID=$UUID  /mnt/data  ext4  defaults,noatime,nofail,x-systemd.device-timeout=10s  0  2" \\
   | sudo tee -a /etc/fstab
 
-#   noatime       = jangan update access time (hemat write SSD/HDD, cepat)
-#   data=writeback = mode journaling paling cepat (risiko minor korupsi jika power loss)
-#                    AMAN karena ada backup harian (Langkah 14)
-#
-#   UNTUK PRODUKSI SENSITIF: ganti data=writeback → data=ordered (default, lebih aman)
+#   defaults      = rw, suid, dev, exec, auto, nouser, async
+#   noatime       = jangan update access time (hemat write HDD, lebih cepat)
+#   nofail        = KRUSIAL! server TETAP BOOT walau HDD gagal/cabut.
+#                   Tanpa nofail: HDD error = server stuck di boot = DOWN TOTAL!
+#   x-systemd.device-timeout=10s = hanya tunggu device 10 detik (default 90 detik)
+#   0  2          = dump off, fsck urutan kedua (setelah root)
 
-# 4) Mount sekarang
+# 4) Validasi fstab SEBELUM reboot (syntax salah = server GAGAL BOOT!)
+sudo findmnt --verify
+# Harus output: No errors or warnings. JANGAN reboot kalau masih ada error!
+
+# 5) Mount sekarang (tanpa perlu restart)
+sudo mkdir -p /mnt/data
 sudo mount -a
 
-# 5) Verifikasi mount
-mount | grep /mnt/data
+# 6) Verifikasi mount aktif
+findmnt /mnt/data
 df -hT /mnt/data
-# Harus cetak: /dev/sdb1 ext4  492G  ...  /mnt/data`
+# Harus cetak: /dev/sdb1 ext4  492G  ...  /mnt/data
+
+# 7) TEST AUTOMOUNT — reboot server sekarang
+sudo systemctl reboot
+
+# 8) Setelah server hidup kembali (tunggu ~1 menit), SSH lagi lalu verifikasi:
+mount | grep /mnt/data
+ls -la /mnt/data
+# /mnt/data HARUS sudah ter-mount OTOMATIS tanpa perintah apa pun.
+# Folder lost+found adalah isi normal ext4 yang baru diformat — abaikan.`
 
 const DISK_SSD_TUNING = `# 3.D — Tuning SSD 128GB (OS disk) untuk umur panjang
 # TRIM otomatis + scheduler I/O yang sesuai untuk SSD
@@ -466,10 +495,11 @@ echo 'ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="0", ATTR
   | sudo tee /etc/udev/rules.d/60-ssd-scheduler.rules
 sudo udevadm control --reload-rules
 
-# 3) (OPSIONAL) Kurangi swappiness khusus SSD (ditimpa Langkah 5 sysctl)
-# SSD 128GB cepat penuh jika swap aktif — swap harus di HDD atau disabled
-sudo swapoff --all 2>/dev/null || true
-sudo sed -i '/swap/d' /etc/fstab  # hapus entry swap lama`
+# 3) (OPSIONAL) Hapus entry swap lama di SSD (ditimpa Langkah 5 sysctl)
+#    Hapus HANYA baris bertipe swap (bukan baris lain yang mengandung kata swap)
+sudo sed -i '/[[:space:]]swap[[:space:]]/d' /etc/fstab
+#    Verifikasi fstab masih valid:
+sudo findmnt --verify`
 
 // ======================================================================
 // LANGKAH 18 — HARDENING SERVER (TERAKHIR SEBELUM GO-LIVE)
@@ -1775,7 +1805,7 @@ export function GuideView() {
           </Badge>
           <Badge variant="secondary">Debian 13 · Linux 6.x</Badge>
           <Badge variant="secondary">Rust · Axum · Tantivy · Rayon</Badge>
-          <Badge variant="secondary">llama.cpp GGUF (Q4_K_M)</Badge>
+          <Badge variant="secondary">llama.cpp GGUF (Q3_K_M)</Badge>
           <Badge variant="secondary">20 Langkah · 0→19</Badge>
         </div>
         <h1 className="mt-3 text-xl font-semibold tracking-tight">
@@ -1879,8 +1909,8 @@ export function GuideView() {
         <Section
           id="disk"
           step="3"
-          title="Mount & Format HDD/SSD"
-          desc="Identifikasi SSD (OS) vs HDD (DATA), format HDD 500GB sebagai ext4, mount otomatis via fstab, tuning SSD (TRIM, I/O scheduler)."
+          title="Mount & Format HDD/SSD + Automount Reboot"
+          desc="Identifikasi SSD (OS) vs HDD (DATA), format ulang HDD 500GB ext4 (WAJIB jika HDD ikut terformat saat install ulang OS), AUTOMOUNT via /etc/fstab dengan nofail (server tetap boot walau HDD error) + test reboot, tuning SSD (TRIM, I/O scheduler)."
         >
           <Alert>
             <ShieldAlert />
@@ -1888,14 +1918,27 @@ export function GuideView() {
             <AlertDescription>
               <p>
                 Pastikan <code className="rounded bg-muted px-1 py-0.5 text-xs">/dev/sdb</code> di
-                Langkah 3.B BENAR-BENAR HDD data kosong, bukan disk OS. Salah format = kehilangan
-                sistem. Selalu verifikasi dengan <strong>3.A</strong> dulu sebelum 3.B.
+                Langkah 3.B BENAR-BENAR HDD data, bukan disk OS. Salah format = kehilangan sistem.
+                Nama device BISA berubah setelah install ulang — selalu verifikasi dengan{' '}
+                <strong>3.A</strong> dulu sebelum 3.B.
+              </p>
+            </AlertDescription>
+          </Alert>
+          <Alert>
+            <ShieldAlert />
+            <AlertTitle>HDD ikut terformat saat install ulang OS?</AlertTitle>
+            <AlertDescription>
+              <p>
+                Data lama (model GGUF, ebook, index) sudah hilang — lanjutkan saja: format ulang di
+                3.B, lalu automount di 3.C. Download ulang model GGUF Q3_K_M (3.55GB) di{' '}
+                <strong>Langkah 11</strong>. Jangan lupa <strong>test reboot di 3.C langkah 7-8</strong>{' '}
+                — tanpa fstab yang benar, /mnt/data kosong tiap reboot dan semua service gagal start.
               </p>
             </AlertDescription>
           </Alert>
           <CodeBlock code={DISK_IDENTIFY} filename="3.A-identify-disks.sh" />
           <CodeBlock code={DISK_FORMAT} filename="3.B-format-hdd-ext4.sh" />
-          <CodeBlock code={DISK_FSTAB} filename="3.C-fstab-mount.sh" />
+          <CodeBlock code={DISK_FSTAB} filename="3.C-fstab-automount.sh" />
           <CodeBlock code={DISK_SSD_TUNING} filename="3.D-ssd-tuning.sh" />
         </Section>
 

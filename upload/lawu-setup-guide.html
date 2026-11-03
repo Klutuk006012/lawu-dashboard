@@ -1378,23 +1378,35 @@ cd / &amp;&amp; rm -rf /tmp/hello_lawu</code></pre>
             <span class="code-lang">sh</span>
           </div>
           <pre class="code-content"><code># 8.A — Inisialisasi project Cargo lawu-server
+# &gt;&gt;&gt; RUN AS: user lawu (masih sebagai lawu dari Langkah 7, TANPA sudo) &lt;&lt;&lt;
+# JANGAN jalankan 'sudo su - lawu' di sini — Anda SUDAH sebagai lawu dari Langkah 7.
+# Jika Anda sudah exit dari lawu, login ulang: 'sudo su - lawu' dari user admin.
 
-# Sebagai user lawu
-sudo su - lawu
-source ~/.cargo/env
+# 1) Verifikasi Anda sebagai lawu + cargo di PATH
+whoami                    # harus cetak: lawu
+source ~/.cargo/env       # load cargo env (atau buka shell baru)
+cargo --version           # harus cetak: cargo 1.x.x
 
-# 1) Buat project di home directory
+# 2) Buat project di home directory
 cd ~
 cargo new --bin lawu-server
 cd lawu-server
 
-# 2) Struktur direktori yang dihasilkan
-tree -L 2
-# lawu-server/
-# ├── Cargo.toml
-# ├── src/
-# │   └── main.rs
-# └── target/  (akan muncul setelah build)</code></pre>
+# 3) Cek struktur direktori yang dihasilkan (pakai ls — 'tree' jarang terinstall)
+ls -la
+ls -la src/
+# Output yang diharapkan:
+# ./:
+#   drwxr-xr-x  src/
+#   -rw-r--r--  Cargo.toml
+#   -rw-r--r--  .gitignore
+# ./src/:
+#   -rw-r--r--  main.rs
+
+# (OPSIONAL) Jika ingin pakai 'tree' untuk visualisasi hierarki:
+#   sudo apt install tree   (dari user admin, bukan lawu)
+#   tree -L 2
+# Tapi 'ls -la' + 'ls -la src/' di atas sudah cukup.</code></pre>
         </div>
         <div class="code-block">
           <div class="code-header">

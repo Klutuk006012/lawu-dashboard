@@ -1049,22 +1049,32 @@ async fn telegram_test_handler() -> Json<serde_json::Value> {
 const LLAMA_CLONE = `# 11.A — Clone & build llama.cpp (open source MIT)
 # Paten 3: murni CPU. Paten 5: llama.cpp = MIT license.
 # llama.cpp TIDAK butuh GPU — pure CPU dengan optimasi AVX2 otomatis di i5-10400.
+# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 10, TANPA sudo) <<<
 
-# Sebagai user lawu
-sudo su - lawu
-source ~/.cargo/env
-
-# 1) Clone repo llama.cpp (official ggerganov)
+# 1) Verifikasi sebagai lawu + di home directory
+whoami    # harus: lawu
+cd ~
+mkdir -p ~/src
 cd ~/src
-git clone https://github.com/ggerganov/llama.cpp.git
+
+# 2) Clone repo llama.cpp (official ggml-org — repo sudah di-migrate dari ggerganov)
+git clone https://github.com/ggml-org/llama.cpp.git
 cd llama.cpp
 
-# 2) Checkout release stabil terbaru (misal b3xxx)
-#    Cek tag terbaru: https://github.com/ggerganov/llama.cpp/releases
-git checkout b3500  # ganti dengan tag stabil terbaru saat Anda menjalankan
+# 3) Cek 5 tag release terbaru, pilih yang paling baru (stabil)
+git tag | grep -E '^b[0-9]+$' | sort -V | tail -5
+# Contoh output Nov 2026: b12065, b12066, b12068, b12069
+# Pilih yang TERAKHIR (paling baru stabil)
 
-# 3) Update submodule (jika ada)
-git submodule update --init --recursive`
+# 4) Checkout tag stabil terbaru
+git checkout b12069   # ganti dengan tag terbaru yang muncul di output step 3
+
+# 5) Update submodule (jika ada — .gitmodules mungkin kosong, aman)
+git submodule update --init --recursive
+
+# 6) Verifikasi LICENSE (MIT — Paten 5)
+head -3 LICENSE
+# Harus cetak: MIT License + copyright holder`
 
 const LLAMA_BUILD = `# 11.B — Build llama.cpp dengan optimasi CPU native (AVX2 di i5-10400)
 

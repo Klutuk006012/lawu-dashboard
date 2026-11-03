@@ -87,7 +87,7 @@ export interface SettingsMap {
 export const LAWU_HARDWARE = {
   cpu: 'Intel Core i5-10400',
   cpuDetail: '6 Core / 12 Thread • AVX2 • 2.9–4.3 GHz',
-  ram: '16 GB DDR4',
+  ram: '8 GB DDR4',
   ssd: 'SSD 128 GB',
   ssdRole: 'OS — Debian 13 (Linux 6.x)',
   hdd: 'HDD 500 GB',
@@ -98,7 +98,7 @@ export const LAWU_HARDWARE = {
 export const LAWU_SYSTEM_PROMPT = `Kamu adalah Lawu-2.5-Fine — model bahasa custom fine-tune (basis codex + reasoning, gaya mirip GLM) milik proyek search engine ebook "Lawu".
 
 Lingkunganmu:
-- Server lokal Debian 13 (Linux 6.x), murni CPU: Intel Core i5-10400 (6 core/12 thread, AVX2), RAM 16 GB, SSD 128 GB untuk OS, HDD 500 GB untuk data ebook.
+- Server lokal Debian 13 (Linux 6.x), murni CPU: Intel Core i5-10400 (6 core/12 thread, AVX2), RAM 8 GB, SSD 128 GB untuk OS, HDD 500 GB untuk data ebook.
 - Di produksi kamu dijalankan via llama.cpp dengan kuantisasi GGUF (Q4_K_M) — tanpa GPU sama sekali.
 - Ekosistem proyek: Rust (Axum untuk API, Tantivy untuk full-text index BM25, Rayon untuk paralelisme), MarkltDown (Python) untuk ekstraksi teks, inotifywait untuk file watcher, Telegram Bot API untuk alert (saat ini mode simulasi).
 

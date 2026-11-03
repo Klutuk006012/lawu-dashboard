@@ -600,8 +600,10 @@ const SYSCTL = `# 6.A — Tulis config sysctl Lawu ke file (heredoc — LANGSUNG
 sudo tee /etc/sysctl.d/99-lawu-fine.conf > /dev/null <<'SYSCTL'
 # Tuning kernel untuk search engine ebook Lawu-2.5-Fine
 
-# Manfaatkan RAM 16GB untuk caching disk/Tantivy, kurangi swap ke SSD
-vm.swappiness = 10
+# Manfaatkan RAM 8GB untuk caching disk/Tantivy
+# RAM 8GB = mepet untuk 7B Q4_K_M, swappiness 40 (lebih agresif swap ke HDD)
+# RAM 16GB+ = swappiness 10 (jarang swap, cache di RAM)
+vm.swappiness = 40
 
 # Tulis data kotor ke disk bertahap — cegah I/O stall saat indexing
 vm.dirty_background_ratio = 5
@@ -1098,8 +1100,14 @@ cmake -B build \\
   -DLLAMA_STATIC=ON \\
   -G Ninja
 
-# 2) Build paralel (6 core fisik i5-10400) — estimasi 5-8 menit
-cmake --build build --config Release -j 6
+# 2) Build paralel — GUNAKAN -j 3 untuk RAM 8GB (jangan -j 6, OOM!)
+#    Estimasi: 10-15 menit dengan 3 thread (RAM 8GB aman)
+cmake --build build --config Release -j 3
+
+# ⚠️ RAM 8GB BUILD RULE:
+#   -j 3 = aman (3 × ~1GB RAM = 3GB, sisa 5GB untuk OS)
+#   -j 4 = mepet (4 × ~1GB = 4GB, bisa OOM kalau OS sibuk)
+#   -j 6 = OOM (6 × ~1GB = 6GB, RAM 8GB tidak cukup)
 
 # 3) Verifikasi binary ada + size besar (static linking → 15-25MB, bukan 18KB)
 ls -lh build/bin/llama-server
@@ -1120,8 +1128,8 @@ ldd build/bin/llama-server | grep -iE 'cuda|nvrtc|cudnn|libgpu' \\
 ~/src/llama.cpp/build/bin/llama-server --version
 # Harus cetak: version: b12069 (atau tag yang Anda checkout)
 
-# Estimasi waktu build: 5-8 menit di i5-10400 dengan 6 thread
-# Jika OOM (jarang di static build), turunkan -j 6 → -j 4 atau -j 3`
+# Estimasi waktu build: 10-15 menit di i5-10400 dengan 3 thread (RAM 8GB)
+# Jika masih OOM (jarang), turunkan -j 3 → -j 2`
 
 // ======================================================================
 // LANGKAH 12 — KONVERSI & KUANTISASI GGUF
@@ -1190,29 +1198,37 @@ rm -f ~/models/lawu-2.5-fine-f16.gguf
 // ======================================================================
 
 const LLAMA_SERVE = `# 13.A — Jalankan llama-server (OpenAI-compatible endpoint)
+# >>> RUN AS: user lawu (masih sebagai lawu dari Langkah 12, TANPA sudo) <<<
+# RAM 8GB: pakai -t 4 + -c 2048 (bukan -t 6 + -c 4096 — itu untuk RAM 16GB)
+# Alternatif: pakai model 3B (Qwen2.5-Coder-3B) untuk headroom lebih besar
 
-# Sebagai user lawu
-sudo su - lawu
 cd ~/src/llama.cpp
 
 # 1) Tes serve manual dulu (sebelum systemd di Langkah 14)
 ./build/bin/llama-server \\
   -m ~/models/lawu-2.5-fine-q4_k_m.gguf \\
   --alias lawu-2.5-fine \\
-  -t 6 \\
+  -t 4 \\
   --mmap \\
-  -c 4096 \\
+  -c 2048 \\
   --host 127.0.0.1 \\
   --port 8080
 
-# Parameter penjelasan:
+# Parameter penjelasan (RAM 8GB tuning):
 #   -m           = path model GGUF
 #   --alias      = nama model di endpoint OpenAI-compatible
-#   -t 6         = 6 thread fisik i5-10400 (sisakan thread utk OS/indexer)
-#   --mmap        = memory-map file model (hemat RAM, pakai page cache OS)
-#   -c 4096      = context window 4K token (cukup utk chat + snippet ebook)
+#   -t 4         = 4 thread (sisakan 2 thread untuk OS + Axum + Tantivy)
+#   --mmap        = memory-map file model (WAJIB — hemat RAM, pakai page cache OS)
+#   -c 2048      = context window 2K token (hemat KV cache RAM ~512MB)
 #   --host 127.0.0.1 = bind localhost SAJA (akses via Nginx reverse proxy)
 #   --port 8080  = port inference
+
+# RAM 8GB BUDGET (7B Q4_K_M):
+#   Model mmap load   : ~4.4GB
+#   KV cache ctx 2048  : ~0.5GB
+#   Axum + Tantivy    : ~0.6GB
+#   OS + cache         : ~2.5GB
+#   TOTAL              : ~8.0GB (MEPET — jika OOM saat inference, pakai 3B model)
 
 # 2) Di terminal lain, test endpoint OpenAI-compatible
 curl http://127.0.0.1:8080/v1/models | jq
@@ -1225,10 +1241,18 @@ curl http://127.0.0.1:8080/v1/chat/completions \\
     "max_tokens": 100
   }' | jq
 
-# 3) Estimasi throughput: 7B Q4_K_M ≈ 9-14 tok/s di i5-10400 murni CPU
-#    14B Q4_K_M masih muat RAM 16GB tapi throughput turun ~2x (mulai dari 7B)
+# 3) Estimasi throughput RAM 8GB (i5-10400, -t 4):
+#    7B Q4_K_M (4.4GB)  : ~7-11 tok/s (mepet, bisa OOM kalau prompt panjang)
+#    3B Q4_K_M (2GB)    : ~25-35 tok/s (RECOMMENDED — headroom besar)
+#    7B Q3_K_M (3.6GB)  : ~10-15 tok/s (kompromi kualitas vs RAM)
 
-# 4) Stop manual serve (Ctrl+C), lanjut setup systemd di Langkah 14`
+# 4) Jika OOM saat inference (kill by kernel), ALTERNATIF:
+#    a) Pakai model lebih kecil: Qwen2.5-Coder-3B Q4_K_M (~2GB)
+#    b) Turunkan context: -c 2048 → -c 1024
+#    c) Aktifkan swap ke HDD (BUKAN SSD): sudo mkswap /dev/sdb2 + swapon
+#    d) Kurangi thread: -t 4 → -t 3
+
+# 5) Stop manual serve (Ctrl+C), lanjut setup systemd di Langkah 14`
 
 // ======================================================================
 // LANGKAH 14 — SYSTEMD UNITS
@@ -1257,7 +1281,7 @@ After=mnt-data.mount
 User=lawu
 Group=lawu
 Type=simple
-ExecStart=/home/lawu/src/llama.cpp/build/bin/llama-server -m /home/lawu/models/lawu-2.5-fine-q4_k_m.gguf --alias lawu-2.5-fine -t 6 --mmap -c 4096 --host 127.0.0.1 --port 8080
+ExecStart=/home/lawu/src/llama.cpp/build/bin/llama-server -m /home/lawu/models/lawu-2.5-fine-q4_k_m.gguf --alias lawu-2.5-fine -t 4 --mmap -c 2048 --host 127.0.0.1 --port 8080
 Restart=always
 RestartSec=3
 LimitNOFILE=65535
@@ -1931,7 +1955,7 @@ export function GuideView() {
           id="llama-serve"
           step="13"
           title="Serve llama.cpp (OpenAI-compatible)"
-          desc="Jalankan llama-server dengan -t 6, --mmap, -c 4096, bind 127.0.0.1:8080. Test endpoint /v1/models & /v1/chat/completions. Estimasi 9-14 tok/s di i5-10400."
+          desc="Jalankan llama-server dengan -t 4, --mmap, -c 2048 (RAM 8GB tuning), bind 127.0.0.1:8080. Test endpoint /v1/models & /v1/chat/completions. Estimasi 7-11 tok/s (7B) atau 25-35 tok/s (3B) di i5-10400."
         >
           <CodeBlock code={LLAMA_SERVE} filename="13.A-serve-llama.sh" />
         </Section>

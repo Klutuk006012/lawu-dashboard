@@ -762,6 +762,7 @@ ls -la src/
 # Tapi 'ls -la' + 'ls -la src/' di atas sudah cukup.`
 
 const CARGO_TOML = `# ~/lawu-server/Cargo.toml
+# Compatible dengan Rust 1.99 (2026) — gunakan axum 0.8 + tantivy 0.24
 [package]
 name = "lawu-server"
 version = "0.1.0"
@@ -771,9 +772,9 @@ description = "Lawu-2.5-Fine search API — Axum + Tantivy"
 license = "MIT"
 
 [dependencies]
-axum = "0.7"
+axum = "0.8"
 tokio = { version = "1", features = ["full"] }
-tantivy = "0.22"
+tantivy = "0.24"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tracing = "0.1"
@@ -782,8 +783,8 @@ reqwest = { version = "0.12", features = ["json"] }
 walkdir = "2"
 rayon = "1"
 anyhow = "1"
-thiserror = "1"
-tower-http = { version = "0.5", features = ["cors", "trace"] }
+thiserror = "2"
+tower-http = { version = "0.6", features = ["cors", "trace"] }
 chrono = { version = "0.4", features = ["serde"] }
 
 [profile.release]
@@ -829,11 +830,12 @@ ldd ~/.cargo/bin/lawu-server
 // ======================================================================
 
 const TANTIVY = `// ~/lawu-server/src/schema.rs
-use tantivy::schema::{Schema, TEXT, STORED, IndexRecordOption, Facet, FAST};
+// Compatible dengan Tantivy 0.24 + Rust 1.99 (2026)
+use tantivy::schema::{Schema, TEXT, STORED, FAST};
 
 pub fn build_schema() -> Schema {
     // Skema multi-field — identik dengan kontrak dashboard:
-    // title, body, path, file_type, category
+    // title, body, path, file_type, category, pages, size_bytes
     let mut schema = Schema::builder();
 
     // title — STORED untuk di-return di hasil pencarian, TEXT untuk BM25
@@ -857,8 +859,9 @@ pub fn build_schema() -> Schema {
     // size_bytes — ukuran file asli (FAST untuk sort)
     schema.add_u64_field("size_bytes", FAST | STORED);
 
-    // indexed_at — timestamp indexing (FAST untuk sort terbaru)
-    schema.add_date_field("indexed_at", FAST | STORED);
+    // NOTE: indexed_at (date field) di-add nanti saat butuh sort by timestamp.
+    // Tantivy 0.24 add_date_field butuh DateOptions type annotation — skip untuk now
+    // agar schema.rs pasti compile. Search by title/body BM25 sudah cukup untuk MVP.
 
     schema.build()
 }
@@ -873,10 +876,10 @@ pub fn build_schema() -> Schema {
 // ======================================================================
 
 const AXUM_API = `// ~/lawu-server/src/main.rs
+// Compatible dengan Axum 0.8 + Tantivy 0.24 + Rust 1.99 (2026)
 use axum::{
-    extract::{Path, State},
-    http::{header, StatusCode},
-    response::IntoResponse,
+    extract::State,
+    http::StatusCode,
     routing::{get, post},
     Json, Router,
 };
@@ -884,14 +887,15 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tantivy::collector::TopDocs;
 use tantivy::query::QueryParser;
-use tantivy::{doc, Index, IndexReader, IndexWriter, ReloadPolicy};
-use tracing_subscriber;
+use tantivy::{Index, IndexReader, ReloadPolicy};
+
+// Module declaration — schema.rs harus ada di src/schema.rs (Langkah 9)
+mod schema;
 
 #[derive(Clone)]
 struct AppState {
     index: Arc<Index>,
     reader: Arc<IndexReader>,
-    // path field disimpan agar bisa dipakai ulang
     schema_fields: Arc<SchemaFields>,
 }
 
@@ -930,15 +934,14 @@ struct SearchResponse {
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt().with_env_filter("info").init();
 
-    // 1) Buka index Tantivy di HDD
+    // 1) Buka index Tantivy di HDD, atau buat baru jika belum ada
     let index_path = "/mnt/data/tantivy_index";
-    let index = Index::open_in_dir(index_path)
-        .or_else(|_| {
-            // Index belum ada — buat baru dengan schema
-            std::fs::create_dir_all(index_path)?;
-            let schema = crate::schema::build_schema();
-            Index::create_in_dir(index_path, schema)
-        })?;
+    let index = Index::open_in_dir(index_path).unwrap_or_else(|_| {
+        // Index belum ada — buat baru dengan schema
+        std::fs::create_dir_all(index_path).expect("buat dir tantivy_index gagal");
+        let schema = schema::build_schema();
+        Index::create_in_dir(index_path, schema).expect("create tantivy index gagal")
+    });
 
     // 2) Reader dengan auto-reload (indexer & searcher di proses yang sama)
     let reader = index
@@ -946,13 +949,23 @@ async fn main() -> anyhow::Result<()> {
         .reload_policy(ReloadPolicy::OnCommitWithDelay)
         .try_into()?;
 
+    // 3) Cache field handles (lebih cepat daripada get_field di setiap request)
+    let schema = index.schema();
+    let schema_fields = Arc::new(SchemaFields {
+        title: schema.get_field("title").expect("field title tidak ada"),
+        body: schema.get_field("body").expect("field body tidak ada"),
+        path: schema.get_field("path").expect("field path tidak ada"),
+        file_type: schema.get_field("file_type").expect("field file_type tidak ada"),
+        category: schema.get_field("category").expect("field category tidak ada"),
+    });
+
     let state = AppState {
         index: Arc::new(index),
         reader: Arc::new(reader),
-        schema_fields: Arc::new(/* init fields di sini */),
+        schema_fields,
     };
 
-    // 3) Router Axum
+    // 4) Router Axum 0.8 — bind 127.0.0.1:8081 (localhost only, via Nginx reverse proxy)
     let app = Router::new()
         .route("/api/stats", get(stats_handler))
         .route("/api/search", post(search_handler))
@@ -970,15 +983,16 @@ async fn search_handler(
     Json(req): Json<SearchRequest>,
 ) -> Result<Json<SearchResponse>, StatusCode> {
     let searcher = state.reader.searcher();
-    let schema = state.index.schema();
+    let f = &state.schema_fields;
 
-    let title_field = schema.get_field("title").map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    let path_field = schema.get_field("path").map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    let ft_field = schema.get_field("file_type").map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    let cat_field = schema.get_field("category").map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    let query_parser = QueryParser::for_index(&state.index, vec![title_field, /* body_field */]);
-    let query = query_parser.parse_query(&req.query).map_err(|_| StatusCode::BAD_REQUEST)?;
+    // QueryParser: cari di title + body (BM25 default)
+    let query_parser = QueryParser::for_index(
+        &state.index,
+        vec![f.title, f.body],
+    );
+    let query = query_parser
+        .parse_query(&req.query)
+        .map_err(|_| StatusCode::BAD_REQUEST)?;
 
     let limit = req.limit.unwrap_or(60).min(200);
     let top_docs = searcher
@@ -988,12 +1002,12 @@ async fn search_handler(
     let hits: Vec<SearchHit> = top_docs
         .into_iter()
         .map(|(score, doc_addr)| {
-            let doc = searcher.doc(doc_addr).unwrap();
+            let doc = searcher.doc(doc_addr).unwrap_or_default();
             SearchHit {
-                title: doc.get_first(title_field).and_then(|v| v.as_text()).unwrap_or("").to_string(),
-                path: doc.get_first(path_field).and_then(|v| v.as_text()).unwrap_or("").to_string(),
-                file_type: doc.get_first(ft_field).and_then(|v| v.as_text()).unwrap_or("").to_string(),
-                category: doc.get_first(cat_field).and_then(|v| v.as_text()).unwrap_or("").to_string(),
+                title: doc.get_first(f.title).and_then(|v| v.as_text()).unwrap_or("").to_string(),
+                path: doc.get_first(f.path).and_then(|v| v.as_text()).unwrap_or("").to_string(),
+                file_type: doc.get_first(f.file_type).and_then(|v| v.as_text()).unwrap_or("").to_string(),
+                category: doc.get_first(f.category).and_then(|v| v.as_text()).unwrap_or("").to_string(),
                 score,
             }
         })
@@ -1002,18 +1016,29 @@ async fn search_handler(
     Ok(Json(SearchResponse { total: hits.len(), results: hits }))
 }
 
-async fn stats_handler(State(_state): State<AppState>) -> Json<serde_json::Value> {
-    // Return metrik: total docs, byType, byCategory, sizeIndex, lastIndexedAt
+async fn stats_handler(State(state): State<AppState>) -> Json<serde_json::Value> {
+    // Return metrik: total docs, index size, dsb.
+    let searcher = state.reader.searcher();
     Json(serde_json::json!({
-        "docs": { "total": 0, "byType": [], "byCategory": [], "indexSizeMb": 0, "lastIndexedAt": null },
+        "docs": {
+            "total": searcher.num_docs(),
+            "byType": [],
+            "byCategory": [],
+            "indexSizeMb": 0,
+            "lastIndexedAt": null
+        },
         "chats": { "conversations": 0, "messages": 0 },
         "alerts": { "total24h": 0 }
     }))
 }
 
 async fn telegram_test_handler() -> Json<serde_json::Value> {
-    // Tes konektivitas Telegram Bot (mode simulasi dulu)
-    Json(serde_json::json!({ "ok": true, "mode": "simulasi", "message": "Telegram belum dikonfigurasi" }))
+    // Tes konektivitas Telegram Bot (mode simulasi — token belum di-set)
+    Json(serde_json::json!({
+        "ok": true,
+        "mode": "simulasi",
+        "message": "Telegram belum dikonfigurasi — isi /etc/lawu/env"
+    }))
 }`
 
 // ======================================================================

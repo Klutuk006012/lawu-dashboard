@@ -807,8 +807,10 @@ deactivate</code></pre>
             <span class="code-filename">2.A-create-user-lawu.sh</span>
             <span class="code-lang">sh</span>
           </div>
-          <pre class="code-content"><code># 2.A — Buat user &amp; group 'lawu' (system user, no login shell)
-# User ini menjalankan semua service Lawu — isolasi privilege (Paten keamanan).
+          <pre class="code-content"><code># 2.A — Buat user &amp; group 'lawu' (system user, no sudo)
+# &gt;&gt;&gt; RUN AS: user admin Anda (yang punya sudo) &lt;&lt;&lt;
+# User 'lawu' akan menjalankan semua service Lawu — isolasi privilege (Paten keamanan).
+# User lawu TIDAK diberi sudo (intentional — principle of least privilege).
 
 # 1) Buat group 'lawu' jika belum ada
 sudo groupadd -f lawu
@@ -816,16 +818,25 @@ sudo groupadd -f lawu
 # 2) Buat user system 'lawu' dengan home directory
 sudo useradd -m -d /home/lawu -s /bin/bash -g lawu lawu
 
-# 3) Tambah user lawu ke grup sudo HANYA jika Anda ingin lawu bisa sudo
-#    (UNTUK PRODUKSI: JANGAN tambahkan — ikuti principle of least privilege)
-# sudo usermod -aG sudo lawu
-
-# 4) Set password kuat untuk user lawu (untuk su - lawu saat debugging)
+# 3) Set password kuat untuk user lawu (untuk 'su - lawu' saat debugging dari user admin)
 sudo passwd lawu
 
-# 5) Verifikasi user
+# 4) Verifikasi user dibuat (tanpa sudo di grup)
 id lawu
-ls -ld /home/lawu</code></pre>
+ls -ld /home/lawu
+
+# 5) VERIFIKASI lawu TIDAK di sudoers (ini BENAR — by design)
+sudo -u lawu sudo -n whoami 2&gt;&amp;1 | grep -q 'not in the sudoers' \
+  &amp;&amp; echo "✓ lawu TIDAK punya sudo (correct — service user)" \
+  || echo "✗ lawu punya sudo (HAPUS: sudo deluser lawu sudo)"
+
+# 6) Untuk setup service nanti, gunakan 'sudo -u lawu &lt;cmd&gt;' dari user admin
+#    Contoh: sudo -u lawu git clone ... (build sebagai lawu, tanpa sudo)
+# Atau switch ke lawu: 'sudo su - lawu' lalu exit kembali ke admin
+
+# CATATAN: Semua perintah sudo di Langkah 0-6, 14-17 jalankan sebagai USER ADMIN.
+#          Langkah 7-13 (Rust build, llama.cpp build) jalankan sebagai USER LAWU
+#          (sudo su - lawu, tanpa sudo prefix).</code></pre>
         </div>
         <div class="code-block">
           <div class="code-header">
@@ -1189,7 +1200,9 @@ sudo fail2ban-client status sshd
             <span class="code-filename">6.A-apply-sysctl.sh</span>
             <span class="code-lang">sh</span>
           </div>
-          <pre class="code-content"><code># 6.A — Tulis config sysctl Lawu ke file (heredoc — LANGSUNG JALANKAN, jangan paste baris per baris)
+          <pre class="code-content"><code># 6.A — Tulis config sysctl Lawu ke file (heredoc — LANGSUNG JALANKAN)
+# &gt;&gt;&gt; RUN AS: user admin Anda (yang punya sudo) &lt;&lt;&lt;
+# JANGAN jalankan sebagai user lawu — akan error "not in sudoers file"
 # Ini CONFIG FILE, bukan script. Heredoc menulis ke /etc/sysctl.d/99-lawu-fine.conf lalu apply.
 sudo tee /etc/sysctl.d/99-lawu-fine.conf &gt; /dev/null &lt;&lt;'SYSCTL'
 # Tuning kernel untuk search engine ebook Lawu-2.5-Fine
@@ -1267,9 +1280,15 @@ sudo systemctl daemon-reload</code></pre>
           </div>
           <pre class="code-content"><code># 7.A — Install Rust via rustup (official installer, open source Apache-2.0/MIT)
 # Paten 1: Rust = backend tunggal. Paten 5: rustup = open source.
+# &gt;&gt;&gt; RUN AS: user lawu (TANPA sudo — build tidak butuh root) &lt;&lt;&lt;
+# Dari shell user admin Anda (yang punya sudo), switch ke lawu dulu:
 
-# 1) Switch ke user lawu
+# 1) Switch ke user lawu (dari shell user admin Anda)
 sudo su - lawu
+# Sekarang prompt berubah: lawu@hostname:~$
+# Verifikasi Anda sebagai lawu (BUKAN sudo — lawu tidak punya sudo):
+whoami    # harus cetak: lawu
+id        # groups harus TIDAK ada sudo
 
 # 2) Install rustup (rust compiler + cargo + toolchain manager)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \

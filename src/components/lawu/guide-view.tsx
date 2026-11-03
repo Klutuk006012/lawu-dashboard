@@ -267,6 +267,7 @@ sudo apt install -y \\
   libssl-dev \\
   libcurl4-openssl-dev \\
   libsqlite3-dev \\
+  procps \\
   nginx \\
   ufw \\
   fail2ban \\
@@ -612,11 +613,11 @@ net.core.netdev_max_backlog = 16384
 net.ipv4.tcp_syncookies = 1
 SYSCTL
 
-# Apply config ke kernel yang sedang berjalan
-sudo sysctl --system
+# Apply config ke kernel yang sedang berjalan (full path — anti PATH issue)
+sudo /usr/sbin/sysctl --system
 
-# Verifikasi nilai sudah berubah
-sysctl vm.swappiness fs.file-max fs.inotify.max_user_watches net.core.somaxconn`
+# Verifikasi nilai sudah berubah (pakai sudo — secure_path include /usr/sbin)
+sudo sysctl vm.swappiness fs.file-max fs.inotify.max_user_watches net.core.somaxconn`
 
 const LIMITS_CONF = `# 6.B — Tulis limits.conf untuk user lawu (heredoc — LANGSUNG JALANKAN)
 # Naikkan batas file descriptor untuk Axum + Tantivy
@@ -1735,9 +1736,8 @@ export function GuideView() {
           title="Spesifikasi Infrastruktur & Kernel Tuning (sysctl)"
           desc="Parameter kernel di /etc/sysctl.d/99-lawu-fine.conf + limits.conf untuk file descriptor besar (Axum + Tantivy)."
         >
-          <CodeBlock code={SYSCTL} filename="/etc/sysctl.d/99-lawu-fine.conf" />
-          <CodeBlock code={SYSCTL_APPLY} filename="apply-sysctl.sh" />
-          <CodeBlock code={LIMITS_CONF} filename="/etc/security/limits.d/99-lawu-fine.conf" />
+          <CodeBlock code={SYSCTL} filename="6.A-apply-sysctl.sh" />
+          <CodeBlock code={LIMITS_CONF} filename="6.B-apply-limits.sh" />
         </Section>
 
         {/* ─── LANGKAH 7: RUST ─── */}

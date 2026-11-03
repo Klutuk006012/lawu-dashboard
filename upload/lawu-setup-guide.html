@@ -745,6 +745,7 @@ sudo apt install -y \
   libssl-dev \
   libcurl4-openssl-dev \
   libsqlite3-dev \
+  procps \
   nginx \
   ufw \
   fail2ban \
@@ -1219,11 +1220,11 @@ net.core.netdev_max_backlog = 16384
 net.ipv4.tcp_syncookies = 1
 SYSCTL
 
-# Apply config ke kernel yang sedang berjalan
-sudo sysctl --system
+# Apply config ke kernel yang sedang berjalan (full path — anti PATH issue)
+sudo /usr/sbin/sysctl --system
 
-# Verifikasi nilai sudah berubah
-sysctl vm.swappiness fs.file-max fs.inotify.max_user_watches net.core.somaxconn</code></pre>
+# Verifikasi nilai sudah berubah (pakai sudo — secure_path include /usr/sbin)
+sudo sysctl vm.swappiness fs.file-max fs.inotify.max_user_watches net.core.somaxconn</code></pre>
         </div>
         <div class="code-block">
           <div class="code-header">

@@ -231,8 +231,8 @@ HDD 500GB (DATA — /dev/sdb1, ext4, automount via fstab: `defaults,noatime,nofa
 | 14. systemd llama-server | ✅ | lawu-llama.service active, Q4_K_M |
 | 15. Otomasi | ⏳ | watch_ebooks.sh, backup, cron |
 | 16. k6 load test | ⏳ | p95 < 300ms dengan 20 VUs |
-| 17. Nginx reverse proxy | ⏳ | port 80 → Axum :3001 + llama :8080 |
-| 18. Integrasi Dashboard | ⏳ | **Vue.js 3** (Vite + Pinia) — Next.js dibuang, rebuild dengan Vue.js |
+| 17. Nginx reverse proxy | ✅ | port 80 → Vue.js static + Axum :3001 + llama :8080 |
+| 18. Integrasi Dashboard | ✅ | Vue.js 3 (Vite + Pinia) deploy ke srv-fine via GitHub, nginx serve |
 | 19. **Hardening** | ⏳ | **TERAKHIR!** |
 | 20. Go-Live | ⏳ | audit final |
 

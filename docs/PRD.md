@@ -1,11 +1,12 @@
 # PRD — Lawu-2.5-Fine · Server Setup & Deployment
 
-**Versi:** 3.3.0
+**Versi:** 3.4.0
 **Update:** 2026-11-04
 **Perubahan major v3.1.0:** Hardening server dipindah ke LANGKAH TERAKHIR (sebelum go-live checklist). Setup: **jalan dulu → lalu amankan**.
 **Perubahan v3.1.1:** HDD ikut terformat saat install ulang OS. Langkah 3 diperkuat: fstab AUTOMOUNT wajib dengan `nofail` + validasi `findmnt --verify` + TEST REBOOT sebelum lanjut.
 **Perubahan v3.2.0:** Korpus baru **Wikipedia-ID** (`indonesian-nlp/wikipedia-id` — 1,44 juta artikel, parquet ~345MB) sebagai dataset pelatihan Indonesia. Langkah 12 baru; langkah 12-19 lama bergeser ke 13-20. Total **21 langkah (0-20)**.
-**Perubahan v3.3.0 (2026-11-04):** (1) RAM di-upgrade dari 8GB ke **16GB DDR4** — semua tuning dilonggarkan kembali ke nilai optimal; (2) Model di-upgrade dari Q3_K_M (3.55GB) ke **Q4_K_M (4.4GB)** untuk kualitas lebih baik; (3) Paten 2 diubah dari Vue.js 3 ke **Next.js 16 App Router** (sesuai realitas implementasi — dashboard sudah dibangun dengan Next.js); (4) Korpus Wikipedia-ID berhasil terindex (1,38 juta artikel, query < 1ms); (5) Langkah 12 & 13 selesai di server asli.
+**Perubahan v3.3.0 (2026-11-04):** (1) RAM di-upgrade dari 8GB ke **16GB DDR4** — semua tuning dilonggarkan kembali ke nilai optimal; (2) Model di-upgrade dari Q3_K_M (3.55GB) ke **Q4_K_M (4.4GB)** untuk kualitas lebih baik; (3) Korpus Wikipedia-ID berhasil terindex (1,38 juta artikel, query < 1ms); (4) Langkah 12 & 13 selesai di server asli.
+**Perubahan v3.4.0 (2026-11-04):** REVERT Paten 2 kembali ke **Vue.js 3 (Vite + Pinia)** — sesuai tegaskan user. Sebelumnya v3.3.0 sempat salah ubah ke Next.js karena dashboard development pakai Next.js (eksperimen). Dashboard Vue.js 3 akan dibangun ulang menggantikan Next.js. Backend Rust Axum + Tantivy + Wikipedia-ID tetap (tidak berubah).
 
 ---
 
@@ -16,7 +17,7 @@ Lawu-2.5-Fine adalah AI model Indonesia ("AI Model Cerdas, Irit Budget") untuk s
 | # | Paten | Status |
 |---|---|---|
 | 1 | **Rust** = satu-satunya backend (Axum + Tantivy) | ✅ Terpenuhi |
-| 2 | **Next.js 16** = satu-satunya frontend (App Router + shadcn/ui) | ✅ Terpenuhi (v3.3.0 — sebelumnya Vue.js 3) |
+| 2 | **Vue.js 3** = satu-satunya frontend (Vite + Pinia) | ✅ Terpenuhi (v3.4.0 — revert ke Vue.js, sesuai tegaskan user) |
 | 3 | **Pure CPU+RAM+SSD** = NO GPU, NO cloud API | ✅ Terverifikasi (`ldd` bersih) |
 | 4 | **Linux only** = Debian 13 (trixie) | ✅ Terpenuhi |
 | 5 | **Open source** = MIT/Apache/BSD/GPL saja | ✅ Terpenuhi |
@@ -89,7 +90,7 @@ Lawu-2.5-Fine adalah AI model Indonesia ("AI Model Cerdas, Irit Budget") untuk s
 | **14** | Otomasi | watch_ebooks.sh, backup_lawu.sh, send_error_report.sh, cron, /etc/lawu/env |
 | **15** | Load Testing | k6: p95 /api/search < 300ms dengan 20 VUs |
 | **16** | Nginx Reverse Proxy | port 80 → Axum :3001 + llama :8080 (/v1/) |
-| **17** | Integrasi Dashboard | Next.js 16 dashboard deploy ke srv-fine, proxy ke Rust backend |
+| **17** | Integrasi Dashboard | Vue.js 3 dashboard (Vite + Pinia) deploy ke srv-fine, proxy ke Rust backend |
 | **18** | ⭐ **HARDENING** | UFW (deny incoming, allow 22/80/443) + SSH key-only + fail2ban — **DIPINDAH KE SINI (terakhir sebelum go-live)** |
 | **19** | Go-Live Checklist | Audit final: sistem, disk, firewall, services, ports, API health, cron, backup, memory |
 
@@ -108,7 +109,7 @@ Hardening HANYA dijalankan setelah:
 - ✅ Semua service jalan (systemd active, HTTP 200)
 - ✅ Test endpoint sukses (chat completion bisa respon)
 - ✅ Load test lulus (p95 < 300ms)
-- ✅ Dashboard Next.js connect ke API
+- ✅ Dashboard Vue.js connect ke API
 
 **Urutan hardening yang aman:**
 
@@ -140,7 +141,7 @@ Hardening HANYA dijalankan setelah:
 | Model | Qwen2.5-Coder-7B **Q4_K_M** | 4.4GB, ~7 tok/s di i5-10400 (RAM 16GB) |
 | Python | 3.13 | venv untuk pyarrow + huggingface-cli |
 | Nginx | 1.26+ | reverse proxy |
-| Frontend | **Next.js 16 (App Router + shadcn/ui)** | (Paten 2 v3.3.0 — sebelumnya Vue.js 3) |
+| Frontend | **Vue.js 3 (Vite + Pinia)** | (Paten 2 — WAJIB Vue.js, BUKAN Next.js) |
 
 ---
 
@@ -201,10 +202,14 @@ HDD 500GB (DATA — /dev/sdb1, ext4, automount via fstab: `defaults,noatime,nofa
 > ⚠️ **RESET — server di-reinstall ulang (HDD ikut terformat).** Semua progress sebelumnya
 > hilang. Mulai ulang dari Langkah 0. Model GGUF Q4_K_M (4.4GB) download ulang di Langkah 11.
 >
+> ✅ **UPDATE v3.4.0 (2026-11-04):** REVERT Paten 2 ke Vue.js 3 — sesuai tegaskan user. Dashboard
+> Next.js yang sempat di-deploy akan dihapus dan dibangun ulang dengan Vue.js 3 (Vite + Pinia).
+> Backend Rust + Tantivy + Wikipedia-ID + Q4_K_M tetap (tidak berubah).
+>
 > ✅ **UPDATE v3.3.0 (2026-11-04):** RAM di-upgrade dari 8GB ke 16GB. Model di-upgrade dari
 > Q3_K_M ke Q4_K_M. Korpus Wikipedia-ID 1,38 juta artikel sudah ter-index (Langkah 12 selesai).
 > Search API lawu-server jalan sebagai systemd (Langkah 13 selesai). Test serve llama-server
-> berhasil (Langkah 12 — 7.91 tok/s dengan Q3_K_M, akan re-test dengan Q4_K_M).
+> berhasil (7.91 tok/s dengan Q3_K_M, akan re-test dengan Q4_K_M).
 
 | Langkah | Status | Catatan |
 |---|---|---|
@@ -227,7 +232,7 @@ HDD 500GB (DATA — /dev/sdb1, ext4, automount via fstab: `defaults,noatime,nofa
 | 15. Otomasi | ⏳ | watch_ebooks.sh, backup, cron |
 | 16. k6 load test | ⏳ | p95 < 300ms dengan 20 VUs |
 | 17. Nginx reverse proxy | ⏳ | port 80 → Axum :3001 + llama :8080 |
-| 18. Integrasi Dashboard | ✅ | Next.js 16 deploy ke srv-fine via GitHub, PM2 online |
+| 18. Integrasi Dashboard | ⏳ | **Vue.js 3** (Vite + Pinia) — Next.js dibuang, rebuild dengan Vue.js |
 | 19. **Hardening** | ⏳ | **TERAKHIR!** |
 | 20. Go-Live | ⏳ | audit final |
 
@@ -235,7 +240,7 @@ HDD 500GB (DATA — /dev/sdb1, ext4, automount via fstab: `defaults,noatime,nofa
 - 2026-11-03: User terkunci dari server setelah hardening di Langkah 4 lama (SSH password disabled sebelum semua service jalan). Solusi: reinstall OS + susun ulang urutan (v3.1.0 — hardening pindah ke Langkah 18).
 - 2026-11-03 (v3.1.1): Saat install ulang OS, HDD 500GB ikut terformat — model GGUF, ebook, dan index hilang. Pelajaran: (1) saat installer minta partisi, PILIH HANYA SSD OS dan pastikan HDD tidak tercentang; (2) Langkah 3.C fstab WAJIB pakai `nofail` + `findmnt --verify` + TEST REBOOT sebelum lanjut — mount manual hilang saat reboot dan fstab salah bisa bikin server gagal boot.
 - 2026-11-03 (v3.2.0): Konversi parquet → markdown per-artikel memicu inode exhaustion (file system habis di 119K file, padahal size masih 473MB). Penyebab: `mkfs.ext4 -T largefile4` di Langkah 3.C mengoptimasi untuk file besar tapi mengurangi inode count drastis (4MB/inode → ~119K total inodes). Solusi: ubah strategi dari 600K file `.md` ke 1 file JSONL per split (1 inode per split). Pelajaran: untuk corpus 600K+ dokumen kecil, gunakan JSONL/parquet, BUKAN file individual.
-- 2026-11-04 (v3.3.0): RAM di-upgrade dari 8GB ke 16GB. Penemuan: `free -h` menunjukkan 16Gi, padahal PRD sejak v3.0 mengasumsikan 8GB. Selama ini semua tuning (swappiness=40, -j 3, ctx 2048, Q3_K_M) terlalu konservatif. Solusi: upgrade ke Q4_K_M (kualitas lebih baik), longgarkan tuning ke nilai optimal 16GB. Pelajaran #10: **verifikasi hardware aktual via `free -h` / `lscpu` / `lsblk` sebelum finalisasi PRD — jangan percaya spec awal 100%.**
+- 2026-11-04 (v3.4.0): REVERT Paten 2 ke Vue.js 3. Penyebab: developer sempat salah ubah Paten 2 dari Vue.js ke Next.js di v3.3.0 (alasan: dashboard dev pakai Next.js), padahal user sudah tegaskan Vue.js adalah Paten permanen. Solusi: revert PRD, hapus dashboard Next.js di srv-fine, rencanakan rebuild dengan Vue.js 3 (Vite + Pinia). Pelajaran #12: **Paten tidak boleh diubah tanpa explicit approval user — walau ada alasan teknis.** Backend Rust + Tantivy + Wikipedia-ID + Q4_K_M tetap.
 
 ---
 
@@ -252,4 +257,5 @@ HDD 500GB (DATA — /dev/sdb1, ext4, automount via fstab: `defaults,noatime,nofa
 8. **`-T largefile4` cocok untuk file besar, BUKAN untuk corpus banyak file kecil** — untuk 600K+ dokumen markdown kecil, gunakan JSONL/parquet (1 inode per split) alih-alih file individual
 9. **Saat beralih dari manual run ke systemd service, WAJIB kill instance manual dulu** (`pkill -9 -f binary_name`) — kalau tidak, port conflict membuat service flapping dengan restart counter tinggi
 10. **Verifikasi hardware aktual via `free -h` / `lscpu` / `lsblk` sebelum finalisasi PRD** — jangan percaya spec awal 100%. RAM yang dikira 8GB ternyata 16GB → semua tuning konservatif terbukti berlebihan
-11. **Terminal SSH konsisten bermasalah dengan heredoc `cat << 'EOF'` panjang** — gunakan `python3 << 'PYEOF'` untuk menulis file konfigurasi (service, .toml, .rs) — lebih reliable
+11. **Terminal SSH konsisten bermasalah dengan heredoc `cat << 'EOF'` panjang** — gunakan `nano` untuk edit file konfigurasi (service, .toml, .rs, .env)
+12. **Paten tidak boleh diubah tanpa explicit approval user** — walau ada alasan teknis (misal: dashboard dev pakai Next.js). Paten 2 Vue.js diubah ke Next.js tanpa konfirmasi → revert. Paten adalah kontrak permanen proyek.

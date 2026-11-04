@@ -1845,6 +1845,57 @@ curl http://<IP-SERVER>/v1/chat/completions \\
   -d '{"model":"lawu-2.5-fine","messages":[{"role":"user","content":"Halo Lawu"}],"max_tokens":50}' | jq`
 
 // ======================================================================
+// LANGKAH 18.B — BUILD & DEPLOY VUE.JS DASHBOARD (Paten 2)
+// ======================================================================
+
+const VUE_DASHBOARD = `# 18.B — Build & Deploy Vue.js 3 Dashboard (Paten 2: Vite + Pinia)
+# >>> RUN AS: user lawu-web (TANPA sudo) <<<
+
+cd /opt/lawu-dashboard
+
+# 1) Install dependencies
+bun install
+
+# 2) Build production (Vite output: dist/)
+bun run build
+
+# 3) Preview production build (test cepat di port 4173)
+bun run preview &
+sleep 2
+curl -s http://127.0.0.1:4173/ | head -5
+kill %1
+
+# 4) Setup systemd service untuk Vue.js (static files + nginx OR preview server)
+#    Opsi A: nginx serve static files (recommended — paling ringan)
+sudo cp -r dist/* /var/www/lawu-dashboard/
+#    Konfigurasi nginx di Langkah 17 (Nginx Reverse Proxy)
+
+#    Opsi B: systemd serve via vite preview (untuk dev/staging)
+sudo cp /opt/lawu-dashboard/lawu-dashboard.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable lawu-dashboard.service
+sudo systemctl start lawu-dashboard.service
+sleep 3
+sudo systemctl status lawu-dashboard.service --no-pager | head -10
+
+# 5) Set environment variable untuk connect ke Rust backend
+echo "VITE_LAWU_BACKEND_URL=http://127.0.0.1:3001" > .env.production
+echo "VITE_LAWU_LLM_URL=http://127.0.0.1:8080" >> .env.production
+
+# 6) Rebuild dengan env baru
+bun run build
+
+# 7) Test end-to-end
+curl -s http://127.0.0.1:3000/api/stats | jq    # via nginx proxy
+curl -s http://127.0.0.1:3001/api/stats | jq    # langsung ke Rust
+curl -s http://127.0.0.1:8080/health              # langsung ke llama.cpp
+
+# 8) Test reboot — pastikan auto-start
+sudo systemctl reboot
+# Setelah hidup lagi:
+sudo systemctl status lawu-dashboard lawu-server lawu-llama --no-pager | grep Active`
+
+// ======================================================================
 // LANGKAH 20 — FINAL GO-LIVE CHECKLIST
 // ======================================================================
 
@@ -2253,10 +2304,11 @@ export function GuideView() {
         <Section
           id="integrasi"
           step="18"
-          title="Integrasi dengan Dashboard"
-          desc="Hubungkan dashboard ini ke server nyata: setting endpoint LLM di tab Pengaturan, arahkan fetch ke Nginx :80, setup Telegram bot token."
+          title="Integrasi dengan Dashboard Vue.js 3 (Paten 2)"
+          desc="Hubungkan dashboard Vue.js 3 (Vite + Pinia) ke server nyata: setting endpoint LLM di tab Pengaturan, arahkan fetch ke Nginx :80, setup Telegram bot token."
         >
           <CodeBlock code={INTEGRATE} filename="integrasi-dashboard.txt" />
+          <CodeBlock code={VUE_DASHBOARD} filename="18.B-build-vue-dashboard.sh" />
         </Section>
 
         {/* ─── LANGKAH 19: HARDENING (SETELAH SEMUA SERVICE JALAN!) ─── */}

@@ -219,15 +219,15 @@ HDD 500GB (DATA — /dev/sdb1, ext4, automount via fstab: `defaults,noatime,nofa
 | 8. Tantivy schema | ✅ | 4 fields: docid, title, text, split |
 | 9. Axum API | ✅ | /health, /api/search, /api/stats |
 | 10. llama.cpp build | ✅ | b12069, gcc 14.2.0, -j 6 |
-| 11. Model GGUF | ⏳ | Q3_K_M terdownload → **upgrade ke Q4_K_M (4.4GB)** |
+| 11. Model GGUF | ✅ | Q4_K_M (4.4GB) terdownload, service updated |
 | 12. Korpus Wikipedia-ID | ✅ | 1.38jt artikel terindex, query < 1ms |
-| 13. Serve llama.cpp | ✅ | test OK, 7.91 tok/s (Q3_K_M), systemd active |
+| 13. Serve llama.cpp | ✅ | test OK, Q4_K_M aktif, systemd auto-start |
 | 13b. systemd lawu-server | ✅ | auto-start post-reboot verified |
-| 14. systemd llama-server | ⏳ | setelah Q4_K_M download |
+| 14. systemd llama-server | ✅ | lawu-llama.service active, Q4_K_M |
 | 15. Otomasi | ⏳ | watch_ebooks.sh, backup, cron |
 | 16. k6 load test | ⏳ | p95 < 300ms dengan 20 VUs |
 | 17. Nginx reverse proxy | ⏳ | port 80 → Axum :3001 + llama :8080 |
-| 18. Integrasi Dashboard | ⏳ | Next.js dashboard deploy ke srv-fine |
+| 18. Integrasi Dashboard | ✅ | Next.js 16 deploy ke srv-fine via GitHub, PM2 online |
 | 19. **Hardening** | ⏳ | **TERAKHIR!** |
 | 20. Go-Live | ⏳ | audit final |
 
